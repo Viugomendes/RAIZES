@@ -495,6 +495,81 @@ msgstr "desde %(year)s"
 msgid "until %(year)s"
 msgstr "até %(year)s"
 
+# --- Árvore ---
+
+msgid "The central person was not found:"
+msgstr "A pessoa central não foi encontrada:"
+
+msgid "No central person has been chosen, so the tree has no sides."
+msgstr "Nenhuma pessoa central foi escolhida, por isso a árvore não tem lados."
+
+msgid "Write the identifier of a person in RAIZES_CENTRAL_PERSON, in the .env file."
+msgstr "Escreva o identificador de uma pessoa em RAIZES_CENTRAL_PERSON, no arquivo .env."
+
+msgid "Zoom"
+msgstr "Zoom"
+
+msgid "Zoom in"
+msgstr "Aproximar"
+
+msgid "Zoom out"
+msgstr "Afastar"
+
+msgid "Show the whole family"
+msgstr "Mostrar a família inteira"
+
+msgid "Whole family"
+msgstr "Família inteira"
+
+msgid "How to read the tree"
+msgstr "Como ler a árvore"
+
+msgid "Person"
+msgstr "Pessoa"
+
+msgid "Central person"
+msgstr "Pessoa central"
+
+msgid "Deceased person"
+msgstr "Pessoa falecida"
+
+msgid "Current union"
+msgstr "União atual"
+
+msgid "Ended union"
+msgstr "União terminada"
+
+msgid "Biological child"
+msgstr "Filho biológico"
+
+msgid "Adoptive child"
+msgstr "Filho adotivo"
+
+msgid "Foster child"
+msgstr "Filho de criação"
+
+msgid "Sides and distance"
+msgstr "Lados e distância"
+
+msgid "Further away: smaller and lighter"
+msgstr "Mais longe: menor e mais claro"
+
+msgid ""
+"Drag to move, use the mouse wheel or pinch to zoom, and click a person to "
+"open their page."
+msgstr ""
+"Arraste para mover, use a roda do mouse ou o gesto de pinça para aproximar, "
+"e clique numa pessoa para abrir a página dela."
+
+msgid "Side of %(name)s"
+msgstr "Lado de %(name)s"
+
+msgid "%(name)s, siblings, partners and descendants"
+msgstr "%(name)s, irmãos, parceiros e descendentes"
+
+msgid "No link to %(name)s"
+msgstr "Sem ligação com %(name)s"
+
 # --- Links nos textos ---
 
 msgid "%(link)s: there is no person with this identifier."

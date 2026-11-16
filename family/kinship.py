@@ -76,6 +76,10 @@ class FamilyGraph:
         """The unions in which the person is a partner."""
         return list(self._unions_as_partner[person])
 
+    def parent_unions(self, person: str) -> list[UnionRecord]:
+        """The unions in which the person is a child."""
+        return [union for union, _kind in self._unions_as_child[person]]
+
     def partners(self, person: str) -> list[str]:
         """The known partners of the person, one per union."""
         found = []

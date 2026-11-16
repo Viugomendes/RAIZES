@@ -1,8 +1,105 @@
 {% extends "family/base.html" %}
-{% load i18n %}
+{% load i18n l10n static %}
 
 {% block title %}{% translate "Tree" %} · {% endblock %}
+{% block body_class %}wide{% endblock %}
 
 {% block content %}
-  <h1>{% translate "Family tree" %}</h1>
+  <h1 class="tree-title">{% translate "Family tree" %}</h1>
+
+  {% if not tree %}
+    <p class="notice">{% translate "Nobody has been added yet." %}</p>
+  {% else %}
+    {% if not central %}
+      <p class="notice">
+        {% if wanted_central %}
+          {% translate "The central person was not found:" %} <code>{{ wanted_central }}</code>.
+        {% else %}
+          {% translate "No central person has been chosen, so the tree has no sides." %}
+        {% endif %}
+        {% translate "Write the identifier of a person in RAIZES_CENTRAL_PERSON, in the .env file." %}
+      </p>
+    {% endif %}
+
+    <div class="tree-frame">
+      <div class="tree-toolbar" role="group" aria-label="{% translate 'Zoom' %}">
+        <button type="button" id="tree-zoom-in" title="{% translate 'Zoom in' %}" aria-label="{% translate 'Zoom in' %}">+</button>
+        <button type="button" id="tree-zoom-out" title="{% translate 'Zoom out' %}" aria-label="{% translate 'Zoom out' %}">−</button>
+        <button type="button" id="tree-fit" title="{% translate 'Show the whole family' %}">{% translate "Whole family" %}</button>
+      </div>
+
+      {% localize off %}
+      <svg id="family-tree" viewBox="{{ tree.view_box }}" style="aspect-ratio: {{ tree.width }} / {{ tree.height }}" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="{% translate 'Family tree' %}">
+        <g class="bands">
+          {% for x, y, width, height in tree.bands %}<rect x="{{ x }}" y="{{ y }}" width="{{ width }}" height="{{ height }}"/>{% endfor %}
+        </g>
+        <g class="child-lines">
+          {% for css, path in tree.child_lines %}<path class="child-line {{ css }}" d="{{ path }}"/>
+          {% endfor %}
+        </g>
+        <g class="union-lines">
+          {% for css, path in tree.union_lines %}<path class="union-line {{ css }}" d="{{ path }}"/>
+          {% endfor %}
+        </g>
+        <g class="people">
+          {% for person in tree.people %}<a class="{{ person.css_class }}" href="{{ person.url }}">
+            <title>{{ person.title }}</title>
+            {% if person.ring_radius %}<circle class="ring" cx="{{ person.x }}" cy="{{ person.y }}" r="{{ person.ring_radius }}" fill="#ffffff" stroke="{{ person.stroke }}" stroke-width="2"/>{% endif %}
+            <circle cx="{{ person.x }}" cy="{{ person.y }}" r="{{ person.radius }}" fill="{{ person.fill }}" stroke="{{ person.stroke }}" stroke-width="{{ person.stroke_width }}"/>
+            <text x="{{ person.x }}" font-size="{{ person.font_size }}">{% for line, y in person.label %}<tspan x="{{ person.x }}" y="{{ y }}">{{ line }}</tspan>{% endfor %}</text>
+          </a>
+          {% endfor %}
+        </g>
+        <g class="union-nodes">
+          {% for points in tree.union_nodes %}<polygon class="union-node" points="{{ points }}"/>
+          {% endfor %}
+        </g>
+      </svg>
+      {% endlocalize %}
+    </div>
+
+    <details class="legend" open>
+      <summary>{% translate "How to read the tree" %}</summary>
+      <div class="legend-columns">
+        <div>
+          <h2>{% translate "People" %}</h2>
+          <ul>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="10" fill="#3a3531"/></svg> {% translate "Person" %}</li>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="12.5" fill="#ffffff" stroke="#3a3531" stroke-width="1.5"/><circle cx="22" cy="14" r="9" fill="#3a3531"/></svg> {% translate "Central person" %}</li>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="10" fill="#ffffff" stroke="#3a3531" stroke-width="2.5"/></svg> {% translate "Deceased person" %}</li>
+          </ul>
+        </div>
+        <div>
+          <h2>{% translate "Unions" %}</h2>
+          <ul>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><path class="union-line current" d="M2,14 L42,14"/><polygon class="sample-node" points="22,8 28,14 22,20 16,14"/></svg> {% translate "Current union" %}</li>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><path class="union-line ended" d="M2,14 L42,14"/></svg> {% translate "Ended union" %}</li>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><path class="union-line dating" d="M2,14 L42,14"/></svg> {% translate "Dating" %}</li>
+          </ul>
+        </div>
+        <div>
+          <h2>{% translate "Children" %}</h2>
+          <ul>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><path class="child-line biological" d="M2,14 L42,14"/></svg> {% translate "Biological child" %}</li>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><path class="child-line adoptive" d="M2,14 L42,14"/></svg> {% translate "Adoptive child" %}</li>
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><path class="child-line foster" d="M2,14 L42,14"/></svg> {% translate "Foster child" %}</li>
+          </ul>
+        </div>
+        <div>
+          <h2>{% translate "Sides and distance" %}</h2>
+          <ul>
+            {% for colour, label in legend_sides %}
+              <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="10" fill="{{ colour }}"/></svg> {{ label }}</li>
+            {% endfor %}
+            <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="9" cy="14" r="8" fill="#3a3531"/><circle cx="25" cy="14" r="6" fill="#8d8985"/><circle cx="38" cy="14" r="4" fill="#bdbbb9"/></svg> {% translate "Further away: smaller and lighter" %}</li>
+          </ul>
+        </div>
+      </div>
+      <p class="muted">{% translate "Drag to move, use the mouse wheel or pinch to zoom, and click a person to open their page." %}</p>
+    </details>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {% if tree %}<script src="{% static 'js/tree.js' %}" defer></script>{% endif %}
 {% endblock %}

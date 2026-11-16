@@ -250,6 +250,12 @@ class PartnersTests(SimpleTestCase):
 
         self.assertEqual([record.id for record in graph.unions_of("a")], [0, 2])
 
+    def test_unions_in_which_a_person_is_a_child(self):
+        graph = family(union("mother father", "me"), union("mother stepfather", foster="me"))
+
+        self.assertEqual([record.id for record in graph.parent_unions("me")], [0, 1])
+        self.assertEqual(graph.parent_unions("mother"), [])
+
 
 class DistanceTests(SimpleTestCase):
     def setUp(self):

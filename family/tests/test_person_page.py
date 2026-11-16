@@ -305,6 +305,15 @@ class PersonListTests(PersonPageTestCase):
             with self.subTest(person=identifier):
                 self.assertIn(f'href="/pt-br/people/{identifier}/"', html)
 
+    def test_list_is_alphabetical_ignoring_accents(self):
+        html = self.client.get("/pt-br/people/").content.decode()
+        names = re.findall(r'<a href="/pt-br/people/[\w-]+/">([^<]+)</a>', html)
+
+        self.assertLess(names.index("Alice Videira Loureiro"), names.index("Álvaro Oliveira Figueira"))
+        self.assertLess(names.index("Álvaro Oliveira Figueira"), names.index("Amélia Castanheira"))
+        self.assertLess(names.index("Inês Oliveira Figueira"), names.index("Íris Salgueiro"))
+        self.assertLess(names.index("Íris Salgueiro"), names.index("Jandira Mangueira"))
+
     def test_list_shows_the_years(self):
         html = self.client.get("/pt-br/people/").content.decode()
 

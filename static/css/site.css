@@ -429,6 +429,192 @@ a.timestamp::before {
   border-radius: 999px;
 }
 
+/* ---------- Tree ---------- */
+
+body.wide .site-main {
+  max-width: none;
+}
+
+.tree-title {
+  margin-bottom: 0.6rem;
+}
+
+.tree-frame {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+#family-tree {
+  display: block;
+  width: 100%;
+  /* The height follows the proportions of the tree (set on the element),
+     but never takes more than most of the screen. */
+  height: auto;
+  max-height: min(78vh, 900px);
+  min-height: 260px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#family-tree.dragging {
+  cursor: grabbing;
+}
+
+.tree-toolbar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  gap: 0.3rem;
+}
+
+.tree-toolbar button {
+  min-width: 2.4rem;
+  height: 2.4rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.tree-toolbar button:hover {
+  background: var(--accent-soft);
+}
+
+.bands rect {
+  fill: #f7f3eb;
+}
+
+.child-line {
+  fill: none;
+  stroke: #8f867c;
+  stroke-width: 1.5;
+}
+
+.child-line.adoptive {
+  stroke-dasharray: 9 4 2 4;
+}
+
+.child-line.foster {
+  stroke-dasharray: 0.1 4.5;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.union-line {
+  fill: none;
+  stroke: #4d463f;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.union-line.ended {
+  stroke-dasharray: 7 8;
+  stroke-width: 3;
+}
+
+.union-line.dating {
+  stroke-dasharray: 0.1 7.5;
+}
+
+.union-line.lone {
+  stroke-width: 2;
+}
+
+.union-node,
+.sample-node {
+  fill: #ffffff;
+  stroke: #4d463f;
+  stroke-width: 1.6;
+}
+
+a.person {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.person text {
+  fill: var(--ink);
+  font-family: var(--font);
+  text-anchor: middle;
+  /* A white halo keeps the name readable where a line passes behind it. */
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+}
+
+.person:hover circle:not(.ring),
+.person:focus-visible circle:not(.ring) {
+  stroke: #1b6fd1;
+  stroke-width: 3.5;
+}
+
+.person:focus-visible {
+  outline: none;
+}
+
+.legend {
+  margin-top: 1rem;
+  padding: 0.8rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.legend summary {
+  cursor: pointer;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+.legend-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.5rem 2rem;
+  margin-top: 0.8rem;
+}
+
+.legend h2 {
+  margin: 0 0 0.3rem;
+  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.legend ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.1rem 0;
+  font-size: 0.93rem;
+}
+
+.legend svg {
+  flex: none;
+  width: 44px;
+  height: 28px;
+}
+
 /* ---------- List of people ---------- */
 
 .people-list {
