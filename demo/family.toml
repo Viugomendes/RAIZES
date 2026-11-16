@@ -1,0 +1,825 @@
+# The invented family used for tests, examples and screenshots.
+#
+# NONE OF THESE PEOPLE EXIST. Every surname is the name of a tree, to make
+# that obvious. Load it with:  python manage.py load_demo
+#
+# It contains, on purpose, every hard case the site must handle:
+#   - four generations above the central person and one below
+#   - a person with three unions (Joaquim)
+#   - a central person with three parental figures: mother, father and
+#     stepfather (Lia)
+#   - a family of eight siblings (the children of Anselmo and Dalva)
+#   - an uncle younger than his niece and nephew (Gabriel)
+#   - an adoptive child (Jonas), a dating relationship (Lia and Davi)
+#   - a person whose father is unknown (Rui), deceased people and children
+#   - uncertain data: approximate dates, unknown years, an unconfirmed person
+#
+# The interview link points to "Big Buck Bunny", an openly licensed short film
+# by the Blender Foundation, standing in for a real interview.
+
+family_name = "Família Carvalho Figueira"
+central_person = "lia-carvalho-1996"
+
+# ---------------------------------------------------------------------------
+# Places
+# ---------------------------------------------------------------------------
+
+[[places]]
+slug = "sao-paulo"
+name = "São Paulo, Brasil"
+latitude = -23.55
+longitude = -46.63
+
+[[places]]
+slug = "santos"
+name = "Santos, Brasil"
+latitude = -23.96
+longitude = -46.33
+
+[[places]]
+slug = "ouro-preto"
+name = "Ouro Preto, Brasil"
+latitude = -20.39
+longitude = -43.5
+
+[[places]]
+slug = "curitiba"
+name = "Curitiba, Brasil"
+latitude = -25.43
+longitude = -49.27
+
+[[places]]
+slug = "recife"
+name = "Recife, Brasil"
+latitude = -8.05
+longitude = -34.88
+
+[[places]]
+slug = "porto"
+name = "Porto, Portugal"
+latitude = 41.15
+longitude = -8.61
+
+[[places]]
+slug = "valencia"
+name = "Valência, Espanha"
+latitude = 39.47
+longitude = -0.38
+
+# ---------------------------------------------------------------------------
+# People: the central person, her siblings and their partners
+# ---------------------------------------------------------------------------
+
+[[people]]
+identifier = "lia-carvalho-1996"
+given_name = "Lia"
+surname = "Figueira Carvalho"
+nickname = "Lili"
+sex = "f"
+birth_date = "1996-05-12"
+birth_place = "sao-paulo"
+lives_in = "curitiba"
+lived_in = ["sao-paulo", "curitiba"]
+occupation = "ilustradora"
+tags = "artista, viajante"
+portrait = true
+source = "ela mesma"
+tastes = """
+**Comida favorita:** o [[receita:bolo-de-fuba-da-dalva|bolo de fubá da vó Dalva]], ainda morno.
+**Time do coração:** Santos, por causa do vô Anselmo.
+**Mania:** desenhar nas margens de qualquer papel.
+"""
+childhood = """
+Cresci entre duas casas: a da minha mãe, [[helena-figueira-1970]], e a do meu pai,
+[[tomas-carvalho-1968|Tomás]]. Quando eu tinha nove anos o [[rui-pinheiro-1965|Rui]]
+entrou na nossa vida, e foi ele quem me ensinou a andar de bicicleta.
+
+As férias eram em [[lugar:ouro-preto]], na casa dos avós, com
+[[bento-carvalho-1993|meu irmão Bento]] e um bando de primos.
+"""
+legacy = """
+> Guardem as histórias. As fotos sozinhas não contam quem a gente foi.
+"""
+
+[[people]]
+identifier = "bento-carvalho-1993"
+given_name = "Bento"
+surname = "Figueira Carvalho"
+sex = "m"
+birth_date = "1993-02-03"
+birth_place = "sao-paulo"
+lives_in = "sao-paulo"
+occupation = "enfermeiro"
+portrait = true
+
+[[people]]
+identifier = "iris-salgueiro-1994"
+given_name = "Íris"
+surname = "Salgueiro"
+sex = "f"
+birth_date = "1994"
+lives_in = "sao-paulo"
+occupation = "professora"
+
+[[people]]
+identifier = "theo-carvalho-2021"
+given_name = "Theo"
+surname = "Salgueiro Carvalho"
+sex = "m"
+birth_date = "2021-08-17"
+birth_place = "sao-paulo"
+lives_in = "sao-paulo"
+portrait = true
+
+[[people]]
+identifier = "nina-pinheiro-2007"
+given_name = "Nina"
+surname = "Figueira Pinheiro"
+sex = "f"
+birth_date = "2007-09-30"
+birth_place = "curitiba"
+lives_in = "curitiba"
+
+[[people]]
+identifier = "otavio-pinheiro-1990"
+given_name = "Otávio"
+surname = "Macieira Pinheiro"
+sex = "m"
+birth_date = "1990"
+lives_in = "recife"
+
+[[people]]
+identifier = "davi-amoreira-1995"
+given_name = "Davi"
+surname = "Amoreira"
+sex = "m"
+birth_date = "1995-11-23"
+lives_in = "curitiba"
+occupation = "músico"
+tags = "músico"
+
+# ---------------------------------------------------------------------------
+# People: the three parental figures and their other partners
+# ---------------------------------------------------------------------------
+
+[[people]]
+identifier = "helena-figueira-1970"
+given_name = "Helena"
+surname = "Oliveira Figueira"
+sex = "f"
+birth_date = "1970-11-02"
+birth_place = "ouro-preto"
+lives_in = "curitiba"
+lived_in = ["ouro-preto", "sao-paulo", "curitiba"]
+occupation = "bibliotecária"
+tags = "leitora"
+portrait = true
+interview_url = "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
+source = "entrevista gravada em 2026"
+childhood = """
+Fui a quinta de oito irmãos. A casa em [[lugar:ouro-preto]] nunca ficava em
+silêncio: sempre tinha alguém cantando, brigando ou procurando um sapato. [00:42]
+
+Quem mandava na fila do banho era a [[cecilia-figueira-1964|Cecília]]. O
+[[edgar-figueira-1968|Edgar]] furava a fila toda vez. [03:15]
+"""
+work = """
+Vim para São Paulo aos dezenove anos para estudar e fiquei. Trabalhei trinta
+anos em bibliotecas públicas e nunca me cansei do cheiro de livro velho.
+"""
+memories = """
+O dia mais feliz foi o primeiro Natal com todos os filhos na mesma mesa:
+[[bento-carvalho-1993]], [[lia-carvalho-1996]] e [[nina-pinheiro-2007]].
+"""
+
+[[people]]
+identifier = "tomas-carvalho-1968"
+given_name = "Tomás"
+surname = "Castanheira Carvalho"
+sex = "m"
+birth_date = "1968-04-19"
+birth_place = "santos"
+lives_in = "santos"
+occupation = "engenheiro naval"
+
+[[people]]
+identifier = "rui-pinheiro-1965"
+given_name = "Rui"
+surname = "Pinheiro"
+sex = "m"
+birth_date = "1965-07-08"
+birth_place = "recife"
+lives_in = "curitiba"
+lived_in = ["recife", "curitiba"]
+occupation = "marceneiro"
+portrait = true
+legacy = """
+Madeira boa não tem pressa. Gente boa também não.
+"""
+
+[[people]]
+identifier = "sandra-macieira-1967"
+given_name = "Sandra"
+surname = "Macieira"
+sex = "f"
+birth_date = "1967"
+lives_in = "recife"
+
+[[people]]
+identifier = "zelia-pinheiro-1942"
+given_name = "Zélia"
+surname = "Pinheiro"
+sex = "f"
+birth_date = "1942"
+birth_place = "recife"
+lives_in = "recife"
+occupation = "costureira"
+
+# ---------------------------------------------------------------------------
+# People: the mother's side (a family of eight siblings)
+# ---------------------------------------------------------------------------
+
+[[people]]
+identifier = "anselmo-figueira-1940"
+given_name = "Anselmo"
+surname = "Figueira"
+nickname = "Seu Selmo"
+sex = "m"
+birth_date = "1940-06-20"
+birth_place = "ouro-preto"
+death_date = "2015-01-08"
+death_place = "ouro-preto"
+resting_place = "ouro-preto"
+occupation = "ferroviário"
+tags = "torcedor do Santos"
+portrait = true
+source = "contado pela tia Cecília"
+remembrance = """
+"Ele assobiava antes de entrar em casa, para a gente saber que era ele."
+— [[helena-figueira-1970|Helena]]
+
+"Me levou ao estádio uma única vez e eu nunca mais torci para outro time."
+— [[lia-carvalho-1996|Lia]]
+"""
+
+[[people]]
+identifier = "dalva-oliveira-1944"
+given_name = "Dalva"
+surname = "Oliveira"
+nickname = "Vó Dalva"
+sex = "f"
+birth_date = "1944-03-02"
+birth_place = "ouro-preto"
+lives_in = "ouro-preto"
+occupation = "cozinheira"
+tags = "cozinheira"
+portrait = true
+tastes = """
+**Prato que faz melhor:** bolo de fubá, que ninguém mais acerta.
+**Frase que sempre repete:** "Quem tem pressa come cru."
+"""
+
+[[people]]
+identifier = "olga-figueira-1943"
+given_name = "Olga"
+surname = "Figueira"
+sex = "f"
+birth_date = "1943"
+birth_place = "ouro-preto"
+lives_in = "ouro-preto"
+
+[[people]]
+identifier = "alvaro-figueira-1962"
+given_name = "Álvaro"
+surname = "Oliveira Figueira"
+sex = "m"
+birth_date = "1962-01-15"
+birth_place = "ouro-preto"
+lives_in = "ouro-preto"
+occupation = "comerciante"
+
+[[people]]
+identifier = "rita-palmeira-1965"
+given_name = "Rita"
+surname = "Palmeira"
+sex = "f"
+birth_date = "1965"
+lives_in = "ouro-preto"
+
+[[people]]
+identifier = "pedro-figueira-1990"
+given_name = "Pedro"
+surname = "Palmeira Figueira"
+sex = "m"
+birth_date = "1990"
+lives_in = "ouro-preto"
+
+[[people]]
+identifier = "luisa-figueira-1992"
+given_name = "Luísa"
+surname = "Palmeira Figueira"
+sex = "f"
+birth_date = "1992"
+lives_in = "sao-paulo"
+
+[[people]]
+identifier = "cecilia-figueira-1964"
+given_name = "Cecília"
+surname = "Oliveira Figueira"
+sex = "f"
+birth_date = "1964-08-09"
+birth_place = "ouro-preto"
+lives_in = "ouro-preto"
+occupation = "professora aposentada"
+
+[[people]]
+identifier = "marta-figueira-1966"
+given_name = "Marta"
+surname = "Oliveira Figueira"
+sex = "f"
+birth_date = "1966"
+birth_place = "ouro-preto"
+lives_in = "santos"
+
+[[people]]
+identifier = "paulo-nogueira-1963"
+given_name = "Paulo"
+surname = "Nogueira"
+sex = "m"
+birth_date = "1963"
+lives_in = "santos"
+
+[[people]]
+identifier = "clara-nogueira-1995"
+given_name = "Clara"
+surname = "Figueira Nogueira"
+sex = "f"
+birth_date = "1995"
+lives_in = "santos"
+
+[[people]]
+identifier = "jonas-nogueira-2001"
+given_name = "Jonas"
+surname = "Figueira Nogueira"
+sex = "m"
+birth_date = "2001"
+lives_in = "santos"
+
+[[people]]
+identifier = "edgar-figueira-1968"
+given_name = "Edgar"
+surname = "Oliveira Figueira"
+sex = "m"
+birth_date = "1968-12-01"
+birth_place = "ouro-preto"
+death_date = "1999"
+resting_place = "ouro-preto"
+
+[[people]]
+identifier = "ines-figueira-1972"
+given_name = "Inês"
+surname = "Oliveira Figueira"
+sex = "f"
+birth_date = "1972"
+birth_place = "ouro-preto"
+lives_in = "valencia"
+lived_in = ["ouro-preto", "valencia"]
+tags = "emigrante"
+
+[[people]]
+identifier = "joana-cedro-1974"
+given_name = "Joana"
+surname = "Cedro"
+sex = "f"
+birth_date = "1974"
+lives_in = "valencia"
+
+[[people]]
+identifier = "vitor-figueira-1975"
+given_name = "Vítor"
+surname = "Oliveira Figueira"
+sex = "m"
+birth_date = "1975"
+birth_place = "ouro-preto"
+lives_in = "sao-paulo"
+
+[[people]]
+identifier = "lara-figueira-1978"
+given_name = "Lara"
+surname = "Oliveira Figueira"
+sex = "f"
+birth_date = "1978-10-27"
+birth_place = "ouro-preto"
+lives_in = "sao-paulo"
+
+[[people]]
+identifier = "mauro-ipe-1976"
+given_name = "Mauro"
+surname = "Ipê"
+sex = "m"
+birth_date = "1976"
+
+[[people]]
+identifier = "sofia-ipe-2006"
+given_name = "Sofia"
+surname = "Figueira Ipê"
+sex = "f"
+birth_date = "2006"
+lives_in = "sao-paulo"
+
+# Great-grandparents and great-great-grandparents on the mother's side.
+
+[[people]]
+identifier = "horacio-figueira-1912"
+given_name = "Horácio"
+surname = "Figueira"
+sex = "m"
+birth_date = "1912"
+birth_place = "ouro-preto"
+death_date = "1988"
+resting_place = "ouro-preto"
+occupation = "ferreiro"
+
+[[people]]
+identifier = "benedita-aroeira-1915"
+given_name = "Benedita"
+surname = "Aroeira"
+sex = "f"
+birth_date = "1915"
+death_date = "1999"
+resting_place = "ouro-preto"
+
+[[people]]
+identifier = "teodoro-figueira-1885"
+given_name = "Teodoro"
+surname = "Figueira"
+sex = "m"
+birth_date = "1885"
+birth_date_approximate = true
+birth_place = "porto"
+death_date = "1950"
+death_date_approximate = true
+lived_in = ["porto", "ouro-preto"]
+occupation = "ferreiro"
+tags = "emigrante"
+source = "certidão de casamento de Horácio"
+origins = """
+Veio de [[lugar:porto]] ainda rapaz, por volta de 1905, e nunca mais voltou.
+Dizem que trouxe só uma mala e o martelo de ferreiro, que passou para o filho
+[[horacio-figueira-1912|Horácio]].
+"""
+
+[[people]]
+identifier = "maria-jacaranda-1"
+given_name = "Maria"
+surname = "Jacarandá"
+sex = "f"
+deceased = true
+confirmed = false
+source = "nome lembrado pela tia Olga, sem documento"
+
+[[people]]
+identifier = "olivio-oliveira-1915"
+given_name = "Olívio"
+surname = "Oliveira"
+sex = "m"
+birth_date = "1915"
+birth_date_approximate = true
+deceased = true
+
+[[people]]
+identifier = "jandira-mangueira-1"
+given_name = "Jandira"
+surname = "Mangueira"
+sex = "f"
+deceased = true
+confirmed = false
+source = "segundo a tia Cecília"
+
+# ---------------------------------------------------------------------------
+# People: the father's side (a grandfather with three unions)
+# ---------------------------------------------------------------------------
+
+[[people]]
+identifier = "joaquim-carvalho-1938"
+given_name = "Joaquim"
+surname = "Pereira Carvalho"
+nickname = "Quinzinho"
+sex = "m"
+birth_date = "1938-09-14"
+birth_place = "santos"
+lives_in = "santos"
+occupation = "estivador aposentado"
+portrait = true
+love = """
+Casei três vezes e não me arrependo de nenhuma. Cada uma me ensinou uma coisa
+diferente, e a mais importante foi ouvir.
+"""
+
+[[people]]
+identifier = "amelia-castanheira-1941"
+given_name = "Amélia"
+surname = "Castanheira"
+sex = "f"
+birth_date = "1941"
+birth_place = "santos"
+death_date = "1979-05-30"
+resting_place = "santos"
+
+[[people]]
+identifier = "lucia-laranjeira-1950"
+given_name = "Lúcia"
+surname = "Laranjeira"
+sex = "f"
+birth_date = "1950"
+lives_in = "sao-paulo"
+
+[[people]]
+identifier = "sonia-cerejeira-1966"
+given_name = "Sônia"
+surname = "Cerejeira"
+sex = "f"
+birth_date = "1966"
+lives_in = "santos"
+
+[[people]]
+identifier = "regina-carvalho-1964"
+given_name = "Regina"
+surname = "Castanheira Carvalho"
+sex = "f"
+birth_date = "1964"
+birth_place = "santos"
+lives_in = "santos"
+
+[[people]]
+identifier = "heitor-loureiro-1961"
+given_name = "Heitor"
+surname = "Loureiro"
+sex = "m"
+birth_date = "1961"
+lives_in = "santos"
+
+[[people]]
+identifier = "rafael-loureiro-1988"
+given_name = "Rafael"
+surname = "Carvalho Loureiro"
+sex = "m"
+birth_date = "1988"
+lives_in = "santos"
+
+[[people]]
+identifier = "camila-videira-1989"
+given_name = "Camila"
+surname = "Videira"
+sex = "f"
+birth_date = "1989"
+lives_in = "santos"
+
+[[people]]
+identifier = "alice-loureiro-2016"
+given_name = "Alice"
+surname = "Videira Loureiro"
+sex = "f"
+birth_date = "2016-04-04"
+lives_in = "santos"
+
+[[people]]
+identifier = "beatriz-loureiro-1991"
+given_name = "Beatriz"
+surname = "Carvalho Loureiro"
+sex = "f"
+birth_date = "1991"
+lives_in = "sao-paulo"
+
+[[people]]
+identifier = "marcos-carvalho-1984"
+given_name = "Marcos"
+surname = "Laranjeira Carvalho"
+sex = "m"
+birth_date = "1984"
+lives_in = "sao-paulo"
+
+[[people]]
+identifier = "gabriel-carvalho-2000"
+given_name = "Gabriel"
+surname = "Cerejeira Carvalho"
+sex = "m"
+birth_date = "2000-02-29"
+birth_place = "santos"
+lives_in = "santos"
+occupation = "estudante"
+
+# Great-grandparents and a great-great-grandfather on the father's side.
+
+[[people]]
+identifier = "vicente-carvalho-1910"
+given_name = "Vicente"
+surname = "Carvalho"
+sex = "m"
+birth_date = "1910"
+birth_place = "santos"
+death_date = "1975"
+resting_place = "santos"
+occupation = "estivador"
+
+[[people]]
+identifier = "rosa-pereira-1914"
+given_name = "Rosa"
+surname = "Pereira"
+sex = "f"
+birth_date = "1914"
+death_date = "2001"
+resting_place = "santos"
+
+[[people]]
+identifier = "baltazar-carvalho-1880"
+given_name = "Baltazar"
+surname = "Carvalho"
+sex = "m"
+birth_date = "1880"
+birth_date_approximate = true
+death_date = "1941"
+occupation = "pescador"
+
+# ---------------------------------------------------------------------------
+# Unions. Children hang from the union, never from a single person.
+#   children          = biological children
+#   adoptive_children = adopted by this couple
+#   foster_children   = raised by this couple (stepchildren, foster children)
+# ---------------------------------------------------------------------------
+
+# The central person's mother and father (ended).
+[[unions]]
+partners = ["helena-figueira-1970", "tomas-carvalho-1968"]
+kind = "marriage"
+start_date = "1992"
+end_date = "2003"
+children = ["bento-carvalho-1993", "lia-carvalho-1996"]
+story = """
+Conheceram-se numa festa junina em Santos, em 1990. Ela tinha ido só para
+acompanhar a irmã [[marta-figueira-1966|Marta]].
+"""
+
+# The mother and the stepfather: he raised Lia and Bento, so they are foster
+# children of this union. That is how a third parental figure is recorded.
+[[unions]]
+partners = ["helena-figueira-1970", "rui-pinheiro-1965"]
+kind = "partnership"
+start_date = "2005"
+children = ["nina-pinheiro-2007"]
+foster_children = ["bento-carvalho-1993", "lia-carvalho-1996"]
+story = """
+Ele foi consertar uma estante na biblioteca onde ela trabalhava e demorou três
+semanas num serviço de dois dias.
+"""
+
+# The stepfather's first marriage.
+[[unions]]
+partners = ["rui-pinheiro-1965", "sandra-macieira-1967"]
+kind = "marriage"
+start_date = "1988"
+end_date = "1996"
+children = ["otavio-pinheiro-1990"]
+
+# The stepfather's mother: his father is unknown, so the union has one partner.
+[[unions]]
+partners = ["zelia-pinheiro-1942"]
+children = ["rui-pinheiro-1965"]
+
+# A dating relationship.
+[[unions]]
+partners = ["lia-carvalho-1996", "davi-amoreira-1995"]
+kind = "dating"
+start_date = "2022"
+
+[[unions]]
+partners = ["bento-carvalho-1993", "iris-salgueiro-1994"]
+kind = "marriage"
+start_date = "2019-10-05"
+children = ["theo-carvalho-2021"]
+
+# The mother's parents: eight children.
+[[unions]]
+partners = ["anselmo-figueira-1940", "dalva-oliveira-1944"]
+kind = "marriage"
+start_date = "1961"
+children = [
+    "alvaro-figueira-1962",
+    "cecilia-figueira-1964",
+    "marta-figueira-1966",
+    "edgar-figueira-1968",
+    "helena-figueira-1970",
+    "ines-figueira-1972",
+    "vitor-figueira-1975",
+    "lara-figueira-1978",
+]
+story = """
+Namoraram por carta durante dois anos, enquanto ele trabalhava na ferrovia.
+Ficaram casados cinquenta e três anos.
+"""
+
+[[unions]]
+partners = ["alvaro-figueira-1962", "rita-palmeira-1965"]
+kind = "marriage"
+start_date = "1988"
+children = ["pedro-figueira-1990", "luisa-figueira-1992"]
+
+# One biological daughter and one adopted son.
+[[unions]]
+partners = ["marta-figueira-1966", "paulo-nogueira-1963"]
+kind = "marriage"
+start_date = "1992"
+children = ["clara-nogueira-1995"]
+adoptive_children = ["jonas-nogueira-2001"]
+
+[[unions]]
+partners = ["ines-figueira-1972", "joana-cedro-1974"]
+kind = "partnership"
+start_date = "2005"
+
+[[unions]]
+partners = ["lara-figueira-1978", "mauro-ipe-1976"]
+kind = "marriage"
+start_date = "2004"
+end_date = "2012"
+children = ["sofia-ipe-2006"]
+
+[[unions]]
+partners = ["horacio-figueira-1912", "benedita-aroeira-1915"]
+kind = "marriage"
+start_date = "1936"
+children = ["anselmo-figueira-1940", "olga-figueira-1943"]
+
+[[unions]]
+partners = ["teodoro-figueira-1885", "maria-jacaranda-1"]
+children = ["horacio-figueira-1912"]
+
+[[unions]]
+partners = ["olivio-oliveira-1915", "jandira-mangueira-1"]
+children = ["dalva-oliveira-1944"]
+
+# The father's father and his three unions.
+[[unions]]
+partners = ["joaquim-carvalho-1938", "amelia-castanheira-1941"]
+kind = "marriage"
+start_date = "1962"
+children = ["regina-carvalho-1964", "tomas-carvalho-1968"]
+story = """
+Vizinhos de rua desde crianças. Ela faleceu cedo, em 1979.
+"""
+
+[[unions]]
+partners = ["joaquim-carvalho-1938", "lucia-laranjeira-1950"]
+kind = "marriage"
+start_date = "1982"
+end_date = "1995"
+children = ["marcos-carvalho-1984"]
+
+# Gabriel, born in 2000, is the uncle of Bento (1993) and Lia (1996).
+[[unions]]
+partners = ["joaquim-carvalho-1938", "sonia-cerejeira-1966"]
+kind = "partnership"
+start_date = "1998"
+children = ["gabriel-carvalho-2000"]
+story = """
+Conheceram-se no baile da terceira idade, onde ela era a professora de dança.
+"""
+
+[[unions]]
+partners = ["regina-carvalho-1964", "heitor-loureiro-1961"]
+kind = "marriage"
+start_date = "1986"
+children = ["rafael-loureiro-1988", "beatriz-loureiro-1991"]
+
+[[unions]]
+partners = ["rafael-loureiro-1988", "camila-videira-1989"]
+kind = "partnership"
+start_date = "2014"
+children = ["alice-loureiro-2016"]
+
+[[unions]]
+partners = ["vicente-carvalho-1910", "rosa-pereira-1914"]
+kind = "marriage"
+start_date = "1935"
+children = ["joaquim-carvalho-1938"]
+
+# Vicente's mother is unknown.
+[[unions]]
+partners = ["baltazar-carvalho-1880"]
+children = ["vicente-carvalho-1910"]
+
+# ---------------------------------------------------------------------------
+# Recipes
+# ---------------------------------------------------------------------------
+
+[[recipes]]
+slug = "bolo-de-fuba-da-dalva"
+title = "Bolo de fubá da vó Dalva"
+author = "dalva-oliveira-1944"
+text = """
+**Ingredientes:** 3 ovos, 2 xícaras de fubá, 1 xícara de açúcar, 1 xícara de
+leite, meia xícara de óleo, 1 colher de fermento e uma pitada de erva-doce.
+
+**Modo de preparo:** bata tudo, menos o fermento, que entra por último. Forno
+médio por quarenta minutos. Não abra o forno antes da hora.
+"""

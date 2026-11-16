@@ -401,6 +401,22 @@ msgstr ""
 "Esta persona es antepasada de uno de los miembros de la pareja, así que no "
 "puede ser también su hija."
 
+# --- Comandos ---
+
+msgid ""
+"This command erases the database before loading the invented family, so it "
+"only runs with RAIZES_DATASET=demo. The real family was not touched."
+msgstr ""
+"Este comando borra la base de datos antes de cargar la familia inventada, "
+"por eso solo funciona con RAIZES_DATASET=demo. La familia real no se ha tocado."
+
+msgid ""
+"Invented family loaded: %(people)d people, %(unions)d unions, %(places)d "
+"places, %(recipes)d recipes."
+msgstr ""
+"Familia inventada cargada: %(people)d personas, %(unions)d uniones, "
+"%(places)d lugares, %(recipes)d recetas."
+
 # --- Panel de administración ---
 
 msgid "Raízes · invented family (demo)"
