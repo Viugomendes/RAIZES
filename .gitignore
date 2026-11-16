@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------
+# PRIVATE: the real family's data. This must never reach Git.
+# ---------------------------------------------------------------
+/data/
+
+# The exported site (it contains whatever data was exported).
+/dist/
+
+# Secrets and local configuration.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
+
+# Databases, wherever they are (the demo database is rebuilt by a command).
+*.sqlite3
+*.sqlite3-journal
+*.db
+
+# Generated demo pictures and other generated files.
+/demo/media/
+/.build/
+
+# Python.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editors and operating system.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node (only needed later, for publishing with Wrangler).
+node_modules/
+.wrangler/
