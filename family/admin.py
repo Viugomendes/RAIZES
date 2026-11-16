@@ -3,10 +3,12 @@
 It runs only on the owner's computer and is never exported with the site.
 """
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
 
+from .markup import LinkTargets
 from .models import TEXT_SECTIONS, ChildLink, Person, Photo, Place, Recipe, Union
+from .textcheck import person_problems, union_problems
 
 # The header always says which family is loaded, so that real data is never
 # typed into the invented family by mistake (or the other way round).
@@ -16,6 +18,16 @@ else:
     admin.site.site_header = _("Raízes · REAL family data")
 admin.site.site_title = "Raízes"
 admin.site.index_title = _("Family data")
+
+
+def warn_about_text_problems(request, problems: list[str]) -> None:
+    """Show a warning for each link in a text that points nowhere.
+
+    The record is saved anyway: it is normal to mention someone who will only
+    be added later. The export, however, refuses to run while problems remain.
+    """
+    for problem in problems:
+        messages.warning(request, problem)
 
 
 @admin.register(Place)
@@ -76,6 +88,10 @@ class PersonAdmin(admin.ModelAdmin):
         # The identifier can be typed when creating a person, never afterwards.
         return ("identifier",) if obj else ()
 
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        warn_about_text_problems(request, person_problems(obj, LinkTargets.from_database()))
+
 
 class ChildLinkInline(admin.TabularInline):
     model = ChildLink
@@ -96,6 +112,10 @@ class UnionAdmin(admin.ModelAdmin):
     autocomplete_fields = ("partner1", "partner2")
     fields = ("partner1", "partner2", "kind", "start_date", "end_date", "ended", "story")
     inlines = (ChildLinkInline,)
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        warn_about_text_problems(request, union_problems(obj, LinkTargets.from_database()))
 
 
 @admin.register(Photo)

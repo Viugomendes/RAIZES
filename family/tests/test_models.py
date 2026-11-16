@@ -155,6 +155,10 @@ class PersonFieldTests(TestCase):
     def test_full_name_without_surname(self):
         self.assertEqual(make_person("Benedita", "").full_name, "Benedita")
 
+    def test_initials_use_the_given_name_and_the_last_surname(self):
+        self.assertEqual(make_person().initials, "RO")
+        self.assertEqual(make_person("Benedita", "").initials, "B")
+
     def test_tags_are_tidied_up(self):
         person = make_person(tags="  Músico, emigrante ,músico,, ")
 

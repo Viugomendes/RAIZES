@@ -193,3 +193,277 @@ h3 {
 .muted {
   color: var(--ink-soft);
 }
+
+.years,
+.link-note {
+  color: var(--ink-soft);
+  font-size: 0.88em;
+  white-space: nowrap;
+}
+
+/* ---------- Page of a person ---------- */
+
+.person-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.avatar {
+  flex: none;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-size: 3.2rem;
+}
+
+.person-heading {
+  flex: 1;
+  min-width: 15rem;
+}
+
+.person-heading h1 {
+  margin-bottom: 0.15em;
+}
+
+.nickname {
+  margin: 0 0 0.4rem;
+  color: var(--ink-soft);
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-style: italic;
+}
+
+.person-facts {
+  margin: 0 0 0.6rem;
+  color: var(--ink-soft);
+}
+
+.person-facts span + span::before {
+  content: "·";
+  margin: 0 0.5em;
+}
+
+.page-section {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.page-section > h2 {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) 1fr;
+  gap: 0.55rem 1.25rem;
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--ink-soft);
+}
+
+.facts dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.relatives,
+.unions,
+.places {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relatives li {
+  display: inline;
+}
+
+.relatives li + li::before {
+  content: " · ";
+  color: var(--ink-soft);
+}
+
+.union + .union {
+  margin-top: 0.6rem;
+}
+
+.union-kind {
+  font-weight: 600;
+}
+
+.union-period {
+  color: var(--ink-soft);
+  font-size: 0.88em;
+}
+
+.union-period::before {
+  content: "(";
+}
+
+.union-period::after {
+  content: ")";
+}
+
+.union-children {
+  display: block;
+  padding-left: 1rem;
+  border-left: 2px solid var(--line);
+  margin-top: 0.15rem;
+}
+
+.tag {
+  display: inline-block;
+  margin: 0 0.3rem 0.2rem 0;
+  padding: 0.05rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.88em;
+}
+
+.prose {
+  max-width: 42rem;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+.prose blockquote {
+  margin: 1rem 0;
+  padding: 0.2rem 1rem;
+  border-left: 3px solid var(--accent);
+  color: var(--ink-soft);
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-style: italic;
+}
+
+.union-story {
+  margin-bottom: 1.25rem;
+}
+
+.union-story h3 {
+  margin-bottom: 0.3rem;
+}
+
+.union-story h3 .years {
+  font-family: var(--font);
+  font-weight: normal;
+}
+
+a.timestamp {
+  display: inline-block;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+
+a.timestamp::before {
+  content: "▶ ";
+  font-size: 0.75em;
+}
+
+.broken-link {
+  background: #fde2e1;
+  color: #8a1c14;
+  border-radius: 3px;
+  padding: 0 0.2rem;
+}
+
+.place-name,
+.recipe-name {
+  font-style: italic;
+}
+
+.video {
+  position: relative;
+  max-width: 42rem;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.places li {
+  display: inline-block;
+  margin: 0 0.4rem 0.3rem 0;
+  padding: 0.1rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+/* ---------- List of people ---------- */
+
+.people-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  columns: 3 16rem;
+  column-gap: 2rem;
+}
+
+.people-list li {
+  break-inside: avoid;
+  padding: 0.2rem 0;
+}
+
+@media (max-width: 36rem) {
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+
+  .facts dd {
+    margin-bottom: 0.6rem;
+  }
+
+  .page-section {
+    padding: 1rem;
+  }
+
+  .avatar {
+    width: 110px;
+    height: 110px;
+  }
+
+  .avatar-initials {
+    font-size: 2.2rem;
+  }
+}

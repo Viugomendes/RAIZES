@@ -1,0 +1,1 @@
+<a href="{% url 'family:person_detail' relative.identifier %}">{{ relative.full_name }}</a>{% if relative.years_display %} <span class="years">{{ relative.years_display }}</span>{% endif %}{% if note %} <span class="link-note">({{ note }})</span>{% endif %}

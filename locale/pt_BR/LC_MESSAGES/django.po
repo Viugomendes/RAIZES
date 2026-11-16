@@ -400,6 +400,115 @@ msgstr ""
 "Esta pessoa é antepassada de um dos parceiros, então não pode ser também "
 "filha dele."
 
+# --- Página da pessoa ---
+
+msgid "The details about this person have not been confirmed yet."
+msgstr "As informações sobre esta pessoa ainda não foram confirmadas."
+
+msgid "Basic data"
+msgstr "Dados básicos"
+
+msgid "Full name"
+msgstr "Nome completo"
+
+msgid "Nickname"
+msgstr "Apelido"
+
+msgid "Other names"
+msgstr "Outros nomes"
+
+msgid "date unknown"
+msgstr "data desconhecida"
+
+msgid "Rests in"
+msgstr "Descansa em"
+
+msgid "Lives in"
+msgstr "Mora em"
+
+msgid "Occupation"
+msgstr "Profissão"
+
+msgid "Tags"
+msgstr "Etiquetas"
+
+msgid "Parents"
+msgstr "Pais"
+
+msgid "Siblings"
+msgstr "Irmãos"
+
+msgid "Half-siblings"
+msgstr "Meio-irmãos"
+
+msgid "Step-siblings"
+msgstr "Irmãos de criação"
+
+msgid "Unions"
+msgstr "Uniões"
+
+msgid "Union"
+msgstr "União"
+
+msgid "with"
+msgstr "com"
+
+msgid "With"
+msgstr "Com"
+
+msgid "Other parent unknown"
+msgstr "Outro pai ou mãe desconhecido"
+
+msgid "Children"
+msgstr "Filhos"
+
+msgid "Grandchildren"
+msgstr "Netos"
+
+msgid "Source"
+msgstr "Fonte"
+
+msgid "Gallery and places"
+msgstr "Galeria e lugares"
+
+msgid "Interview"
+msgstr "Entrevista"
+
+msgid "Watch on YouTube"
+msgstr "Assistir no YouTube"
+
+msgid "Places where they lived"
+msgstr "Lugares onde viveu"
+
+msgid "Nobody has been added yet."
+msgstr "Ninguém foi cadastrado ainda."
+
+msgid "by adoption"
+msgstr "por adoção"
+
+msgid "raised as family"
+msgstr "de criação"
+
+msgid "since %(year)s"
+msgstr "desde %(year)s"
+
+msgid "until %(year)s"
+msgstr "até %(year)s"
+
+# --- Links nos textos ---
+
+msgid "%(link)s: there is no person with this identifier."
+msgstr "%(link)s: não existe nenhuma pessoa com este identificador."
+
+msgid "%(link)s: there is no place with this identifier."
+msgstr "%(link)s: não existe nenhum lugar com este identificador."
+
+msgid "%(link)s: there is no recipe with this identifier."
+msgstr "%(link)s: não existe nenhuma receita com este identificador."
+
+msgid "%(time)s: there is no interview to link this minute to."
+msgstr "%(time)s: não há entrevista para ligar a este minuto."
+
 # --- Comandos ---
 
 msgid ""

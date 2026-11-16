@@ -60,13 +60,12 @@ def draw_portrait(person: Person) -> bytes:
     digest = hashlib.sha256(person.identifier.encode()).digest()
     red, green, blue = colorsys.hls_to_rgb(digest[0] / 255, 0.72, 0.45)
     background = (int(red * 255), int(green * 255), int(blue * 255))
-    initials = person.given_name[:1] + person.surname.split()[-1][:1] if person.surname else person.given_name[:1]
 
     image = Image.new("RGB", (400, 400), background)
     draw = ImageDraw.Draw(image)
     draw.text(
         (200, 200),
-        initials.upper(),
+        person.initials,
         fill=(255, 255, 255),
         font=ImageFont.load_default(size=170),
         anchor="mm",

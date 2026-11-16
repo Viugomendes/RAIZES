@@ -6,6 +6,7 @@ never typed in: they are calculated from the unions (see kinship.py).
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .fields import PartialDateField, parse_stored_date
@@ -214,11 +215,21 @@ class Person(models.Model):
     def __str__(self):
         return self.full_name
 
+    def get_absolute_url(self) -> str:
+        """Address of the person's page on the site."""
+        return reverse("family:person_detail", args=[self.identifier])
+
     # ----- Calculated values -------------------------------------------------
 
     @property
     def full_name(self) -> str:
         return f"{self.given_name} {self.surname}".strip()
+
+    @property
+    def initials(self) -> str:
+        """First letters of the given name and of the last surname: "RO"."""
+        last_surname = self.surname.split()[-1:] or [""]
+        return (self.given_name[:1] + last_surname[0][:1]).upper()
 
     @property
     def birth(self):

@@ -1,0 +1,169 @@
+{% extends "family/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ person.full_name }} · {% endblock %}
+
+{% block content %}
+<article class="person">
+
+  <header class="person-header">
+    {% if person.photo %}
+      <img class="avatar" src="{{ person.photo.url }}" alt="{{ person.full_name }}" width="160" height="160">
+    {% else %}
+      <div class="avatar avatar-initials" aria-hidden="true">{{ person.initials }}</div>
+    {% endif %}
+    <div class="person-heading">
+      <h1>{{ person.full_name }}</h1>
+      {% if person.nickname %}<p class="nickname">“{{ person.nickname }}”</p>{% endif %}
+      <p class="person-facts">
+        {% if person.years_display %}<span>{{ person.years_display }}</span>{% endif %}
+        {% if person.is_deceased %}
+          {% if person.birth_place %}<span>{{ person.birth_place.name }}</span>{% endif %}
+        {% elif person.lives_in %}
+          <span>{{ person.lives_in.name }}</span>
+        {% elif person.birth_place %}
+          <span>{{ person.birth_place.name }}</span>
+        {% endif %}
+        {% if person.occupation %}<span>{{ person.occupation }}</span>{% endif %}
+      </p>
+      {% if not person.confirmed %}
+        <p class="notice">{% translate "The details about this person have not been confirmed yet." %}</p>
+      {% endif %}
+    </div>
+  </header>
+
+  {# ---------- Section 1: basic data, calculated from the fields and the unions ---------- #}
+  <section id="basic-data" class="page-section">
+    <h2>{% translate "Basic data" %}</h2>
+    <dl class="facts">
+      <dt>{% translate "Full name" %}</dt>
+      <dd>{{ person.full_name }}</dd>
+
+      {% if person.nickname %}
+        <dt>{% translate "Nickname" %}</dt>
+        <dd>{{ person.nickname }}</dd>
+      {% endif %}
+
+      {% if person.other_names %}
+        <dt>{% translate "Other names" %}</dt>
+        <dd>{{ person.other_names }}</dd>
+      {% endif %}
+
+      {% if person.birth_date or person.birth_place %}
+        <dt>{% translate "Birth" %}</dt>
+        <dd>{{ person.birth_display }}{% if person.birth_date and person.birth_place %} · {% endif %}{% if person.birth_place %}{{ person.birth_place.name }}{% endif %}</dd>
+      {% endif %}
+
+      {% if person.is_deceased %}
+        <dt>{% translate "Death" %}</dt>
+        <dd>{% if person.death_date %}{{ person.death_display }}{% else %}{% translate "date unknown" %}{% endif %}{% if person.death_place %} · {{ person.death_place.name }}{% endif %}</dd>
+        {% if person.resting_place %}
+          <dt>{% translate "Rests in" %}</dt>
+          <dd>{{ person.resting_place.name }}</dd>
+        {% endif %}
+      {% elif person.lives_in %}
+        <dt>{% translate "Lives in" %}</dt>
+        <dd>{{ person.lives_in.name }}</dd>
+      {% endif %}
+
+      {% if person.occupation %}
+        <dt>{% translate "Occupation" %}</dt>
+        <dd>{{ person.occupation }}</dd>
+      {% endif %}
+
+      {% if person.tag_list %}
+        <dt>{% translate "Tags" %}</dt>
+        <dd>{% for tag in person.tag_list %}<span class="tag">{{ tag }}</span>{% endfor %}</dd>
+      {% endif %}
+
+      {% if parents %}
+        <dt>{% translate "Parents" %}</dt>
+        <dd><ul class="relatives">{% for parent in parents %}<li>{% include "family/_person_link.html" with relative=parent.person note=parent.note %}</li>{% endfor %}</ul></dd>
+      {% endif %}
+
+      {% if full_siblings %}
+        <dt>{% translate "Siblings" %}</dt>
+        <dd><ul class="relatives">{% for sibling in full_siblings %}<li>{% include "family/_person_link.html" with relative=sibling note="" %}</li>{% endfor %}</ul></dd>
+      {% endif %}
+
+      {% if half_siblings %}
+        <dt>{% translate "Half-siblings" %}</dt>
+        <dd><ul class="relatives">{% for sibling in half_siblings %}<li>{% include "family/_person_link.html" with relative=sibling note="" %}</li>{% endfor %}</ul></dd>
+      {% endif %}
+
+      {% if step_siblings %}
+        <dt>{% translate "Step-siblings" %}</dt>
+        <dd><ul class="relatives">{% for sibling in step_siblings %}<li>{% include "family/_person_link.html" with relative=sibling note="" %}</li>{% endfor %}</ul></dd>
+      {% endif %}
+
+      {% if unions %}
+        <dt>{% translate "Unions" %}</dt>
+        <dd><ul class="unions">{% for union in unions %}<li class="union">
+          <span class="union-line">
+            {% if union.partner %}
+              <span class="union-kind">{% if union.kind %}{{ union.kind }}{% else %}{% translate "Union" %}{% endif %}</span>
+              {% translate "with" %}
+              {% include "family/_person_link.html" with relative=union.partner note="" %}
+            {% else %}
+              <span class="union-kind">{% translate "Other parent unknown" %}</span>
+            {% endif %}
+            {% if union.period or union.is_ended %}<span class="union-period">{{ union.period }}{% if union.period and union.is_ended %}, {% endif %}{% if union.is_ended %}{% translate "ended" %}{% endif %}</span>{% endif %}
+          </span>
+          {% if union.children %}
+            <span class="union-children">{% translate "Children" %}:
+              {% for child in union.children %}{% include "family/_person_link.html" with relative=child.person note=child.note %}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </span>
+          {% endif %}
+        </li>{% endfor %}</ul></dd>
+      {% endif %}
+
+      {% if grandchildren %}
+        <dt>{% translate "Grandchildren" %}</dt>
+        <dd><ul class="relatives">{% for grandchild in grandchildren %}<li>{% include "family/_person_link.html" with relative=grandchild note="" %}</li>{% endfor %}</ul></dd>
+      {% endif %}
+
+      {% if person.source %}
+        <dt>{% translate "Source" %}</dt>
+        <dd>{{ person.source }}</dd>
+      {% endif %}
+    </dl>
+  </section>
+
+  {# ---------- Sections 2 to 9: the texts. Only the ones with content appear ---------- #}
+  {% for section in sections %}
+    <section id="{{ section.key }}" class="page-section">
+      <h2>{{ section.title }}</h2>
+      {% for union in section.stories %}
+        <div class="union-story">
+          <h3>{% if union.partner %}{% translate "With" %} {{ union.partner.full_name }}{% else %}{% translate "Other parent unknown" %}{% endif %}{% if union.period %} <span class="years">{{ union.period }}</span>{% endif %}</h3>
+          <div class="prose">{{ union.story }}</div>
+        </div>
+      {% endfor %}
+      {% if section.html %}<div class="prose">{{ section.html }}</div>{% endif %}
+    </section>
+  {% endfor %}
+
+  {# ---------- Section 10: gallery and places ---------- #}
+  {% if interview_embed_url or lived_in %}
+    <section id="gallery" class="page-section">
+      <h2>{% translate "Gallery and places" %}</h2>
+      {% if interview_embed_url %}
+        <h3>{% translate "Interview" %}</h3>
+        <div class="video">
+          <iframe id="interview-player" src="{{ interview_embed_url }}" data-embed-url="{{ interview_embed_url }}" title="{% translate 'Interview' %}: {{ person.full_name }}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        </div>
+        <p class="muted"><a href="{{ interview_watch_url }}" rel="noopener">{% translate "Watch on YouTube" %}</a></p>
+      {% endif %}
+      {% if lived_in %}
+        <h3>{% translate "Places where they lived" %}</h3>
+        <ul class="places">{% for place in lived_in %}<li>{{ place.name }}</li>{% endfor %}</ul>
+      {% endif %}
+    </section>
+  {% endif %}
+
+</article>
+{% endblock %}
+
+{% block scripts %}
+  {% if interview_embed_url %}<script src="{% static 'js/person.js' %}" defer></script>{% endif %}
+{% endblock %}

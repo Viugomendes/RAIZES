@@ -5,4 +5,16 @@
 
 {% block content %}
   <h1>{% translate "People" %}</h1>
+  {% if people %}
+    <ul class="people-list">
+      {% for person in people %}
+        <li>
+          <a href="{% url 'family:person_detail' person.identifier %}">{{ person.full_name }}</a>
+          {% if person.years_display %}<span class="years">{{ person.years_display }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="notice">{% translate "Nobody has been added yet." %}</p>
+  {% endif %}
 {% endblock %}

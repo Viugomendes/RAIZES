@@ -113,6 +113,39 @@ class PersonAdminTests(AdminTestCase):
         self.assertEqual(person.given_name, "Raimundo")
         self.assertEqual(person.identifier, "ramon-garcia-1962")
 
+    def test_broken_link_in_a_text_is_saved_with_a_clear_warning(self):
+        response = self.client.post(
+            "/admin/family/person/add/",
+            {**PERSON_FORM, "childhood": "Brincava com [[marta-garcia-1964]]."},
+            follow=True,
+        )
+
+        self.assertTrue(Person.objects.filter(identifier="ramon-garcia-1962").exists())
+        warnings = [str(message) for message in response.context["messages"] if message.level_tag == "warning"]
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("Infância e juventude", warnings[0])
+        self.assertIn("[[marta-garcia-1964]]", warnings[0])
+        self.assertIn("não existe nenhuma pessoa", warnings[0])
+
+    def test_text_without_problems_has_no_warning(self):
+        make_person("Marta", "García", birth_date="1964")
+
+        response = self.client.post(
+            "/admin/family/person/add/",
+            {**PERSON_FORM, "childhood": "Brincava com [[marta-garcia-1964]]."},
+            follow=True,
+        )
+
+        warnings = [message for message in response.context["messages"] if message.level_tag == "warning"]
+        self.assertEqual(warnings, [])
+
+    def test_person_has_a_link_to_their_page_on_the_site(self):
+        person = make_person(birth_date="1962")
+
+        self.assertEqual(person.get_absolute_url(), "/pt-br/people/ramon-garcia-1962/")
+        response = self.client.get(f"/admin/family/person/{person.pk}/change/")
+        self.assertContains(response, "viewsitelink")
+
     def test_people_can_be_searched_by_name(self):
         make_person(birth_date="1962")
         make_person("Carmen", "López")
@@ -191,6 +224,18 @@ class UnionAdminTests(AdminTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Union.objects.exists())
+
+    def test_broken_link_in_the_story_is_saved_with_a_warning(self):
+        response = self.client.post(
+            "/admin/family/union/add/",
+            {**self.form, "story": "Apresentados por [[ninguem-1]].", **inline_children()},
+            follow=True,
+        )
+
+        self.assertTrue(Union.objects.exists())
+        warnings = [str(message) for message in response.context["messages"] if message.level_tag == "warning"]
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("[[ninguem-1]]", warnings[0])
 
     def test_ancestor_as_child_shows_an_error_when_editing(self):
         make_union(self.ramon, self.carmen, children=[self.javier])
