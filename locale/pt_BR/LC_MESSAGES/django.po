@@ -1,0 +1,433 @@
+# Raízes: textos da interface em português do Brasil.
+# Depois de editar este arquivo, rode: python manage.py compile_translations
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# --- Site ---
+
+msgid "Family"
+msgstr "Família"
+
+msgid "Skip to content"
+msgstr "Pular para o conteúdo"
+
+msgid "Pages"
+msgstr "Páginas"
+
+msgid "Language"
+msgstr "Idioma"
+
+msgid "Tree"
+msgstr "Árvore"
+
+msgid "People"
+msgstr "Pessoas"
+
+msgid "Family tree"
+msgstr "Árvore da família"
+
+msgid "Invented family, for demonstration only. None of these people exist."
+msgstr "Família inventada, só para demonstração. Nenhuma destas pessoas existe."
+
+# --- Datas ---
+
+msgid "%(day)d %(month)s %(year)d"
+msgstr "%(day)d de %(month)s de %(year)d"
+
+msgid "Write the date as DD/MM/YYYY or just the year (YYYY)."
+msgstr "Escreva a data como DD/MM/AAAA ou só o ano (AAAA)."
+
+# --- Seções da ficha ---
+
+msgid "Tastes and quirks"
+msgstr "Gostos e manias"
+
+msgid "Childhood and youth"
+msgstr "Infância e juventude"
+
+msgid "Work and adult life"
+msgstr "Trabalho e vida adulta"
+
+msgid "Love and friendship"
+msgstr "Amor e amizade"
+
+msgid "Origins and times"
+msgstr "Origens e época"
+
+msgid "Memories and reflections"
+msgstr "Memórias e reflexões"
+
+msgid "Legacy"
+msgstr "Legado"
+
+msgid "In the memory of others"
+msgstr "Na memória dos outros"
+
+# --- Modelos: nomes ---
+
+msgid "person"
+msgstr "pessoa"
+
+msgid "people"
+msgstr "pessoas"
+
+msgid "union"
+msgstr "união"
+
+msgid "unions"
+msgstr "uniões"
+
+msgid "child"
+msgstr "filho"
+
+msgid "children"
+msgstr "filhos"
+
+msgid "place"
+msgstr "lugar"
+
+msgid "places"
+msgstr "lugares"
+
+msgid "photo"
+msgstr "foto"
+
+msgid "photos"
+msgstr "fotos"
+
+msgid "recipe"
+msgstr "receita"
+
+msgid "recipes"
+msgstr "receitas"
+
+# --- Modelos: campos ---
+
+msgid "identifier"
+msgstr "identificador"
+
+msgid "name"
+msgstr "nome"
+
+msgid "given name"
+msgstr "nome"
+
+msgid "surname"
+msgstr "sobrenome"
+
+msgid "nickname"
+msgstr "apelido"
+
+msgid "other names"
+msgstr "outros nomes"
+
+msgid "sex"
+msgstr "sexo"
+
+msgid "Female"
+msgstr "Feminino"
+
+msgid "Male"
+msgstr "Masculino"
+
+msgid "Other"
+msgstr "Outro"
+
+msgid "birth date"
+msgstr "data de nascimento"
+
+msgid "approximate birth date"
+msgstr "data de nascimento aproximada"
+
+msgid "birth place"
+msgstr "lugar de nascimento"
+
+msgid "deceased"
+msgstr "falecido(a)"
+
+msgid "death date"
+msgstr "data de falecimento"
+
+msgid "approximate death date"
+msgstr "data de falecimento aproximada"
+
+msgid "death place"
+msgstr "lugar de falecimento"
+
+msgid "resting place"
+msgstr "descansa em"
+
+msgid "lives in"
+msgstr "mora em"
+
+msgid "lived in"
+msgstr "viveu em"
+
+msgid "occupation"
+msgstr "profissão"
+
+msgid "tags"
+msgstr "etiquetas"
+
+msgid "main photo"
+msgstr "foto principal"
+
+msgid "interview link"
+msgstr "link da entrevista"
+
+msgid "confirmed"
+msgstr "confirmado"
+
+msgid "source"
+msgstr "fonte"
+
+msgid "created at"
+msgstr "criado em"
+
+msgid "updated at"
+msgstr "atualizado em"
+
+msgid "first partner"
+msgstr "primeira pessoa"
+
+msgid "second partner"
+msgstr "segunda pessoa"
+
+msgid "kind"
+msgstr "tipo"
+
+msgid "Marriage"
+msgstr "Casamento"
+
+msgid "Partnership"
+msgstr "União"
+
+msgid "Dating"
+msgstr "Namoro"
+
+msgid "start"
+msgstr "início"
+
+msgid "end"
+msgstr "fim"
+
+msgid "ended"
+msgstr "terminou"
+
+msgid "story of the couple"
+msgstr "história do casal"
+
+msgid "kind of link"
+msgstr "tipo de vínculo"
+
+msgid "Biological"
+msgstr "Biológico"
+
+msgid "Adoptive"
+msgstr "Adotivo"
+
+msgid "Raised by (stepchild or foster child)"
+msgstr "De criação (enteado ou criado pela família)"
+
+msgid "latitude"
+msgstr "latitude"
+
+msgid "longitude"
+msgstr "longitude"
+
+msgid "file"
+msgstr "arquivo"
+
+msgid "year"
+msgstr "ano"
+
+msgid "years"
+msgstr "anos"
+
+msgid "caption"
+msgstr "legenda"
+
+msgid "people in the photo"
+msgstr "pessoas na foto"
+
+msgid "someone not identified"
+msgstr "alguém não identificado"
+
+msgid "title"
+msgstr "título"
+
+msgid "whose recipe it is"
+msgstr "de quem é a receita"
+
+msgid "ingredients and preparation"
+msgstr "ingredientes e modo de preparo"
+
+# --- Modelos: textos de ajuda ---
+
+msgid ""
+"Format name-surname-year, for example: ramon-garcia-1962. Leave it empty to "
+"have it created for you. It never changes afterwards."
+msgstr ""
+"Formato nome-sobrenome-ano, por exemplo: ramon-garcia-1962. Deixe em branco "
+"para ele ser criado sozinho. Depois de criado, nunca muda."
+
+msgid "Maiden name, other spellings. Separate them with commas."
+msgstr "Nome de solteira, outras grafias. Separe com vírgulas."
+
+msgid "Complete (14/03/1962) or just the year (1962). Empty if unknown."
+msgstr "Completa (14/03/1962) ou só o ano (1962). Em branco se for desconhecida."
+
+msgid "The site shows \"c. 1962\"."
+msgstr "O site mostra \"c. 1962\"."
+
+msgid "Tick it when the person has died, even if the date is unknown."
+msgstr "Marque quando a pessoa já faleceu, mesmo sem saber a data."
+
+msgid "Only the city, never the full address."
+msgstr "Só a cidade, nunca o endereço completo."
+
+msgid "Free words separated by commas, for example: musician, emigrant."
+msgstr "Palavras livres separadas por vírgulas, por exemplo: músico, emigrante."
+
+msgid ""
+"Normal link of the video on YouTube: https://www.youtube.com/watch?v=CODE or "
+"https://youtu.be/CODE."
+msgstr ""
+"Link normal do vídeo no YouTube: https://www.youtube.com/watch?v=CODIGO ou "
+"https://youtu.be/CODIGO."
+
+msgid "Untick it while the information about this person is doubtful."
+msgstr "Desmarque enquanto as informações sobre esta pessoa forem duvidosas."
+
+msgid "Where the information came from, for example: told by aunt Marta."
+msgstr "De onde veio a informação, por exemplo: contado pela tia Marta."
+
+msgid ""
+"Optional. Written in Markdown. [[identifier]] links to a person and [mm:ss] "
+"links to that minute of the interview."
+msgstr ""
+"Opcional. Escrito em Markdown. [[identificador]] cria um link para uma pessoa "
+"e [mm:ss] para aquele minuto da entrevista."
+
+msgid "Leave it empty when the other parent is unknown."
+msgstr "Deixe em branco quando o outro pai ou mãe é desconhecido."
+
+msgid "Leave it empty if you do not know."
+msgstr "Deixe em branco se não souber."
+
+msgid "Complete date or just the year. Empty if unknown."
+msgstr "Data completa ou só o ano. Em branco se for desconhecido."
+
+msgid "Empty means the union is still current."
+msgstr "Em branco significa que a união continua."
+
+msgid "Tick it when the union ended, even if the date is unknown."
+msgstr "Marque quando a união terminou, mesmo sem saber a data."
+
+msgid ""
+"Optional, in Markdown. It appears in the section \"Love and friendship\" of "
+"both partners."
+msgstr ""
+"Opcional, em Markdown. Aparece na seção \"Amor e amizade\" das duas fichas."
+
+msgid "Short name used in links, for example: valencia."
+msgstr "Nome curto usado nos links, por exemplo: valencia."
+
+msgid "For example: Valência, Espanha."
+msgstr "Por exemplo: Valência, Espanha."
+
+msgid "Tick it when someone in the photo is unknown (\"Who is this?\")."
+msgstr "Marque quando alguém na foto não foi identificado (\"Quem é?\")."
+
+msgid "Short name used in links, for example: feijoada-da-vo."
+msgstr "Nome curto usado nos links, por exemplo: feijoada-da-vo."
+
+msgid "Written in Markdown."
+msgstr "Escrito em Markdown."
+
+# --- Modelos: mensagens de erro ---
+
+msgid ""
+"Paste the link of the video on YouTube, in one of these formats: "
+"https://www.youtube.com/watch?v=CODE or https://youtu.be/CODE."
+msgstr ""
+"Cole o link do vídeo no YouTube, num destes formatos: "
+"https://www.youtube.com/watch?v=CODIGO ou https://youtu.be/CODIGO."
+
+msgid "Fill in both latitude and longitude, or neither."
+msgstr "Preencha a latitude e a longitude, ou nenhuma das duas."
+
+msgid ""
+"The identifier cannot change after the person is created: every link to this "
+"person depends on it."
+msgstr ""
+"O identificador não pode mudar depois que a pessoa é criada: todos os links "
+"para ela dependem dele."
+
+msgid ""
+"Use only lowercase letters without accents, digits and hyphens, for example: "
+"ramon-garcia-1962."
+msgstr ""
+"Use só letras minúsculas sem acento, números e hifens, por exemplo: "
+"ramon-garcia-1962."
+
+msgid "The death date is before the birth date."
+msgstr "A data de falecimento é anterior à de nascimento."
+
+msgid "%(name)s (other parent unknown)"
+msgstr "%(name)s (pai ou mãe desconhecido)"
+
+msgid "A union needs two different people."
+msgstr "Uma união precisa de duas pessoas diferentes."
+
+msgid "The end is before the start."
+msgstr "O fim é anterior ao início."
+
+msgid "This person is already a child of this union."
+msgstr "Esta pessoa já é filha desta união."
+
+msgid "A person cannot be a child of their own union."
+msgstr "Uma pessoa não pode ser filha da própria união."
+
+msgid ""
+"This person is an ancestor of one of the partners, so cannot also be their "
+"child."
+msgstr ""
+"Esta pessoa é antepassada de um dos parceiros, então não pode ser também "
+"filha dele."
+
+# --- Painel de administração ---
+
+msgid "Raízes · invented family (demo)"
+msgstr "Raízes · família inventada (demonstração)"
+
+msgid "Raízes · REAL family data"
+msgstr "Raízes · dados REAIS da família"
+
+msgid "Family data"
+msgstr "Dados da família"
+
+msgid "Who"
+msgstr "Quem"
+
+msgid "Birth"
+msgstr "Nascimento"
+
+msgid "Death"
+msgstr "Falecimento"
+
+msgid "Life"
+msgstr "Vida"
+
+msgid "Photo and interview"
+msgstr "Foto e entrevista"
+
+msgid "Reliability"
+msgstr "Confiabilidade"
+
+msgid "Texts of the page (all optional)"
+msgstr "Textos da ficha (todos opcionais)"
