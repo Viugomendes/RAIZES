@@ -3,9 +3,7 @@
 // The drawing is made on the server (Python). This script:
 // - moves and zooms it (drag, Ctrl + mouse wheel, two fingers, buttons, keys);
 // - opens it in full screen, where one finger and the plain wheel also work;
-// - recolours it from another central person ("see from..."), using the same
-//   kinship rules as the server (kinship.js). Nobody moves: only the sides,
-//   the distances and the central ring change.
+// - zooms on a person when the address says so (tree/?person=<identifier>).
 (function () {
   "use strict";
 
@@ -16,7 +14,6 @@
   var frame = document.getElementById("tree-frame");
   var hint = document.getElementById("tree-hint");
   var strings = JSON.parse(document.getElementById("tree-strings").textContent);
-  var data = window.RAIZES_DATA;
 
   var MAX_ZOOM = 12; // how many times closer than the whole-family view
   var MIN_ZOOM = 0.6;
@@ -261,132 +258,20 @@
     event.preventDefault();
   });
 
-  // ----- See from... -----
-  if (!data || !window.RaizesKinship || !data.people.length) {
-    return;
-  }
-  var SVG_NS = "http://www.w3.org/2000/svg";
-  var graph = new window.RaizesKinship.FamilyGraph(data);
-  var people = window.Raizes.byId(data.people);
-  var skin = data.skin;
-  var colors = data.colors;
-  var last = skin.radii.length - 1;
-  var group = document.getElementById("tree-people");
-  var nodes = Array.prototype.slice.call(group.querySelectorAll("a.person"));
-
-  function mixWithWhite(colour, share) {
-    var out = "#";
-    for (var i = 1; i < 7; i += 2) {
-      var channel = parseInt(colour.substr(i, 2), 16);
-      var mixed = Math.round(channel + (255 - channel) * share);
-      out += (mixed < 16 ? "0" : "") + mixed.toString(16);
-    }
-    return out;
-  }
-
-  function sideColor(side, figures) {
-    if (side === undefined) {
-      return colors.unlinked;
-    }
-    if (side === window.RaizesKinship.CENTER) {
-      return colors.center;
-    }
-    var index = figures.indexOf(side);
-    return index < colors.sides.length ? colors.sides[index] : colors.otherSides;
-  }
-
-  function restyle(central) {
-    var result = graph.walk(central);
-    nodes.forEach(function (node) {
-      var id = node.getAttribute("data-id");
-      var person = people[id];
-      var d = result.distance[id];
-      var step = d === undefined ? last : Math.min(d, last);
-      var radius = skin.radii[step];
-      var font = skin.fontSizes[step];
-      var shade = mixWithWhite(sideColor(result.side[id], result.figures), skin.fades[step]);
+  // ----- "See in the tree" from a person's page: tree/?person=<identifier> -----
+  var wanted = new URLSearchParams(window.location.search).get("person");
+  if (wanted) {
+    var node = svg.querySelector('a.person[data-id="' + wanted.replace(/[^a-z0-9-]/g, "") + '"]');
+    if (node) {
       var dot = node.querySelector("circle.dot");
-      var cx = dot.getAttribute("cx");
+      var cx = parseFloat(dot.getAttribute("cx"));
       var cy = parseFloat(dot.getAttribute("cy"));
-      dot.setAttribute("r", radius);
-      dot.setAttribute("fill", person.deceased ? "#ffffff" : shade);
-      dot.setAttribute("stroke", shade);
-      dot.setAttribute("stroke-width", person.deceased ? 2.5 : 0);
-
-      var ring = node.querySelector("circle.ring");
-      var isCentral = id === central;
-      if (isCentral && !ring) {
-        ring = document.createElementNS(SVG_NS, "circle");
-        ring.setAttribute("class", "ring");
-        ring.setAttribute("cx", cx);
-        ring.setAttribute("cy", cy);
-        ring.setAttribute("fill", "#ffffff");
-        ring.setAttribute("stroke-width", 2);
-        node.insertBefore(ring, dot);
-      } else if (!isCentral && ring) {
-        node.removeChild(ring);
-        ring = null;
-      }
-      var ringRadius = 0;
-      if (ring) {
-        ringRadius = radius + 5;
-        ring.setAttribute("r", ringRadius);
-        ring.setAttribute("stroke", shade);
-      }
-      node.classList.toggle("central", isCentral);
-
-      var text = node.querySelector("text");
-      text.setAttribute("font-size", font);
-      var first = cy + Math.max(radius, ringRadius) + font + 4;
-      Array.prototype.forEach.call(text.querySelectorAll("tspan"), function (span, index) {
-        span.setAttribute("y", Math.round((first + index * font * 1.12) * 10) / 10);
-      });
-      node._radius = radius;
-    });
-    // Nearest people are drawn last, on top of the others.
-    nodes.slice().sort(function (a, b) {
-      return b._radius - a._radius;
-    }).forEach(function (node) {
-      group.appendChild(node);
-    });
-    updateLegend(central, result);
-  }
-
-  function updateLegend(central, result) {
-    var list = document.getElementById("legend-sides");
-    var f = window.Raizes.format;
-    var entries = result.figures.map(function (figure) {
-      return [sideColor(figure, result.figures), f(strings.side, { name: people[figure].name })];
-    });
-    entries.push([colors.center, f(strings.center, { name: people[central].name })]);
-    if (Object.keys(result.distance).length < data.people.length) {
-      entries.push([colors.unlinked, f(strings.unlinked, { name: people[central].name })]);
+      var width = Math.max(whole.width / 4, 500);
+      var height = width * (whole.height / whole.width);
+      view = { x: cx - width / 2, y: cy - height / 2, width: width, height: height };
+      apply();
+      node.classList.add("focused");
+      node.focus();
     }
-    list.innerHTML = entries.map(function (entry) {
-      return '<li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="10" fill="' + entry[0] + '"/></svg> <span>' + entry[1] + "</span></li>";
-    }).join("");
   }
-
-  var select = document.getElementById("tree-from");
-  var sorted = data.people.slice().sort(function (a, b) {
-    return window.Raizes.normalize(a.name) < window.Raizes.normalize(b.name) ? -1 : 1;
-  });
-  select.innerHTML = sorted.map(function (person) {
-    return '<option value="' + window.Raizes.escapeHtml(person.id) + '">' + window.Raizes.escapeHtml(person.name) + (person.years ? " (" + window.Raizes.escapeHtml(person.years) + ")" : "") + "</option>";
-  }).join("");
-  document.querySelector(".tree-controls").hidden = false;
-
-  var wanted = new URLSearchParams(window.location.search).get("from");
-  var start = wanted && people[wanted] ? wanted : data.central;
-  if (start) {
-    select.value = start;
-    if (start !== data.central) {
-      restyle(start);
-    }
-  } else {
-    select.selectedIndex = -1;
-  }
-  select.addEventListener("change", function () {
-    restyle(select.value);
-  });
 })();

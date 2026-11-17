@@ -30,7 +30,6 @@
         lived: [person.livesIn].concat(person.livedIn).filter(Boolean),
         occupation: N(person.occupation),
         tags: person.tags.map(N),
-        side: kin ? kin.side[person.id] : undefined,
         distance: kin ? kin.distance[person.id] : undefined,
         generation: kin ? kin.generation[person.id] : undefined,
       };
@@ -41,7 +40,7 @@
     return N(text).split(/\s+/).filter(Boolean);
   }
 
-  // criteria: {text, from, to, born, lived, side, distance, generation,
+  // criteria: {text, from, to, born, lived, distance, generation,
   //            status ("living"|"deceased"), occupation, tag, photos, interview, recipe}
   function filterPeople(index, criteria) {
     var textWords = words(criteria.text);
@@ -66,9 +65,6 @@
         return false;
       }
       if (criteria.lived && entry.lived.indexOf(criteria.lived) === -1) {
-        return false;
-      }
-      if (criteria.side && entry.side !== criteria.side) {
         return false;
       }
       if (criteria.distance !== undefined && criteria.distance !== "" && !(entry.distance <= Number(criteria.distance))) {
@@ -146,36 +142,8 @@
     });
     options(form.elements.tag, Object.keys(tags).sort().map(function (tag) { return [tag, tag]; }));
 
-    function sideColor(side) {
-      if (side === undefined) {
-        return data.colors.unlinked;
-      }
-      if (side === Kinship.CENTER) {
-        return data.colors.center;
-      }
-      var i = kin.figures.indexOf(side);
-      return i < data.colors.sides.length ? data.colors.sides[i] : data.colors.otherSides;
-    }
-
-    function sideLabel(side) {
-      if (!kin) {
-        return "";
-      }
-      var centralName = people[data.central].name;
-      if (side === undefined) {
-        return Raizes.format(strings.unlinked, { name: centralName });
-      }
-      if (side === Kinship.CENTER) {
-        return Raizes.format(strings.centerShort, { name: centralName });
-      }
-      return Raizes.format(strings.side, { name: people[side].name });
-    }
-
     if (kin) {
       var centralName = people[data.central].name;
-      options(form.elements.side, kin.figures.map(function (figure) {
-        return [figure, Raizes.format(strings.side, { name: people[figure].name })];
-      }).concat([[Kinship.CENTER, Raizes.format(strings.center, { name: centralName })]]));
       var maxDistance = 0;
       var generations = {};
       Object.keys(kin.distance).forEach(function (id) {
@@ -191,7 +159,7 @@
         return [String(value), Raizes.format(strings.generations[String(value)] || strings.generationOther, { name: centralName, number: value })];
       }));
     } else {
-      ["side", "distance", "generation"].forEach(function (name) {
+      ["distance", "generation"].forEach(function (name) {
         form.elements[name].closest("label").hidden = true;
       });
     }
@@ -204,7 +172,6 @@
         to: elements.to.value,
         born: elements.born.value,
         lived: elements.lived.value,
-        side: elements.side.value,
         distance: elements.distance.value,
         generation: elements.generation.value,
         status: elements.status.value,
@@ -229,11 +196,10 @@
         var picture = person.avatar
           ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, person.avatar) + '" alt="" loading="lazy">'
           : '<span class="mini-avatar mini-initials" aria-hidden="true">' + Raizes.escapeHtml(person.initials) + "</span>";
-        var side = kin ? '<span class="side-dot" style="background:' + sideColor(entry.side) + '"></span>' + sideLabel(entry.side) : "";
         return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + picture +
           '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(person.name) + "</span>" +
           (person.years ? ' <span class="years">' + Raizes.escapeHtml(person.years) + "</span>" : "") +
-          (side ? '<span class="result-side">' + side + "</span>" : "") + "</span></a></li>";
+          (person.occupation ? '<span class="result-side">' + Raizes.escapeHtml(person.occupation) + "</span>" : "") + "</span></a></li>";
       }).join("") + "</ul>";
       if (recipes.length) {
         html += "<h2>" + Raizes.escapeHtml(strings.recipes) + '</h2><ul class="results">' + recipes.map(function (recipe) {

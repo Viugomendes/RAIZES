@@ -12,11 +12,10 @@
   </div>
 
   <form class="filters map-filters" id="map-filters" hidden>
-    <label>{% translate "Side" %} <select id="map-side"></select></label>
     <label>{% translate "Generation" %} <select id="map-generation"></select></label>
     <p class="muted" id="map-count" aria-live="polite"></p>
   </form>
-  <div id="family-map" class="map map-large" aria-label="{% translate 'Family map' %}">
+  <div id="family-map" class="map map-large" aria-label="{% translate 'Family map' %}" data-hint-wheel="{% translate 'Hold Ctrl and turn the mouse wheel to zoom.' %}" data-hint-touch="{% translate 'Use two fingers to move and zoom, or open the full screen.' %}" data-full="{% translate 'Full screen' %}" data-exit-full="{% translate 'Exit full screen' %}">
     <noscript><p class="notice">{% translate "The map needs JavaScript turned on." %}</p></noscript>
   </div>
   <p class="muted map-credit">{% translate "Map images: OpenStreetMap. They are loaded from the OpenStreetMap servers." %}</p>

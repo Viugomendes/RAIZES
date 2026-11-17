@@ -19,15 +19,6 @@ from .dates import PartialDate
 from .graph import load_family_graph
 from .images import AVATAR, LARGE, THUMB, variant_url
 from .models import TEXT_SECTIONS, Person, Photo, Place, Recipe, Union
-from .tree_skin import (
-    CENTER_COLOR,
-    FADES,
-    FONT_SIZES,
-    OTHER_SIDES_COLOR,
-    RADII,
-    UNLINKED_COLOR,
-    side_colors,
-)
 
 NEWS_DAYS = 30  # "new on the site" shows what was first published in these days
 _QUOTE_LINE = re.compile(r"^\s*>\s?(.*)$")
@@ -218,13 +209,6 @@ def build_site_data(today: datetime.date | None = None) -> dict:
 
     return {
         "central": central,
-        "colors": {
-            "sides": side_colors(),
-            "otherSides": OTHER_SIDES_COLOR,
-            "center": CENTER_COLOR,
-            "unlinked": UNLINKED_COLOR,
-        },
-        "skin": {"radii": RADII, "fontSizes": FONT_SIZES, "fades": FADES},
         "people": people_data,
         "unions": unions,
         "places": places,

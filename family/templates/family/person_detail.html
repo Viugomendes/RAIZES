@@ -30,7 +30,7 @@
       {% if not person.confirmed %}
         <p class="notice">{% translate "The details about this person have not been confirmed yet." %}</p>
       {% endif %}
-      <p class="person-actions"><a href="{% url 'family:tree' %}?from={{ person.identifier }}">{% translate "See the tree from this person" %}</a></p>
+      <p class="person-actions"><a href="{% url 'family:tree' %}?person={{ person.identifier }}">{% translate "See in the tree" %}</a></p>
     </div>
   </header>
 
@@ -205,7 +205,7 @@
 
       {% if personal_places %}
         <h3>{% translate "Places" %}</h3>
-        {% if map_places %}<div id="personal-map" class="map map-small" aria-label="{% translate 'Places' %}"></div>{{ map_places|json_script:"personal-places" }}{% endif %}
+        {% if map_places %}<div id="personal-map" class="map map-small" aria-label="{% translate 'Places' %}" data-hint-wheel="{% translate 'Hold Ctrl and turn the mouse wheel to zoom.' %}" data-hint-touch="{% translate 'Use two fingers to move and zoom, or open the full screen.' %}" data-full="{% translate 'Full screen' %}" data-exit-full="{% translate 'Exit full screen' %}"></div>{{ map_places|json_script:"personal-places" }}{% endif %}
         <ul class="places">{% for place in personal_places %}<li>{{ place.name }} <span class="muted">{{ place.roles|join:", " }}</span></li>{% endfor %}</ul>
       {% endif %}
     </section>

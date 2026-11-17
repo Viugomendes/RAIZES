@@ -16,10 +16,11 @@ from pathlib import Path, PurePosixPath
 from django.conf import settings
 from PIL import Image, ImageOps, UnidentifiedImageError
 
+TREE = 128  # round photo inside the circles of the tree
 AVATAR = 320  # main photo of a person
 THUMB = 480  # gallery thumbnails, search results
 LARGE = 1600  # a photo opened on its own
-WIDTHS = (AVATAR, THUMB, LARGE)
+WIDTHS = (TREE, AVATAR, THUMB, LARGE)
 
 URL_PREFIX = "v"  # /media/v/<width>/<original name>.jpg
 QUALITY = 82

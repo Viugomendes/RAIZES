@@ -65,9 +65,9 @@ hospedagem elas aparecem normalmente.
 | Página | O que faz |
 |---|---|
 | Novidades | Mural automático: aniversários da semana, "neste dia", "em memória", lembrança do dia e novo no site. Calculado pelo navegador a cada dia, sem republicar. |
-| Árvore | A família inteira. "Ver a partir de..." recalcula lados e distâncias para qualquer pessoa. Aproximar: Ctrl + roda do mouse, dois dedos ou os botões; "Tela cheia" para usar a árvore à vontade. |
-| Árvore > Mapa | Todos os lugares da família, com filtro por lado e geração. |
-| Busca | Por nome, ano, lugar, lado, distância, geração, vivo ou falecido, profissão, etiqueta, fotos, entrevista e receita. |
+| Árvore | A família inteira, com a foto de cada pessoa no círculo. Aproximar: Ctrl + roda do mouse, dois dedos ou os botões; "Tela cheia" para usar a árvore à vontade. Na ficha, "Ver na árvore" abre a árvore já na pessoa. |
+| Árvore > Mapa | Todos os lugares da família, com filtro por geração. Aproxima como a árvore. |
+| Busca | Por nome, ano, lugar, distância, geração, vivo ou falecido, profissão, etiqueta, fotos, entrevista e receita. |
 | Página da pessoa | As 10 seções do plano, com galeria, gravações, receitas e mapa pessoal. |
 | Quem é? | Fotos com alguém que ainda não foi identificado. |
 
@@ -141,7 +141,6 @@ Outras escolhas de cada família, também no `.env`:
 | `RAIZES_CENTRAL_PERSON` | A pessoa a partir de quem a árvore se organiza |
 | `RAIZES_LANGUAGE` | Idioma em que o site abre: `pt-br` ou `es` |
 | `RAIZES_HIDDEN_SECTIONS` | Seções da ficha que não aparecem, por exemplo `origins, legacy` |
-| `RAIZES_SIDE_COLORS` | Cores dos lados da árvore (as de fábrica foram testadas para daltonismo) |
 
 O cabeçalho do painel sempre mostra qual família está aberta. O comando
 `load_demo` se recusa a rodar com `RAIZES_DATASET=real`, para nunca apagar a

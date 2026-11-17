@@ -29,7 +29,7 @@ LONE_PARENT_ROOM = 26  # room beside a lone parent, for the union node
 
 # Vertical distances, from the top of a band downwards.
 ARC_ZONE = 24  # where unions that jump over someone are drawn
-NODE_RADIUS = 26  # the largest circle
+NODE_RADIUS = 32  # the largest circle
 AGE_RANGE = 34  # how far the birth year can push a person down
 LABEL_ZONE = 42  # the name under the circle
 CHANNEL = 62  # between two bands: where the lines to the children travel

@@ -202,13 +202,10 @@ class SearchTests(JavaScriptTestCase):
         self.assertEqual(self.search(born="sao"), [])
         self.assertEqual(self.search(lived="santo"), [])
 
-    def test_side_distance_and_generation(self):
-        stepfather_side = self.search(side="rui-pinheiro-1965")
+    def test_distance_and_generation(self):
         near = self.search(distance="1")
         grandparents = self.search(generation="-2")
 
-        self.assertIn("zelia-pinheiro-1942", stepfather_side)
-        self.assertNotIn("anselmo-figueira-1940", stepfather_side)
         self.assertEqual(
             sorted(near),
             ["davi-amoreira-1995", "helena-figueira-1970", "lia-carvalho-1996", "rui-pinheiro-1965", "tomas-carvalho-1968"],

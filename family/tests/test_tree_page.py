@@ -4,19 +4,9 @@ import re
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase, override_settings
 
-from family.kinship import ADOPTIVE, BIOLOGICAL, CENTER, FOSTER
+from family.kinship import ADOPTIVE, BIOLOGICAL, FOSTER
 from family.models import ChildLink, Person, Union
-from family.tree_skin import (
-    CENTER_COLOR,
-    OTHER_SIDES_COLOR,
-    SIDE_COLORS,
-    SURFACE,
-    UNLINKED_COLOR,
-    child_line_class,
-    node_style,
-    side_color,
-    union_line_class,
-)
+from family.tree_skin import RADII, SURFACE, child_line_class, node_style, union_line_class
 
 from .test_demo import DemoFamilyTestCase
 from .test_models import make_person, make_union
@@ -28,12 +18,11 @@ def lightness(colour: str) -> float:
 
 
 class NodeStyleTests(SimpleTestCase):
-    def style(self, distance=1, side="mother", deceased=False, central=False):
+    def style(self, distance=1, deceased=False, central=False):
         return node_style(
             given_name="Maria Clara",
             surname="Souza Lima",
             distance=distance,
-            colour=side_color(side, ["father", "mother", "stepfather"]),
             is_deceased=deceased,
             is_central=central,
         )
@@ -68,37 +57,15 @@ class NodeStyleTests(SimpleTestCase):
         self.assertEqual(self.style().label_lines, ["Maria", "Lima"])
 
     def test_label_of_a_person_without_surname(self):
-        style = node_style("Benedita", "", 1, CENTER_COLOR, False, False)
+        style = node_style("Benedita", "", 1, False, False)
 
         self.assertEqual(style.label_lines, ["Benedita"])
 
     def test_room_for_a_person_fits_the_circle_and_the_name(self):
-        style = node_style("Wilhelmina", "Vasconcellos", 5, CENTER_COLOR, False, False)
+        style = node_style("Wilhelmina", "Vasconcellos", 5, False, False)
 
         self.assertGreater(style.slot_width, 2 * style.radius)
         self.assertGreater(style.slot_width, len("Vasconcellos") * style.font_size * 0.5)
-
-
-class SideColourTests(SimpleTestCase):
-    FIGURES = ["father", "mother", "stepfather"]
-
-    def test_each_parental_figure_has_a_colour(self):
-        colours = [side_color(figure, self.FIGURES) for figure in self.FIGURES]
-
-        self.assertEqual(colours, SIDE_COLORS[:3])
-        self.assertEqual(len(set(colours)), 3)
-
-    def test_centre_has_a_neutral_colour(self):
-        self.assertEqual(side_color(CENTER, self.FIGURES), CENTER_COLOR)
-
-    def test_person_without_link_has_its_own_colour(self):
-        self.assertEqual(side_color(None, self.FIGURES), UNLINKED_COLOR)
-
-    def test_sides_beyond_the_validated_colours_share_one_colour(self):
-        figures = ["a", "b", "c", "d", "e"]
-
-        self.assertEqual(side_color("d", figures), OTHER_SIDES_COLOR)
-        self.assertEqual(side_color("e", figures), OTHER_SIDES_COLOR)
 
 
 class LineClassTests(SimpleTestCase):
@@ -184,10 +151,24 @@ class TreePageTests(DemoFamilyTestCase):
                     ChildLink.objects.filter(kind=kind).count(),
                 )
 
-    def test_three_sides_have_three_colours(self):
-        for colour in SIDE_COLORS[:3]:
-            with self.subTest(colour=colour):
-                self.assertIn(colour, self.svg)
+    def test_people_with_a_photo_show_it_round_inside_the_circle(self):
+        with_photo = Person.objects.exclude(photo="")
+
+        self.assertEqual(self.svg.count('<image class="photo"'), with_photo.count())
+        for person in with_photo:
+            with self.subTest(person=person.identifier):
+                self.assertIn(f'href="/media/v/128/{person.photo.name}.jpg"', self.svg)
+        self.assertIn('clip-path="url(#round)"', self.svg)
+
+    def test_everybody_has_the_same_colour(self):
+        fills = set(re.findall(r'<circle class="dot"[^>]*fill="(#[0-9a-f]{6})"', self.svg)) - {SURFACE}
+
+        self.assertTrue(all(fill.startswith("#") for fill in fills))
+        self.assertNotIn("Lado de", self.html)
+
+    def test_no_see_from_any_more(self):
+        self.assertNotIn('id="tree-from"', self.html)
+        self.assertNotIn("data/family.js", self.html)
 
     def test_legend_explains_the_whole_code(self):
         legend = re.search(r'<details class="legend".*?</details>', self.html, re.DOTALL).group(0)
@@ -202,9 +183,7 @@ class TreePageTests(DemoFamilyTestCase):
             "Filho biológico",
             "Filho adotivo",
             "Filho de criação",
-            "Lado de Tomás Castanheira Carvalho",
-            "Lado de Helena Oliveira Figueira",
-            "Lado de Rui Pinheiro",
+
             "Mais longe",
         ):
             with self.subTest(text=text):
@@ -214,7 +193,7 @@ class TreePageTests(DemoFamilyTestCase):
         html = self.client.get("/es/tree/").content.decode()
 
         self.assertIn("Persona fallecida", html)
-        self.assertIn("Lado de Rui Pinheiro", html)
+        self.assertIn("Hijo adoptivo", html)
         self.assertIn('href="/es/people/lia-carvalho-1996/"', html)
 
     def test_drawing_area_has_the_proportions_of_the_tree(self):
@@ -257,13 +236,13 @@ class SmallTreeTests(TestCase):
         self.assertNotIn("<svg id=\"family-tree\"", html)
 
     @override_settings(RAIZES_CENTRAL_PERSON="ana-ruiz-1940")
-    def test_people_without_any_link_are_drawn_in_the_colour_of_the_unlinked(self):
+    def test_people_without_any_link_are_drawn_small(self):
         ana = make_person("Ana", "Ruiz", birth_date="1940")
         make_union(ana, make_person("Luis", "Pérez", birth_date="1938"))
         make_person("Solitário", "Silva", birth_date="1950")
 
         html = self.client.get("/pt-br/tree/").content.decode()
+        alone = re.search(r'href="/pt-br/people/solitario-silva-1950/".*?</a>', html, re.DOTALL).group(0)
 
         self.assertEqual(html.count('class="person'), 3)
-        self.assertIn(UNLINKED_COLOR, html)
-        self.assertIn("Sem ligação", html)
+        self.assertIn(f'r="{RADII[-1]}"', alone)

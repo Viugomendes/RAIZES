@@ -66,8 +66,8 @@ class PersonPhotoTests(PersonPageTestCase):
         self.assertIn('<img class="avatar" src="/media/v/320/people/lia-carvalho-1996.png.jpg"', html)
         self.assertNotIn("avatar-initials", html)
 
-    def test_link_to_the_tree_seen_from_this_person(self):
-        self.assertIn('href="/pt-br/tree/?from=lia-carvalho-1996"', self.page("lia-carvalho-1996"))
+    def test_link_to_see_the_person_in_the_tree(self):
+        self.assertIn('href="/pt-br/tree/?person=lia-carvalho-1996"', self.page("lia-carvalho-1996"))
 
 
 class BasicDataTests(PersonPageTestCase):

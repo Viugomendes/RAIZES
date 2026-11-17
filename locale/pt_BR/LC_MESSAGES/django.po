@@ -542,21 +542,6 @@ msgstr "Filho adotivo"
 msgid "Foster child"
 msgstr "Filho de criação"
 
-msgid "Sides and distance"
-msgstr "Lados e distância"
-
-msgid "Further away: smaller and lighter"
-msgstr "Mais longe: menor e mais claro"
-
-msgid "Side of %(name)s"
-msgstr "Lado de %(name)s"
-
-msgid "%(name)s, siblings, descendants, partners' families and relatives on more than one side"
-msgstr "%(name)s, irmãos, descendentes, família dos parceiros e quem se liga por mais de um lado"
-
-msgid "No link to %(name)s"
-msgstr "Sem ligação com %(name)s"
-
 # --- Links nos textos ---
 
 msgid "%(link)s: there is no person with this identifier."
@@ -662,12 +647,6 @@ msgstr "Tela cheia"
 msgid "Exit full screen"
 msgstr "Sair da tela cheia"
 
-msgid "See from"
-msgstr "Ver a partir de"
-
-msgid "See the tree from this person"
-msgstr "Ver a árvore a partir desta pessoa"
-
 msgid "Hold Ctrl and turn the mouse wheel to zoom."
 msgstr "Segure Ctrl e gire a roda do mouse para aproximar."
 
@@ -676,9 +655,6 @@ msgstr "Use dois dedos para mover e aproximar, ou abra a tela cheia."
 
 msgid "Drag to move, hold Ctrl and turn the mouse wheel (or pinch with two fingers) to zoom, and click a person to open their page."
 msgstr "Arraste para mover, segure Ctrl e gire a roda do mouse (ou use dois dedos) para aproximar, e clique numa pessoa para abrir a página dela."
-
-msgid "All sides"
-msgstr "Todos os lados"
 
 msgid "All generations"
 msgstr "Todas as gerações"
@@ -704,9 +680,6 @@ msgstr "Filhos e sobrinhos"
 msgid "Generation %(number)s"
 msgstr "Geração %(number)s"
 
-msgid "Side"
-msgstr "Lado"
-
 msgid "Generation"
 msgstr "Geração"
 
@@ -730,9 +703,6 @@ msgstr "descansa"
 
 msgid "No place with coordinates matches these filters."
 msgstr "Nenhum lugar com coordenadas corresponde a estes filtros."
-
-msgid "Click the map to zoom with the mouse wheel."
-msgstr "Clique no mapa para aproximar com a roda do mouse."
 
 msgid "Map images: OpenStreetMap. They are loaded from the OpenStreetMap servers."
 msgstr "Imagens do mapa: OpenStreetMap. Elas vêm dos servidores do OpenStreetMap."
@@ -904,11 +874,6 @@ msgid_plural "%(counter)s photos have someone nobody has identified yet."
 msgstr[0] "%(counter)s foto tem alguém que ninguém identificou ainda."
 msgstr[1] "%(counter)s fotos têm alguém que ninguém identificou ainda."
 
-msgid "%(name)s turns %(years)s year old today"
-msgid_plural "%(name)s turns %(years)s years old today"
-msgstr[0] "%(name)s faz %(years)s ano hoje"
-msgstr[1] "%(name)s faz %(years)s anos hoje"
-
 msgid "%(years)s year ago, %(a)s and %(b)s got married"
 msgid_plural "%(years)s years ago, %(a)s and %(b)s got married"
 msgstr[0] "Há %(years)s ano, %(a)s e %(b)s se casavam"
@@ -944,5 +909,10 @@ msgid_plural "turns %(years)s"
 msgstr[0] "faz %(years)s ano"
 msgstr[1] "faz %(years)s anos"
 
-msgid "Close family of %(name)s"
-msgstr "Família próxima de %(name)s"
+# --- Árvore com fotos (2026-11-17) ---
+
+msgid "Further from the central person: smaller"
+msgstr "Mais longe da pessoa central: menor"
+
+msgid "See in the tree"
+msgstr "Ver na árvore"

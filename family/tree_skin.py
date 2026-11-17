@@ -2,41 +2,34 @@
 
 This is the "first proof" of section 4.2 of the plan, a simple visual code:
 
-    person            circle with the name
-    central person    circle with a double ring
-    deceased person   circle with only the outline
+    person            round photo (or a coloured circle) with the name below
+    central person    double ring
+    deceased person   photo in grey, or a circle with only the outline
     union             small diamond between the two partners
     current union     thick solid line        ended union   dashed line
     dating            dotted line
     biological child  thin solid line         adoptive      dash-dot line
     foster child      thin dotted line
-    side              one colour per parental figure of the central person
-    distance          the further away, the lighter and the smaller
+    distance          the further from the central person, the smaller
+
+Everybody has the same colour: the owner decided (2026-11-17) that the
+sides of the family are not shown with colours.
 
 The positions come from tree_layout.py (the skeleton). Replacing this file by
 another skin changes the look without touching the rules of position.
 """
 from dataclasses import dataclass
 
-from django.conf import settings
-
-from .kinship import ADOPTIVE, CENTER, FOSTER
+from .kinship import ADOPTIVE, FOSTER
 from .tree_layout import Band, PersonPlace, UnionPlace
 
-# Side colours. These three were checked with a colour-blindness simulation
-# (every pair stays distinguishable for protanopia and deuteranopia). No
-# fourth colour passes that check against all three, so further sides share
-# one neutral colour and are told apart by the legend and by position.
-SIDE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a"]
-OTHER_SIDES_COLOR = "#8f7f9c"
-CENTER_COLOR = "#3a3531"  # the central person, siblings, partners, descendants
-UNLINKED_COLOR = "#b3aca3"  # people with no link to the central person
+PERSON_COLOR = "#5f7a52"  # circles of people without a photo
 SURFACE = "#ffffff"
 
 # By distance from the central person: 0, 1, 2, 3, 4 or more.
-RADII = [26, 22, 19, 16, 13]
+RADII = [32, 28, 25, 22, 19]
 FONT_SIZES = [15, 14.5, 14, 13.5, 13]
-FADES = [0.0, 0.0, 0.28, 0.46, 0.6]  # share of white mixed into the colour
+FADES = [0.0, 0.1, 0.25, 0.4, 0.5]  # share of white mixed into the colour
 
 DIAMOND = 6  # half of the diagonal of a union node
 LABEL_CHAR_WIDTH = 0.6  # average width of a letter, in font sizes
@@ -60,22 +53,6 @@ def _mix_with_white(colour: str, share: float) -> str:
     return "#{:02x}{:02x}{:02x}".format(*mixed)
 
 
-def side_colors() -> list[str]:
-    """The colours of the sides: the family's choice (RAIZES_SIDE_COLORS) or the default."""
-    return list(getattr(settings, "RAIZES_SIDE_COLORS", None) or SIDE_COLORS)
-
-
-def side_color(side: str | None, parental_figures: list[str]) -> str:
-    """Base colour of a person from their side (None = no link to the centre)."""
-    if side is None:
-        return UNLINKED_COLOR
-    if side == CENTER:
-        return CENTER_COLOR
-    index = parental_figures.index(side)
-    colors = side_colors()
-    return colors[index] if index < len(colors) else OTHER_SIDES_COLOR
-
-
 def _step(distance: int | None) -> int:
     """Index in the tables above; unknown distance counts as the furthest."""
     last = len(RADII) - 1
@@ -86,28 +63,24 @@ def node_style(
     given_name: str,
     surname: str,
     distance: int | None,
-    colour: str,
     is_deceased: bool,
     is_central: bool,
 ) -> NodeStyle:
     step = _step(distance)
     radius = RADII[step]
     font_size = FONT_SIZES[step]
-    shade = _mix_with_white(colour, FADES[step])
+    shade = _mix_with_white(PERSON_COLOR, FADES[step])
 
     label_lines = given_name.split()[:1] + surname.split()[-1:]
     longest = max((len(line) for line in label_lines), default=0)
-    # The room is measured for the largest look a person can get, because
-    # "see from..." in the browser can make anyone the central person
-    # without moving anybody.
-    label_width = longest * max(FONT_SIZES) * LABEL_CHAR_WIDTH
-    slot_width = max(2 * (max(RADII) + 6), label_width) + SLOT_PADDING
+    label_width = longest * font_size * LABEL_CHAR_WIDTH
+    ring = 6 if is_central else 0
+    slot_width = max(2 * (radius + ring), label_width) + SLOT_PADDING
 
     if is_deceased:
-        # Only the outline: an empty circle drawn in the side's colour.
+        # Only the outline: an empty circle (the photo, if any, turns grey).
         return NodeStyle(radius, font_size, label_lines, slot_width, SURFACE, shade, 2.5)
     return NodeStyle(radius, font_size, label_lines, slot_width, shade, shade, 0)
-
 
 def union_line_class(kind: str, is_ended: bool) -> str:
     if kind == "dating":

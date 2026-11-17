@@ -1,5 +1,5 @@
 // The family map: every place, with the people linked to it, filtered by
-// side and generation (counted from the central person).
+// generation (counted from the central person).
 (function () {
   "use strict";
 
@@ -13,32 +13,14 @@
   var lang = document.documentElement.getAttribute("data-lang");
   var root = R.siteRoot(document);
   var people = R.byId(data.people);
-  var graph = new window.RaizesKinship.FamilyGraph(data);
-  var kin = data.central ? graph.walk(data.central) : null;
-  var CENTER = window.RaizesKinship.CENTER;
+  var kin = data.central ? new window.RaizesKinship.FamilyGraph(data).walk(data.central) : null;
+  var COLOUR = "#3f5a36";
 
-  function sideColor(side) {
-    if (!kin || side === undefined) {
-      return data.colors.unlinked;
-    }
-    if (side === CENTER) {
-      return data.colors.center;
-    }
-    var index = kin.figures.indexOf(side);
-    return index < data.colors.sides.length ? data.colors.sides[index] : data.colors.otherSides;
-  }
-
-  // ----- Filters -----
-  var sideSelect = document.getElementById("map-side");
+  // ----- Filter by generation -----
   var generationSelect = document.getElementById("map-generation");
-  var sideOptions = [["", strings.allSides]];
-  var generationOptions = [["", strings.allGenerations]];
+  var options = [["", strings.allGenerations]];
   if (kin) {
     var centralName = people[data.central].name;
-    kin.figures.forEach(function (figure) {
-      sideOptions.push([figure, R.format(strings.side, { name: people[figure].name })]);
-    });
-    sideOptions.push([CENTER, R.format(strings.center, { name: centralName })]);
     var generations = {};
     Object.keys(kin.generation).forEach(function (id) {
       generations[kin.generation[id]] = true;
@@ -47,16 +29,12 @@
       return a - b;
     }).forEach(function (value) {
       var label = strings.generations[String(value)] || strings.generationOther;
-      generationOptions.push([String(value), R.format(label, { name: centralName, number: value })]);
+      options.push([String(value), R.format(label, { name: centralName, number: value })]);
     });
   }
-  function fill(select, options) {
-    select.innerHTML = options.map(function (option) {
-      return '<option value="' + R.escapeHtml(option[0]) + '">' + R.escapeHtml(option[1]) + "</option>";
-    }).join("");
-  }
-  fill(sideSelect, sideOptions);
-  fill(generationSelect, generationOptions);
+  generationSelect.innerHTML = options.map(function (option) {
+    return '<option value="' + R.escapeHtml(option[0]) + '">' + R.escapeHtml(option[1]) + "</option>";
+  }).join("");
   document.getElementById("map-filters").hidden = !kin;
 
   // ----- Map -----
@@ -65,16 +43,9 @@
   var markersBySlug = {};
 
   function draw() {
-    var side = sideSelect.value;
     var generation = generationSelect.value;
     var chosen = data.people.filter(function (person) {
-      if (side && (!kin || kin.side[person.id] !== side)) {
-        return false;
-      }
-      if (generation !== "" && (!kin || String(kin.generation[person.id]) !== generation)) {
-        return false;
-      }
-      return true;
+      return generation === "" || (kin && String(kin.generation[person.id]) === generation);
     });
     var byPlace = window.RaizesPlaces.peopleByPlace(chosen);
     layer.clearLayers();
@@ -86,16 +57,11 @@
         return;
       }
       var entries = byPlace[slug];
-      var colours = {};
-      entries.forEach(function (entry) {
-        colours[sideColor(kin ? kin.side[entry.person] : undefined)] = true;
-      });
-      var colourList = Object.keys(colours);
       var marker = window.L.circleMarker([place.lat, place.lon], {
         radius: Math.min(24, 7 + Math.sqrt(entries.length) * 4),
         color: "#ffffff",
         weight: 2,
-        fillColor: colourList.length === 1 ? colourList[0] : data.colors.center,
+        fillColor: COLOUR,
         fillOpacity: 0.85,
       });
       var list = entries.map(function (entry) {
@@ -103,7 +69,7 @@
         var roles = entry.roles.map(function (role) {
           return strings.roles[role];
         }).join(", ");
-        return '<li><a href="' + R.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + R.escapeHtml(person.name) + "</a> <span class=\"muted\">" + R.escapeHtml(roles) + "</span></li>";
+        return '<li><a href="' + R.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + R.escapeHtml(person.name) + '</a> <span class="muted">' + R.escapeHtml(roles) + "</span></li>";
       }).join("");
       marker.bindPopup(
         "<strong>" + R.escapeHtml(place.name) + "</strong><br>" + R.format(R.plural(strings.people, entries.length), { count: entries.length }) + '<ul class="map-people">' + list + "</ul>",
@@ -121,7 +87,6 @@
     }
   }
 
-  sideSelect.addEventListener("change", draw);
   generationSelect.addEventListener("change", draw);
   draw();
 

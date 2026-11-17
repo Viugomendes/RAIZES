@@ -3,20 +3,16 @@ from dataclasses import dataclass
 
 from django.conf import settings
 from django.urls import reverse
-from django.utils.translation import gettext as _
 
 from .graph import load_family_graph
-from .kinship import CENTER
+from .images import TREE, variant_url
 from .models import Person, Union
 from .tree_layout import compute_layout
 from .tree_skin import (
-    CENTER_COLOR,
-    UNLINKED_COLOR,
     child_line_class,
     child_path,
     diamond_points,
     node_style,
-    side_color,
     union_line_class,
     union_path,
 )
@@ -37,26 +33,19 @@ class PersonDrawing:
     stroke_width: float
     font_size: float
     label: list[tuple[str, float]]  # (text, y of the line)
+    photo: str  # address of a small round photo, or ""
 
+    @property
+    def photo_x(self) -> float:
+        return round(self.x - self.radius, 2)
 
-def legend_entries(figure_names: list[str], central_name: str | None, has_unlinked: bool):
-    """(colour, text) for each side in the legend. tree.js builds the same list
-    in the browser when the visitor picks another central person."""
-    entries = [
-        (side_color(str(index), [str(i) for i in range(len(figure_names))]), _("Side of %(name)s") % {"name": name})
-        for index, name in enumerate(figure_names)
-    ]
-    if central_name:
-        entries.append(
-            (
-                CENTER_COLOR,
-                _("%(name)s, siblings, descendants, partners' families and relatives on more than one side")
-                % {"name": central_name},
-            )
-        )
-        if has_unlinked:
-            entries.append((UNLINKED_COLOR, _("No link to %(name)s") % {"name": central_name}))
-    return entries
+    @property
+    def photo_y(self) -> float:
+        return round(self.y - self.radius, 2)
+
+    @property
+    def photo_size(self) -> float:
+        return 2 * self.radius
 
 
 def build_tree_page() -> dict:
@@ -68,23 +57,14 @@ def build_tree_page() -> dict:
     graph = load_family_graph()
     wanted_central = settings.RAIZES_CENTRAL_PERSON
     central = people.get(wanted_central)
-
-    if central:
-        distances = graph.distances(central.identifier)
-        sides = graph.sides(central.identifier)
-        figures = graph.parental_figures(central.identifier)
-    else:
-        # Without a central person there are no sides: everyone looks the same.
-        distances = {identifier: 1 for identifier in people}
-        sides = {identifier: CENTER for identifier in people}
-        figures = []
+    # Without a central person everybody is drawn at the same size.
+    distances = graph.distances(central.identifier) if central else {i: 1 for i in people}
 
     styles = {
         identifier: node_style(
             person.given_name,
             person.surname,
             distances.get(identifier),
-            side_color(sides.get(identifier), figures),
             person.is_deceased,
             person is central,
         )
@@ -96,8 +76,7 @@ def build_tree_page() -> dict:
         {identifier: person.birth_year for identifier, person in people.items()},
         {identifier: style.slot_width for identifier, style in styles.items()},
     )
-    # Lines end at the centre of the circles, which are drawn over them, so
-    # they still fit when "see from..." changes the size of a circle.
+    # Lines end at the centre of the circles, which are drawn over them.
     radii = {identifier: 0 for identifier in styles}
 
     drawings = []
@@ -130,6 +109,7 @@ def build_tree_page() -> dict:
                     (line, round(first_line + index * style.font_size * 1.12, 1))
                     for index, line in enumerate(style.label_lines)
                 ],
+                photo=variant_url(person.photo.name, TREE) if person.photo else "",
             )
         )
     # Nearest people are drawn last, on top of the others.
@@ -141,9 +121,9 @@ def build_tree_page() -> dict:
         union = stored_unions[node.record.id]
         if len(node.record.partners) == 2:
             css = union_line_class(union.kind, union.is_ended)
-            union_lines.append((css, union_path(node, layout.people, radii, layout.bands)))
         else:
-            union_lines.append(("lone", union_path(node, layout.people, radii, layout.bands)))
+            css = "lone"
+        union_lines.append((css, union_path(node, layout.people, radii, layout.bands)))
         union_nodes.append(diamond_points(node))
         for child, kind in node.record.children:
             child_lines.append(
@@ -152,12 +132,6 @@ def build_tree_page() -> dict:
                     child_path(node, layout.people[child], radii[child], layout.bands[node.layer]),
                 )
             )
-
-    legend_sides = legend_entries(
-        [people[figure].full_name for figure in figures],
-        central.full_name if central else None,
-        has_unlinked=len(distances) < len(people),
-    )
 
     return {
         "tree": {
@@ -182,5 +156,4 @@ def build_tree_page() -> dict:
         },
         "central": central,
         "wanted_central": wanted_central,
-        "legend_sides": legend_sides,
     }
