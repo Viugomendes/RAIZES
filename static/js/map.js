@@ -18,7 +18,7 @@
 
   // ----- Filter by generation -----
   var generationSelect = document.getElementById("map-generation");
-  var options = [["", strings.allGenerations]];
+  var options = [["", R.escapeHtml(strings.allGenerations)]];
   if (kin) {
     var centralName = people[data.central].name;
     var generations = {};
@@ -33,7 +33,8 @@
     });
   }
   generationSelect.innerHTML = options.map(function (option) {
-    return '<option value="' + R.escapeHtml(option[0]) + '">' + R.escapeHtml(option[1]) + "</option>";
+    // The labels come from R.format, which already escaped the names.
+    return '<option value="' + R.escapeHtml(option[0]) + '">' + option[1] + "</option>";
   }).join("");
   document.getElementById("map-filters").hidden = !kin;
 

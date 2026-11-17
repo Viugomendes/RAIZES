@@ -1,5 +1,5 @@
 // The kinship rules in the browser: the same rules as family/kinship.py,
-// used by "see from...", the search and the map. A test runs both versions
+// used by the search and the map (distance and generation). A test runs both versions
 // on every person of the invented family and compares the results.
 (function (root, factory) {
   "use strict";

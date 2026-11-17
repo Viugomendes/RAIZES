@@ -11,6 +11,7 @@ The texts are written in Markdown, with two additions:
 A link to something that does not exist is never ignored: it is reported as a
 problem, shown in the admin and blocking the export.
 """
+import html
 import re
 import xml.etree.ElementTree as etree
 from dataclasses import dataclass, field
@@ -161,7 +162,22 @@ class _TimestampProcessor(InlineProcessor):
 
 
 _SAFE_SCHEMES = {"http", "https", "mailto"}
-_SCHEME = re.compile(r"^\s*([a-zA-Z][a-zA-Z0-9+.-]*):")
+_SCHEME = re.compile(r"^([a-zA-Z][a-zA-Z0-9+.-]*):")
+_INVISIBLE = re.compile(r"[\x00-\x20\x7f]")
+
+
+def is_safe_href(href: str) -> bool:
+    """Only web pages, e-mail addresses and addresses inside the site.
+
+    The address is read the way a browser reads it: entities like "&#58;"
+    decoded, and invisible characters (spaces, tabs, control characters)
+    removed, so "javascript&#58;..." or "java\\tscript:..." are recognised.
+    """
+    plain = _INVISIBLE.sub("", html.unescape(href or ""))
+    if match := _SCHEME.match(plain):
+        return match[1].lower() in _SAFE_SCHEMES
+    # No scheme: a path inside the site or an anchor; never "//other-site".
+    return not plain.startswith(("//", "\\", "/\\")) and ":" not in plain.split("/", 1)[0]
 
 
 class _SafeLinksProcessor(Treeprocessor):
@@ -178,8 +194,7 @@ class _SafeLinksProcessor(Treeprocessor):
     def run(self, root):
         for element in root.iter("a"):
             href = element.get("href", "")
-            match = _SCHEME.match(href)
-            if match and match[1].lower() not in _SAFE_SCHEMES:
+            if not is_safe_href(href):
                 self.problems.append(
                     _("%(link)s: only links to web pages (https://...) are allowed.")
                     % {"link": href}

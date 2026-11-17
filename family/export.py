@@ -23,6 +23,7 @@ from django_distill.renderer import DistillRenderer, render_pattern
 from django_distill.request import get_static_filepath, get_uri_values
 from django_distill.utils import get_langs
 
+from .models import Clip, Person, Photo, Recipe
 from .images import URL_PREFIX, VariantError, make_variant, parse_variant_path
 from .site_data import update_history
 from .textcheck import all_text_problems
@@ -199,27 +200,38 @@ def _write_media(output_dir: Path) -> None:
         for match in _MEDIA_REFERENCE.finditer(page.read_text(encoding="utf-8")):
             wanted.add(unquote(match["path"]))
 
+    # Only files the database knows can be published: an address typed in a
+    # text cannot send any other file of the media folder.
+    known_images = set()
+    for model, field in ((Person, "photo"), (Photo, "image"), (Recipe, "photo")):
+        known_images |= set(model.objects.exclude(**{field: ""}).values_list(field, flat=True))
+    known_clips = set(Clip.objects.values_list("file", flat=True))
+
     problems = []
     for path in sorted(wanted):
-        destination = media_dir / path
-        destination.parent.mkdir(parents=True, exist_ok=True)
+        relative = Path(path)
+        destination = (media_dir / relative).resolve()
+        if ".." in relative.parts or media_dir.resolve() not in destination.parents:
+            problems.append(_("Missing file: %(file)s") % {"file": path})
+            continue
         if path.startswith(f"{URL_PREFIX}/"):
             parsed = parse_variant_path(path[len(URL_PREFIX) + 1 :])
+            if parsed is None or parsed[1] not in known_images:
+                problems.append(_("Missing or unreadable photo: %(file)s") % {"file": path})
+                continue
             try:
-                if parsed is None:
-                    raise VariantError(path)
-                shutil.copyfile(make_variant(parsed[1], parsed[0]), destination)
+                source = make_variant(parsed[1], parsed[0])
             except VariantError:
                 problems.append(_("Missing or unreadable photo: %(file)s") % {"file": path})
+                continue
         else:
-            # Clips only, and only inside the clips folder: an address like
-            # "clips/../photos/x.png" must never send an original photo.
-            clips_root = media_root / "clips"
-            source = (media_root / path).resolve()
-            if ".." not in Path(path).parts and clips_root in source.parents and source.is_file():
-                shutil.copyfile(source, destination)
-            else:
+            source = (media_root / relative).resolve()
+            if path not in known_clips or media_root / "clips" not in source.parents or not source.is_file():
                 problems.append(_("Missing file: %(file)s") % {"file": path})
+                continue
+        # The folder is created only after the address was checked.
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
     if problems:
         raise ExportError(_("Some files used by the pages could not be written."), problems)
 

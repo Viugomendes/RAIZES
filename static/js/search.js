@@ -125,9 +125,11 @@
     var index = buildIndex(data);
     var kin = data.central ? new Kinship.FamilyGraph(data).walk(data.central) : null;
 
-    function options(select, list) {
+    // labelsAreHtml: the labels come from Raizes.format, already escaped.
+    function options(select, list, labelsAreHtml) {
       select.insertAdjacentHTML("beforeend", list.map(function (option) {
-        return '<option value="' + Raizes.escapeHtml(option[0]) + '">' + Raizes.escapeHtml(option[1]) + "</option>";
+        var label = labelsAreHtml ? option[1] : Raizes.escapeHtml(option[1]);
+        return '<option value="' + Raizes.escapeHtml(option[0]) + '">' + label + "</option>";
       }).join(""));
     }
 
@@ -154,10 +156,10 @@
       for (var d = 1; d <= maxDistance; d++) {
         steps.push([String(d), Raizes.format(Raizes.plural(strings.steps, d), { count: d })]);
       }
-      options(form.elements.distance, steps);
+      options(form.elements.distance, steps, true);
       options(form.elements.generation, Object.keys(generations).map(Number).sort(function (a, b) { return a - b; }).map(function (value) {
         return [String(value), Raizes.format(strings.generations[String(value)] || strings.generationOther, { name: centralName, number: value })];
-      }));
+      }), true);
     } else {
       ["distance", "generation"].forEach(function (name) {
         form.elements[name].closest("label").hidden = true;
@@ -199,7 +201,7 @@
         return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + picture +
           '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(person.name) + "</span>" +
           (person.years ? ' <span class="years">' + Raizes.escapeHtml(person.years) + "</span>" : "") +
-          (person.occupation ? '<span class="result-side">' + Raizes.escapeHtml(person.occupation) + "</span>" : "") + "</span></a></li>";
+          (person.occupation ? '<span class="result-detail">' + Raizes.escapeHtml(person.occupation) + "</span>" : "") + "</span></a></li>";
       }).join("") + "</ul>";
       if (recipes.length) {
         html += "<h2>" + Raizes.escapeHtml(strings.recipes) + '</h2><ul class="results">' + recipes.map(function (recipe) {
@@ -207,7 +209,7 @@
           return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/") + '">' +
             (recipe.thumb ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, recipe.thumb) + '" alt="" loading="lazy">' : '<span class="mini-avatar mini-initials" aria-hidden="true">🍲</span>') +
             '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(recipe.title) + "</span>" +
-            (author ? '<span class="result-side">' + author + "</span>" : "") + "</span></a></li>";
+            (author ? '<span class="result-detail">' + author + "</span>" : "") + "</span></a></li>";
         }).join("") + "</ul>";
       }
       doc.getElementById("search-results").innerHTML = html;

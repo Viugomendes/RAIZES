@@ -266,7 +266,9 @@
       var dot = node.querySelector("circle.dot");
       var cx = parseFloat(dot.getAttribute("cx"));
       var cy = parseFloat(dot.getAttribute("cy"));
-      var width = Math.max(whole.width / 4, 500);
+      // A quarter of the family, but never closer than the zoom buttons allow
+      // and never wider than the whole family.
+      var width = Math.min(whole.width, Math.max(whole.width / 4, whole.width / MAX_ZOOM, 500));
       var height = width * (whole.height / whole.width);
       view = { x: cx - width / 2, y: cy - height / 2, width: width, height: height };
       apply();

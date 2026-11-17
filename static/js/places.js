@@ -54,6 +54,8 @@
     // Phones and tablets; a laptop with a touch screen keeps mouse dragging.
     var touch = L.Browser.mobile;
     var full = false;
+    var wheelSum = 0;
+    var WHEEL_STEP = 100; // one click of a mouse wheel
 
     var hint = document.createElement("p");
     hint.className = "map-hint";
@@ -88,7 +90,15 @@
           return;
         }
         event.preventDefault();
-        var zoom = map.getZoom() + (event.deltaY < 0 ? 1 : -1);
+        // A touchpad pinch sends many small steps: they are added up, and the
+        // map moves one level for each full "click" of a mouse wheel.
+        // Some browsers count the wheel in lines instead of pixels.
+        wheelSum += event.deltaMode === 1 ? event.deltaY * 33 : event.deltaY;
+        if (Math.abs(wheelSum) < WHEEL_STEP) {
+          return;
+        }
+        var zoom = map.getZoom() + (wheelSum < 0 ? 1 : -1);
+        wheelSum = 0;
         map.setZoomAround(map.mouseEventToContainerPoint(event), zoom);
       },
       { passive: false }

@@ -58,6 +58,32 @@ class MediaPathTests(OutputFolderMixin, DemoFamilyTestCase):
         self.assertFalse((self.output / "media" / photo.image.name).exists())
 
 
+class MediaKnownToTheDatabaseTests(OutputFolderMixin, DemoFamilyTestCase):
+    def test_a_text_cannot_publish_an_image_the_site_does_not_use(self):
+        stray = Path(settings.MEDIA_ROOT) / "photos" / "not-in-the-database.png"
+        Image.new("RGB", (50, 50)).save(stray)
+        self.addCleanup(stray.unlink)
+        photo = Photo.objects.first()
+        photo.caption = "veja /media/v/1600/photos/not-in-the-database.png.jpg"
+        photo.save()
+
+        with self.assertRaises(ExportError):
+            export_site(self.output)
+
+        self.assertFalse(any(self.output.rglob("not-in-the-database*")))
+
+    def test_an_address_that_climbs_out_creates_no_folder_outside(self):
+        outside = self.output.parent / "escaped-folder"
+        photo = Photo.objects.first()
+        photo.caption = "/media/clips/../../../escaped-folder/x.wav"
+        photo.save()
+
+        with self.assertRaises(ExportError):
+            export_site(self.output)
+
+        self.assertFalse(outside.exists())
+
+
 class JpegCommentTests(VariantTestCase):
     def test_comment_hidden_in_a_jpeg_is_removed(self):
         path = self.media / "photos" / "commented.jpg"
@@ -138,7 +164,7 @@ class NewOnTheSiteHistoryTests(OutputFolderMixin, DemoFamilyTestCase):
 class TreeLinesTests(DemoFamilyTestCase):
     def test_child_lines_end_at_the_centre_of_the_circle(self):
         # The circles are drawn over the lines, so a line that ends at the
-        # centre still fits when "see from..." changes the size of a circle.
+        # centre always meets its circle, whatever its size.
         import re
 
         page = self.client.get("/pt-br/tree/").content.decode()

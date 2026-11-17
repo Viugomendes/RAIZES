@@ -421,11 +421,6 @@ a.timestamp::before {
   padding: 0 0.2rem;
 }
 
-.place-name,
-.recipe-name {
-  font-style: italic;
-}
-
 .video {
   position: relative;
   max-width: 42rem;
@@ -670,19 +665,7 @@ a.person {
   color: #fff;
 }
 
-/* ---------- Tree: see from, hints, full screen ---------- */
-
-.tree-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.6rem;
-}
-
-.tree-controls select {
-  max-width: 100%;
-}
+/* ---------- Tree: hints and full screen ---------- */
 
 .tree-hint {
   position: absolute;
@@ -806,8 +789,7 @@ button {
   margin: 0;
 }
 
-.form-actions button,
-.tree-controls select {
+.form-actions button {
   padding: 0.4rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -866,19 +848,12 @@ button {
   font-weight: 600;
 }
 
-.result-side {
+.result-detail {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   color: var(--ink-soft);
   font-size: 0.85rem;
-}
-
-.side-dot {
-  flex: none;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 50%;
 }
 
 .mini-avatar {

@@ -6,7 +6,16 @@ from django.test import SimpleTestCase, TestCase, override_settings
 
 from family.kinship import ADOPTIVE, BIOLOGICAL, FOSTER
 from family.models import ChildLink, Person, Union
-from family.tree_skin import RADII, SURFACE, child_line_class, node_style, union_line_class
+from family.tree_skin import (
+    FADES,
+    PERSON_COLOR,
+    RADII,
+    SURFACE,
+    _mix_with_white,
+    child_line_class,
+    node_style,
+    union_line_class,
+)
 
 from .test_demo import DemoFamilyTestCase
 from .test_models import make_person, make_union
@@ -161,10 +170,29 @@ class TreePageTests(DemoFamilyTestCase):
         self.assertIn('clip-path="url(#round)"', self.svg)
 
     def test_everybody_has_the_same_colour(self):
-        fills = set(re.findall(r'<circle class="dot"[^>]*fill="(#[0-9a-f]{6})"', self.svg)) - {SURFACE}
+        fills = set(re.findall(r'<circle class="dot"[^>]*fill="([^"]+)"', self.svg))
+        allowed = {_mix_with_white(PERSON_COLOR, fade) for fade in FADES} | {SURFACE}
 
-        self.assertTrue(all(fill.startswith("#") for fill in fills))
+        self.assertTrue(fills)
+        self.assertLessEqual(fills, allowed)
         self.assertNotIn("Lado de", self.html)
+
+    def test_deceased_person_with_a_photo_is_marked_for_the_grey_photo(self):
+        anselmo = re.search(r'<a class="([^"]*)" href="/pt-br/people/anselmo-figueira-1940/".*?</a>', self.svg, re.DOTALL)
+
+        self.assertIn("deceased", anselmo.group(1))
+        self.assertIn('<image class="photo"', anselmo.group(0))
+
+    def test_person_without_a_photo_has_only_the_circle(self):
+        davi = re.search(r'href="/pt-br/people/davi-amoreira-1995/".*?</a>', self.svg, re.DOTALL).group(0)
+
+        self.assertNotIn("<image", davi)
+        self.assertIn('<circle class="dot"', davi)
+
+    def test_tree_size_copy_of_a_photo_is_served(self):
+        response = self.client.get("/media/v/128/people/lia-carvalho-1996.png.jpg")
+
+        self.assertEqual(response.status_code, 200)
 
     def test_no_see_from_any_more(self):
         self.assertNotIn('id="tree-from"', self.html)
@@ -183,7 +211,6 @@ class TreePageTests(DemoFamilyTestCase):
             "Filho biológico",
             "Filho adotivo",
             "Filho de criação",
-
             "Mais longe",
         ):
             with self.subTest(text=text):

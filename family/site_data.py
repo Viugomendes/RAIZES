@@ -1,7 +1,6 @@
 """The family's data as the browser sees it (the file data/family.js).
 
-The search, the mural, the maps and the "see from..." of the tree run in
-the browser, without a server, so they read everything from this file. Only
+The search, the mural and the maps run in the browser, without a server, so they read everything from this file. Only
 what the pages already show goes into it: never notes for the owner, never
 the original photos.
 

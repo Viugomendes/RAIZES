@@ -144,6 +144,25 @@ test("a login that is not a form gets a clean answer", async () => {
   assert.equal(response.status, 400);
 });
 
+test("non-ASCII return addresses fall back to the start page", async () => {
+  const { response } = await call("/__login", { method: "POST", body: { password: PASSWORD, next: "/．/x" } });
+
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get("Location"), "/");
+});
+
+test("pages only run the site's own scripts and cannot be framed", async () => {
+  const session = sessionFrom((await login(PASSWORD)).response);
+  for (const { response } of [await call("/pt-br/"), await call("/pt-br/", { cookie: session })]) {
+    const policy = response.headers.get("Content-Security-Policy");
+    assert.match(policy, /script-src 'self'/);
+    assert.match(policy, /frame-ancestors 'none'/);
+    assert.match(policy, /frame-src https:\/\/www\.youtube-nocookie\.com/);
+    assert.ok(!policy.includes("unsafe-eval"));
+    assert.equal(response.headers.get("X-Frame-Options"), "DENY");
+  }
+});
+
 test("map images may learn the site address but never the page", async () => {
   const { response } = await call("/pt-br/");
 

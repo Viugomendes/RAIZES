@@ -54,6 +54,26 @@ class UnsafeContentTests(SimpleTestCase):
         self.assertEqual(len(result.problems), 1)
         self.assertIn("javascript:alert(1)", result.problems[0])
 
+    def test_disguised_javascript_links_are_refused(self):
+        for text in (
+            "[x](javascript&#58;alert(1))",
+            "[x](&#106;avascript:alert(1))",
+            "[x][1]\n\n[1]: javascript&#x3A;alert(1)",
+            "[x](\x01javascript:alert(1))",
+            "[x](JAVASCRIPT:alert(1))",
+            "[x](data:text/html,oi)",
+            "[x](vbscript:msgbox(1))",
+        ):
+            with self.subTest(text=text):
+                result = render(text)
+                self.assertNotIn("<a ", result.html)
+                self.assertEqual(len(result.problems), 1)
+
+    def test_relative_links_and_anchors_are_kept(self):
+        html = render("[a](/pt-br/tree/) [b](#topo) [c](../outra/)").html
+
+        self.assertEqual(html.count("<a "), 3)
+
     def test_safe_kinds_of_link_are_kept(self):
         html = render("[a](https://x.example/) [b](http://x.example/) [c](mailto:a@x.example)").html
 

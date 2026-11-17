@@ -594,7 +594,9 @@ class Clip(models.Model):
         ],
         help_text=_(
             "Audio (mp3, m4a, ogg, wav) or short video (mp4, webm), up to 25 MB. "
-            "Long interviews go on YouTube."
+            "Long interviews go on YouTube. The file goes to the site as it is: "
+            "phone videos may carry hidden data (GPS, phone model), so prefer "
+            "audio or a video already cleaned."
         ),
     )
     caption = models.CharField(_("caption"), max_length=300, blank=True)

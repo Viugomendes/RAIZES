@@ -168,6 +168,7 @@ class ExportedMediaTests(ExportTestCase):
                 self.assertIn(f"v/1600/{photo.image.name}.jpg", names)
                 self.assertNotIn(photo.image.name, names)
         self.assertIn("v/320/people/lia-carvalho-1996.png.jpg", names)
+        self.assertIn("v/128/people/lia-carvalho-1996.png.jpg", names)
         self.assertNotIn("people/lia-carvalho-1996.png", names)
         self.assertFalse(any("not-used-anywhere" in name or "scan.tiff" in name for name in names))
         self.assertTrue(all(name.startswith(("v/", "clips/")) for name in names))

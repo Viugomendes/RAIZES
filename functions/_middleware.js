@@ -22,6 +22,19 @@ const LOGOUT_PATH = "/__logout";
 const MAX_FAILURES = 10;
 const FAILURE_WINDOW = 15 * 60; // seconds
 const PUBLIC_PATHS = new Set(["/robots.txt"]);
+export const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https://tile.openstreetmap.org",
+  "media-src 'self'",
+  "frame-src https://www.youtube-nocookie.com",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
 
 const memoryFailures = new Map();
 
@@ -116,7 +129,8 @@ function language(request) {
 // Browsers ignore tabs and line breaks in addresses and read "\" as "/", so
 // "/\t/other-site" or "/\other-site" would leave the site: both are refused.
 function safeNext(value) {
-  return typeof value === "string" && /^\/(?![\/\\])[^\s\\\x00-\x1f\x7f]*$/.test(value) ? value : "/";
+  // Visible ASCII only (no spaces, no backslash): anything else is refused.
+  return typeof value === "string" && /^\/(?![\/\\])[\x21-\x5b\x5d-\x7e]*$/.test(value) ? value : "/";
 }
 
 function escapeHtml(text) {
@@ -130,6 +144,11 @@ function protectHeaders(headers) {
   // the page; OpenStreetMap asks for that much.
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set("X-Content-Type-Options", "nosniff");
+  // The browser may only run the site's own scripts, show its own pictures
+  // plus the map images, and play the YouTube interviews; the site cannot be
+  // shown inside another site.
+  headers.set("Content-Security-Policy", CONTENT_SECURITY_POLICY);
+  headers.set("X-Frame-Options", "DENY");
   return headers;
 }
 

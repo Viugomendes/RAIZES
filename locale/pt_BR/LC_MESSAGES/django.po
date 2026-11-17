@@ -494,8 +494,8 @@ msgstr "até %(year)s"
 msgid "The central person was not found:"
 msgstr "A pessoa central não foi encontrada:"
 
-msgid "No central person has been chosen, so the tree has no sides."
-msgstr "Nenhuma pessoa central foi escolhida, por isso a árvore não tem lados."
+msgid "No central person has been chosen, so everybody is drawn at the same size."
+msgstr "Nenhuma pessoa central foi escolhida, por isso todos aparecem do mesmo tamanho."
 
 msgid "Write the identifier of a person in RAIZES_CENTRAL_PERSON, in the .env file."
 msgstr "Escreva o identificador de uma pessoa em RAIZES_CENTRAL_PERSON, no arquivo .env."
@@ -836,8 +836,8 @@ msgstr "áudios e vídeos curtos"
 msgid "people in the recording"
 msgstr "pessoas na gravação"
 
-msgid "Audio (mp3, m4a, ogg, wav) or short video (mp4, webm), up to 25 MB. Long interviews go on YouTube."
-msgstr "Áudio (mp3, m4a, ogg, wav) ou vídeo curto (mp4, webm), até 25 MB. Entrevistas longas vão para o YouTube."
+msgid "Audio (mp3, m4a, ogg, wav) or short video (mp4, webm), up to 25 MB. Long interviews go on YouTube. The file goes to the site as it is: phone videos may carry hidden data (GPS, phone model), so prefer audio or a video already cleaned."
+msgstr "Áudio (mp3, m4a, ogg, wav) ou vídeo curto (mp4, webm), até 25 MB. Entrevistas longas vão para o YouTube. O arquivo vai para o site como está: vídeos de celular podem guardar dados escondidos (GPS, modelo do celular), então prefira áudio ou um vídeo já limpo."
 
 msgid "The file is too big for the site (maximum 25 MB). Long interviews go on YouTube as unlisted videos."
 msgstr "O arquivo é grande demais para o site (máximo 25 MB). Entrevistas longas vão para o YouTube como vídeos não listados."
