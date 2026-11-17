@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
-from django.core.cache import cache
+from django.core.cache import cache, caches
 from django.db import connection
 from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
@@ -19,6 +19,7 @@ from django.utils import timezone
 from access import ratelimit
 from access.middleware import SESSION_KEY
 from access.models import SiteSettings, ViewerDevice
+from access.tests import clear_caches
 from family.export import export_site
 from family.models import Clip
 from family.tests.base import DemoFamilyTestCase
@@ -41,8 +42,8 @@ def next_of(response) -> str:
 @override_settings(RAIZES_VIEW_GATE=True)
 class GateTests(TestCase):
     def setUp(self):
-        cache.clear()
-        self.addCleanup(cache.clear)
+        clear_caches()
+        self.addCleanup(clear_caches)
         self.site = SiteSettings.get()
         self.site.set_view_password(PASSWORD)
 
@@ -121,9 +122,9 @@ class GateTests(TestCase):
 
         # A right password while blocked is refused, counted, and does not reset the block.
         self.assertEqual(self.enter().status_code, 429)
-        self.assertEqual(cache.get(ratelimit._key("enter", "127.0.0.1")), 11)
+        self.assertEqual(caches["ratelimit"].get(ratelimit._key("enter", "127.0.0.1")), 11)
         self.assertEqual(self.enter().status_code, 429)
-        self.assertEqual(cache.get(ratelimit._key("enter", "127.0.0.1")), 12)
+        self.assertEqual(caches["ratelimit"].get(ratelimit._key("enter", "127.0.0.1")), 12)
         self.assertFalse(ViewerDevice.objects.exists())
 
     def test_ipv4_mapped_addresses_count_as_their_ipv4_address(self):
@@ -168,6 +169,35 @@ class GateTests(TestCase):
 
         self.assertTrue(ratelimit.attempt("test", "2001:db8:1:ffff::1"))
         self.assertFalse(ratelimit.attempt("test", "2001:db8:2::1"))
+
+    def test_a_blocked_48_prefix_creates_no_new_counters(self):
+        for number in range(101):
+            ratelimit.attempt("test", f"2001:db8:1:{number:x}::1")
+
+        self.assertTrue(ratelimit.attempt("test", "2001:db8:1:ffff::1"))
+        counters = caches["ratelimit"]
+        self.assertIsNone(counters.get(ratelimit._key("test", "2001:db8:1:ffff::1")))
+
+    def test_filling_the_default_cache_never_resets_a_counter(self):
+        for _attempt in range(10):
+            self.enter(password="errada", REMOTE_ADDR="10.0.0.1")
+
+        # LocMemCache keeps 300 entries by default and then forgets the oldest.
+        for number in range(400):
+            cache.set(f"filler-{number}", number)
+
+        self.assertEqual(self.enter(REMOTE_ADDR="10.0.0.1").status_code, 429)
+
+    def test_many_64_prefixes_never_reset_a_counter(self):
+        for _attempt in range(10):
+            self.enter(password="errada", REMOTE_ADDR="10.0.0.1")
+
+        # Two /48 networks, 200 /64 each: every new counter is a new cache entry.
+        for network in (1, 2):
+            for number in range(200):
+                ratelimit.attempt("enter", f"2001:db8:{network}:{number:x}::1")
+
+        self.assertEqual(self.enter(REMOTE_ADDR="10.0.0.1").status_code, 429)
 
     def test_viewer_session_lasts_a_year_but_a_staff_session_does_not(self):
         year = datetime.timedelta(days=364).total_seconds()

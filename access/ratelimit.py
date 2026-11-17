@@ -6,13 +6,14 @@ There is deliberately no limit across all addresses: anybody could then lock
 the whole family out of the shared password.
 
 The window is the timeout given to cache.add (counted from the first attempt).
-With LocMemCache the counter lives in each process: the supported setup is a
-single-process server (Task 6 documents it).
+The counters live in their own cache ("ratelimit" in config/settings.py), so
+nothing else can push them out. With LocMemCache they live in each process: the
+supported setup is a single-process server (Task 6 documents it).
 """
 import ipaddress
 
 from django.conf import settings
-from django.core.cache import cache
+from django.core.cache import caches
 
 LIMIT = 10
 NETWORK_LIMIT = 100  # per IPv6 /48
@@ -63,7 +64,12 @@ def _network_key(scope: str, ip: str) -> str | None:
     return f"raizes:attempts:{scope}:{ipaddress.ip_network(f'{address}/48', strict=False)}"
 
 
+def counters():
+    return caches["ratelimit"]
+
+
 def _count(key: str) -> int:
+    cache = counters()
     cache.add(key, 0, WINDOW)
     try:
         return cache.incr(key)
@@ -74,13 +80,19 @@ def _count(key: str) -> int:
 
 def attempt(scope: str, ip: str) -> bool:
     """Count one attempt, before checking anything. True when over a limit."""
-    blocked = _count(_key(scope, ip)) > LIMIT
     network = _network_key(scope, ip)
+    # A blocked /48 is refused before its /64 gets a counter: walking through
+    # new /64s must not fill the cache.
     if network is not None and _count(network) > NETWORK_LIMIT:
-        blocked = True
-    return blocked
+        return True
+    return _count(_key(scope, ip)) > LIMIT
+
+
+def first_time(key: str) -> bool:
+    """True once per window for this key (the reset e-mail of one address)."""
+    return counters().add(f"raizes:once:{key}", True, WINDOW)
 
 
 def clear(scope: str, ip: str) -> None:
     """Forget the wrong attempts of this address (the /48 count runs out on its own)."""
-    cache.delete(_key(scope, ip))
+    counters().delete(_key(scope, ip))

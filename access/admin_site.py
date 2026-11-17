@@ -19,7 +19,6 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.forms import AdminUserCreationForm, UserChangeForm
 from django.contrib.auth.models import Group, User
-from django.core.cache import cache
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.http import HttpResponseRedirect
 from django.utils.translation import gettext_lazy as _
@@ -77,10 +76,10 @@ class PasswordResetView(auth_views.PasswordResetView):
 
     def form_valid(self, form):
         email = form.cleaned_data["email"].strip().lower()
-        address_key = "raizes:reset-sent:" + hashlib.sha256(email.encode()).hexdigest()
-        if ratelimit.attempt(RESET_SCOPE, ratelimit.client_ip(self.request)) or not cache.add(
-            address_key, True, ratelimit.WINDOW
-        ):
+        address_key = "reset-sent:" + hashlib.sha256(email.encode()).hexdigest()
+        if ratelimit.attempt(
+            RESET_SCOPE, ratelimit.client_ip(self.request)
+        ) or not ratelimit.first_time(address_key):
             return HttpResponseRedirect(self.get_success_url())
         if not settings.RAIZES_PUBLIC_URL:
             return super().form_valid(form)

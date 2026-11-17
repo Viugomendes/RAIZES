@@ -6,13 +6,13 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
-from django.core.cache import cache
 from django.core.management.sql import emit_post_migrate_signal
 from django.test import TestCase, override_settings
 
 from access.models import SiteSettings
 from access.roles import ADMINISTRATORS, REVIEWERS
 from access.security import CONTENT_SECURITY_POLICY
+from access.tests import clear_caches
 
 EMAIL = "dona@example.com"
 PASSWORD = "uma-senha-comprida-42"
@@ -32,8 +32,8 @@ def make_staff(email=EMAIL, username="dona", group=None, superuser=False):
 
 class AdminLoginTests(TestCase):
     def setUp(self):
-        cache.clear()
-        self.addCleanup(cache.clear)
+        clear_caches()
+        self.addCleanup(clear_caches)
         self.owner = make_staff(superuser=True)
 
     def log_in(self, email=EMAIL, password=PASSWORD):
@@ -181,8 +181,8 @@ class SecurityHeadersTests(TestCase):
 
 class RoleTests(TestCase):
     def setUp(self):
-        cache.clear()
-        self.addCleanup(cache.clear)
+        clear_caches()
+        self.addCleanup(clear_caches)
 
     def test_roles_exist_after_migrate(self):
         ours = Permission.objects.filter(content_type__app_label__in=("family", "access"))

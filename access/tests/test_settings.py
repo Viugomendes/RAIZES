@@ -15,7 +15,6 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIHandler
 from django.core.management import call_command
 from django.test import RequestFactory, SimpleTestCase, TransactionTestCase, override_settings
@@ -23,6 +22,7 @@ from django.test import RequestFactory, SimpleTestCase, TransactionTestCase, ove
 from access.management.commands.servir import waitress_options
 from access.models import SiteSettings
 from access.ratelimit import client_ip
+from access.tests import clear_caches
 
 BASE_DIR = Path(settings.BASE_DIR)
 
@@ -252,8 +252,8 @@ class BehindAProxyTests(TransactionTestCase):
     """The real waitress, as `servir` starts it, receiving visits from a local proxy."""
 
     def setUp(self):
-        cache.clear()
-        self.addCleanup(cache.clear)
+        clear_caches()
+        self.addCleanup(clear_caches)
         SiteSettings.get().set_view_password("bolo-de-fuba")
 
     def start(self):

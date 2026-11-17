@@ -207,6 +207,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# The attempt limits (access/ratelimit.py) have a cache of their own: filling the
+# default one (300 entries) must never make Django forget a guesser's counter.
+CACHES = {
+    "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
+    "ratelimit": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "raizes-ratelimit",
+        "OPTIONS": {"MAX_ENTRIES": 100000},
+    },
+}
+
 # The panel (/painel/) is entered with e-mail and password, staff accounts only.
 AUTHENTICATION_BACKENDS = ["access.backends.EmailBackend"]
 LOGIN_URL = "admin:login"
