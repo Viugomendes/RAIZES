@@ -9,7 +9,11 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext as _
 
+from access.models import SiteSettings
 from family.demo import load_demo_family
+
+# The invented family opens locally behind the view password; it is public on purpose.
+DEMO_VIEW_PASSWORD = "demo-raizes"
 
 
 class Command(BaseCommand):
@@ -35,4 +39,9 @@ class Command(BaseCommand):
                 )
                 % counts
             )
+        )
+        SiteSettings.get().set_view_password(DEMO_VIEW_PASSWORD)
+        self.stdout.write(
+            _("Password to open the invented family: %(password)s")
+            % {"password": DEMO_VIEW_PASSWORD}
         )

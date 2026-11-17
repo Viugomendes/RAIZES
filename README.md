@@ -38,12 +38,25 @@ ative o ambiente virtual. É preciso fazer isso uma vez em cada terminal novo:
 
 | Para quê | Comando |
 |---|---|
-| Carregar a família inventada (apaga e recria o banco de demonstração) | `python manage.py load_demo` |
+| Carregar a família inventada (apaga e recria o banco de demonstração; mostra a senha de visualização dela, `demo-raizes`) | `python manage.py load_demo` |
+| Instalar pela primeira vez (idioma, nome da família, senha de visualização e o seu usuário) | `python manage.py instalar` |
+| Servir para os aparelhos da casa (mostra o endereço na rede) | `python manage.py servir` |
+| Guardar uma cópia de tudo em `backups/` | `python manage.py backup` |
+| Voltar uma cópia (`--force` para sobrescrever) | `python manage.py restaurar backups/arquivo.zip` |
 | Criar o seu usuário do painel (uma vez por banco) | `python manage.py createsuperuser` |
 | Abrir o painel e o site no seu computador | `python manage.py runserver` |
 | Rodar os testes | `python manage.py test` |
 | Exportar o site para `dist/` | `python manage.py export_site` |
 | Depois de editar um arquivo em `locale/` | `python manage.py compile_translations` |
+
+
+### E-mail
+
+O comando `instalar` envia a senha do painel por e-mail. Para isso, ponha no `.env`
+`RAIZES_EMAIL_HOST`, `RAIZES_EMAIL_PORT`, `RAIZES_EMAIL_USER`, `RAIZES_EMAIL_PASSWORD`,
+`RAIZES_EMAIL_TLS=true` e `RAIZES_EMAIL_FROM` (os dados do seu provedor de e-mail).
+Se o envio falhar, o comando mostra a senha uma única vez na tela: anote-a na hora.
+
 
 Com o `runserver` rodando:
 

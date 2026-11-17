@@ -1050,3 +1050,132 @@ msgstr "Sair"
 
 msgid "The password cannot be only spaces."
 msgstr "A senha não pode ser só espaços."
+
+msgid ".env already exists and is different. Use --force to overwrite it."
+msgstr ".env já existe e é diferente. Use --force para sobrescrevê-lo."
+
+msgid "Address to listen on (0.0.0.0 = the whole home network)."
+msgstr "Endereço em que escutar (0.0.0.0 = toda a rede da casa)."
+
+msgid "Backup restored."
+msgstr "Cópia de segurança restaurada."
+
+msgid "Backup saved: %(file)s"
+msgstr "Cópia de segurança salva: %(file)s"
+
+msgid "E-mail of the owner (it receives the password)."
+msgstr "E-mail da dona (ele recebe a senha)."
+
+msgid "Family name: "
+msgstr "Nome da família: "
+
+msgid "Family view password (8+ characters): "
+msgstr "Senha de visualização da família (8 ou mais caracteres): "
+
+msgid "File not found: %(file)s"
+msgstr "Arquivo não encontrado: %(file)s"
+
+msgid "Hello!\n\nThe panel is at /painel/ . Log in with this e-mail and this password:\n\n%(password)s\n\nKeep it safe."
+msgstr "Olá!\n\nO painel fica em /painel/ . Entre com este e-mail e esta senha:\n\n%(password)s\n\nGuarde-a bem."
+
+msgid "Installed. The site opens in the chosen language."
+msgstr "Instalado. O site abre no idioma escolhido."
+
+msgid "It holds private data and passwords: keep it in a safe place."
+msgstr "Ela contém dados privados e senhas: guarde-a em um lugar seguro."
+
+msgid "Language (pt-br or es): "
+msgstr "Idioma (pt-br ou es): "
+
+msgid "Language must be one of: %(options)s"
+msgstr "O idioma deve ser um destes: %(options)s"
+
+msgid "Language of the site: pt-br or es."
+msgstr "Idioma do site: pt-br ou es."
+
+msgid "Name of the family."
+msgstr "Nome da família."
+
+msgid "Never ask: every option is required."
+msgstr "Nunca perguntar: todas as opções são obrigatórias."
+
+msgid "Open on the home network: http://%(ip)s:%(port)d/"
+msgstr "Abra na rede da casa: http://%(ip)s:%(port)d/"
+
+msgid "Open on this computer: http://localhost:%(port)d/"
+msgstr "Abra neste computador: http://localhost:%(port)d/"
+
+msgid "Overwrite data that is already there."
+msgstr "Sobrescrever os dados que já existem."
+
+msgid "Password the family types to open the site (8+ characters)."
+msgstr "Senha que a família digita para abrir o site (8 ou mais caracteres)."
+
+msgid "Password to open the invented family: %(password)s"
+msgstr "Senha para abrir a família inventada: %(password)s"
+
+msgid "Port (default 8000)."
+msgstr "Porta (padrão 8000)."
+
+msgid "Press Ctrl+C to stop."
+msgstr "Aperte Ctrl+C para parar."
+
+msgid "Restores a backup made by the backup command."
+msgstr "Restaura uma cópia feita pelo comando backup."
+
+msgid "Saves the data folder and .env into backups/raizes-YYYY-MM-DD-HHMM.zip."
+msgstr "Salva a pasta de dados e o .env em backups/raizes-AAAA-MM-DD-HHMM.zip."
+
+msgid "Serves the site and the panel to the devices of the home network."
+msgstr "Serve o site e o painel aos aparelhos da rede da casa."
+
+msgid "Sets up Raízes: language, family name, view password and the owner's account."
+msgstr "Instala o Raízes: idioma, nome da família, senha de visualização e a conta da dona."
+
+msgid "The backup .zip file."
+msgstr "O arquivo .zip da cópia de segurança."
+
+msgid "The backup is empty."
+msgstr "A cópia de segurança está vazia."
+
+msgid "The data folder is not empty. Use --force to overwrite it."
+msgstr "A pasta de dados não está vazia. Use --force para sobrescrevê-la."
+
+msgid "The e-mail could not be sent (e-mail is not configured yet; see the README, section about e-mail). Write this panel password down now, it will not be shown again:"
+msgstr "Não foi possível enviar o e-mail (o e-mail ainda não está configurado; veja o README, seção sobre e-mail). Anote agora esta senha do painel, ela não será mostrada de novo:"
+
+msgid "The panel password was sent to %(email)s."
+msgstr "A senha do painel foi enviada para %(email)s."
+
+msgid "The two passwords are not the same."
+msgstr "As duas senhas não são iguais."
+
+msgid "The view password needs at least %(count)d characters."
+msgstr "A senha de visualização precisa de pelo menos %(count)d caracteres."
+
+msgid "There is already an account with this e-mail."
+msgstr "Já existe uma conta com este e-mail."
+
+msgid "This backup does not belong here (unexpected entry: %(name)s)."
+msgstr "Esta cópia não pertence a este lugar (item inesperado: %(name)s)."
+
+msgid "This is not a valid backup file."
+msgstr "Este não é um arquivo de cópia de segurança válido."
+
+msgid "Type a valid e-mail."
+msgstr "Digite um e-mail válido."
+
+msgid "Type it again: "
+msgstr "Digite de novo: "
+
+msgid "Unsafe path inside the backup: %(name)s"
+msgstr "Caminho inseguro dentro da cópia: %(name)s"
+
+msgid "With --no-input, give --family-name, --language, --email and --view-password."
+msgstr "Com --no-input, informe --family-name, --language, --email e --view-password."
+
+msgid "Your Raízes panel password"
+msgstr "A senha do seu painel do Raízes"
+
+msgid "Your e-mail (the panel login): "
+msgstr "Seu e-mail (o login do painel): "

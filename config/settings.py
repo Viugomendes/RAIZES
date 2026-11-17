@@ -181,3 +181,16 @@ MEDIA_ROOT = DATA_DIR / "media"
 RAIZES_CACHE_DIR = DATA_DIR / "cache"
 # When each person, photo and recipe was first exported ("new on the site").
 RAIZES_HISTORY_FILE = DATA_DIR / "export-history.json"
+# Where `python manage.py backup` writes its zip files (Git ignores it).
+RAIZES_BACKUP_DIR = BASE_DIR / "backups"
+
+# ---------------------------------------------------------------------------
+# E-mail (the password of the panel is sent by e-mail; see the README)
+# ---------------------------------------------------------------------------
+EMAIL_HOST = os.environ.get("RAIZES_EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("RAIZES_EMAIL_PORT", "25") or 25)
+EMAIL_HOST_USER = os.environ.get("RAIZES_EMAIL_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("RAIZES_EMAIL_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("RAIZES_EMAIL_TLS", "").lower() in ("1", "true", "yes")
+DEFAULT_FROM_EMAIL = os.environ.get("RAIZES_EMAIL_FROM", "") or EMAIL_HOST_USER or "raizes@localhost"
+EMAIL_TIMEOUT = 15

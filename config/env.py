@@ -72,3 +72,20 @@ def get_or_create_secret_key(path: Path, name: str = "RAIZES_SECRET_KEY") -> str
     path.write_text(f"{existing}{name}='{key}'\n", encoding="utf-8")
     os.environ[name] = key
     return key
+
+
+def set_env_values(path: Path, values: dict[str, str]) -> None:
+    """Write `NAME=value` lines into `.env`, replacing a name already there.
+
+    Every other line (comments, the secret key) is kept as it is.
+    """
+    lines = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
+    for name, value in values.items():
+        if "\n" in value or "\r" in value:
+            raise ValueError(f"{name} cannot have a line break.")
+        if value != value.strip() or "#" in value or value[:1] in "\"'":
+            quote = '"' if "'" in value else "'"
+            value = f"{quote}{value}{quote}"
+        lines = [existing for existing in lines if existing.partition("=")[0].strip() != name]
+        lines.append(f"{name}={value}")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")

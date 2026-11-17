@@ -3,6 +3,9 @@
 # ---------------------------------------------------------------
 /data/
 
+# Backups hold the private data and .env.
+/backups/
+
 # The exported site (it contains whatever data was exported).
 /dist/
 
