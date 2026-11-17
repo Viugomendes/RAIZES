@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
-from django.contrib.auth.forms import AdminUserCreationForm, UserChangeForm
+from django.contrib.auth.forms import AdminUserCreationForm, PasswordResetForm, UserChangeForm
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.http import HttpResponseRedirect
@@ -71,8 +71,17 @@ class RaizesAdminSite(admin.AdminSite):
 site = RaizesAdminSite(name="admin")
 
 
+class PanelPasswordResetForm(PasswordResetForm):
+    """Only panel accounts get the e-mail: another account cannot use the panel."""
+
+    def get_users(self, email):
+        return (user for user in super().get_users(email) if user.is_staff)
+
+
 class PasswordResetView(auth_views.PasswordResetView):
     """Django's reset; over a limit it shows the same "sent" page and sends nothing."""
+
+    form_class = PanelPasswordResetForm
 
     def form_valid(self, form):
         email = form.cleaned_data["email"].strip().lower()

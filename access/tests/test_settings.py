@@ -57,6 +57,7 @@ READ = (
     "SECURE_PROXY_SSL_HEADER",
     "RAIZES_PUBLIC_URL",
     "RAIZES_PROXY_HEADER",
+    "RAIZES_VIEW_GATE",
     "RAIZES_EMAIL_CONFIGURED",
     "EMAIL_BACKEND",
     "EMAIL_FILE_PATH",
@@ -151,6 +152,15 @@ class SettingsTests(SimpleTestCase):
         self.assertRefused(RAIZES_PUBLIC_URL="https://a.example", RAIZES_DEBUG="true")
         self.assertRefused(RAIZES_PROXY_HEADER="CF-Connecting-IP", RAIZES_DEBUG="true")
         self.assertFalse(self.build(RAIZES_PROXY_HEADER="CF-Connecting-IP")["DEBUG"])
+
+    def test_the_view_password_is_on_unless_switched_off_and_a_typo_is_refused(self):
+        self.assertIs(self.build()["RAIZES_VIEW_GATE"], True)
+        self.assertIs(self.build(RAIZES_VIEW_GATE="false")["RAIZES_VIEW_GATE"], False)
+
+        built, error = build_settings(RAIZES_VIEW_GATE="talvez")
+        self.assertIsNone(built)
+        self.assertIn("ImproperlyConfigured", error)
+        self.assertIn("RAIZES_VIEW_GATE must be true or false", error)
 
     def test_a_public_address_without_the_view_password_is_refused(self):
         self.assertRefused(RAIZES_PUBLIC_URL="https://a.example", RAIZES_VIEW_GATE="false")

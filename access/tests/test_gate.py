@@ -327,6 +327,24 @@ class GateTests(TestCase):
         self.assertEqual(self.client.get("/pt-br/").status_code, 200)
         self.assertFalse(ViewerDevice.objects.exists())
 
+    def test_a_logged_in_account_that_is_not_staff_still_needs_the_password(self):
+        user = get_user_model().objects.create_user("primo", password="x", is_staff=False)
+        self.client.force_login(user)
+
+        self.assertEqual(next_of(self.client.get("/pt-br/")), "/pt-br/")
+
+    def test_staff_sees_the_site_even_while_it_is_closed(self):
+        # The owner can look at the site before choosing the family password.
+        self.site.view_password_hash = ""
+        self.site.save()
+        user = get_user_model().objects.create_user("dona", password="x", is_staff=True)
+        self.client.force_login(user)
+
+        response = self.client.get("/pt-br/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Cache-Control"], "private, no-store")
+
     def test_without_a_view_password_the_site_is_closed(self):
         self.site.view_password_hash = ""
         self.site.save()

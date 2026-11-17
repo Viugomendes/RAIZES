@@ -103,6 +103,16 @@ class AdminLoginTests(TestCase):
 
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_password_reset_for_an_unknown_e_mail_looks_the_same_and_sends_nothing(self):
+        # Nobody can learn from the answer which e-mails have an account.
+        get_user_model().objects.create_user("primo", email="primo@example.com", password=PASSWORD)
+        for email in ("ninguem@example.com", "primo@example.com"):
+            with self.subTest(email=email):
+                response = self.client.post("/painel/senha/", {"email": email})
+                self.assertRedirects(response, "/painel/senha/enviado/")
+
+        self.assertEqual(mail.outbox, [])
+
     def test_password_reset_is_limited_per_ip(self):
         users = get_user_model().objects
         for number in range(12):
