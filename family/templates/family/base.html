@@ -43,6 +43,7 @@
     {% if can_leave %}
       <form class="leave-form" method="post" action="{% url 'access:leave' %}">
         {% csrf_token %}
+        <input type="hidden" name="lang" value="{{ LANGUAGE_CODE }}">
         <button type="submit" class="leave-button">{% translate "Leave" %}</button>
       </form>
     {% endif %}

@@ -220,7 +220,7 @@ class GateTests(TestCase):
         session[SESSION_KEY] = "not-a-uuid"
         session.save()
         response = self.client.post("/sair/")
-        self.assertRedirects(response, "/entrar/", fetch_redirect_response=False)
+        self.assertRedirects(response, "/entrar/?lang=pt-br", fetch_redirect_response=False)
 
     def test_attempts_are_counted_per_address(self):
         for _attempt in range(10):
@@ -363,10 +363,21 @@ class GateTests(TestCase):
 
         response = self.client.post("/sair/")
 
-        self.assertRedirects(response, "/entrar/", fetch_redirect_response=False)
+        self.assertRedirects(response, "/entrar/?lang=pt-br", fetch_redirect_response=False)
         self.assertTrue(ViewerDevice.objects.get().revoked)
         self.assertNotIn(SESSION_KEY, self.client.session)
         self.assertEqual(next_of(self.client.get("/pt-br/")), "/pt-br/")
+
+    def test_leave_keeps_the_language_of_the_page(self):
+        for posted, expected in (("es", "es"), ("pt-br", "pt-br"), ("xx", "es")):
+            with self.subTest(posted=posted):
+                self.enter()
+                response = self.client.post(
+                    "/sair/", {"lang": posted}, HTTP_ACCEPT_LANGUAGE="es"
+                )
+                self.assertRedirects(
+                    response, f"/entrar/?lang={expected}", fetch_redirect_response=False
+                )
 
     def test_leave_needs_a_post(self):
         self.enter()

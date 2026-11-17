@@ -162,6 +162,11 @@ class LeaveButtonTests(DemoFamilyTestCase):
         response = self.client.get("/pt-br/")
         self.assertContains(response, 'action="/sair/"')
         self.assertContains(response, "csrfmiddlewaretoken")
+        # After leaving, the password page opens in the language of this page.
+        self.assertContains(response, '<input type="hidden" name="lang" value="pt-br">')
+        self.assertContains(
+            self.client.get("/es/"), '<input type="hidden" name="lang" value="es">'
+        )
 
     def test_no_button_for_staff(self):
         device = make_device(SiteSettings.get())

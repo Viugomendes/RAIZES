@@ -108,7 +108,11 @@ def leave(request):
     device_id = request.session.pop(SESSION_KEY, None)
     if is_device_id(device_id):
         ViewerDevice.objects.filter(pk=device_id).update(revoked=True)
-    return redirect("access:enter")
+    # The password page opens in the language of the page the visitor left.
+    language = request.POST.get("lang")
+    if language not in dict(settings.LANGUAGES):
+        language = translation.get_language()
+    return redirect(f"{reverse('access:enter')}?{urlencode({'lang': language})}")
 
 
 def robots(request):
