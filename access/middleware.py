@@ -96,7 +96,7 @@ class ViewPasswordMiddleware:
             return self.get_response(request)
         user = request.user
         if user.is_active and user.is_staff:
-            return self.get_response(request)
+            return private(self.get_response(request))
         site = SiteSettings.get()
         if not site.has_view_password:
             return site_closed(request)
@@ -106,7 +106,16 @@ class ViewPasswordMiddleware:
         now = timezone.now()
         if now - device.last_seen > TOUCH_EVERY:
             ViewerDevice.objects.filter(pk=device.pk).update(last_seen=now)
-        return self.get_response(request)
+        return private(self.get_response(request))
+
+
+def private(response):
+    """What passed the gate: no cache on the way (tunnel, proxy) may keep a copy.
+
+    The same value as the Cloudflare function (functions/_middleware.js).
+    """
+    response.headers["Cache-Control"] = "private, no-store"
+    return response
 
 
 class LanguageCookieMiddleware:

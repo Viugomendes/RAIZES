@@ -347,7 +347,10 @@ class BackupTests(TempProject, TestCase):
             run("restaurar", str(archive))
 
 
-@override_settings(ALLOWED_HOSTS=["localhost"], CSRF_TRUSTED_ORIGINS=[], RAIZES_PROXY_HEADER="")
+@override_settings(
+    ALLOWED_HOSTS=["localhost"], CSRF_TRUSTED_ORIGINS=[], RAIZES_PROXY_HEADER="",
+    DEBUG=False, RAIZES_VIEW_GATE=True,
+)
 class ServeTests(SimpleTestCase):
     def serve(self, ip="192.168.0.7", **options):
         with mock.patch("waitress.serve") as serve, mock.patch(
@@ -399,12 +402,37 @@ class ServeTests(SimpleTestCase):
         self.assertNotIn("192.168.0.7", output)
 
     @override_settings(DEBUG=True)
-    def test_network_with_debug_on_refuses_to_start(self):
-        for options in ({"rede": True}, {"host": "0.0.0.0"}):
+    def test_debug_on_refuses_to_start_on_any_host(self):
+        # Even locally: a tunnel or a proxy may be publishing this computer.
+        for options in ({"rede": True}, {"host": "0.0.0.0"}, {}, {"host": "127.0.0.1"}):
             with self.subTest(options=options), mock.patch("waitress.serve") as serve:
-                with self.assertRaises(CommandError):
+                with self.assertRaisesMessage(CommandError, "RAIZES_DEBUG=false"):
                     run("servir", **options)
                 serve.assert_not_called()
+
+    @override_settings(RAIZES_VIEW_GATE=False)
+    def test_without_the_view_password_it_refuses_to_start(self):
+        for options in ({"rede": True}, {}):
+            with self.subTest(options=options), mock.patch("waitress.serve") as serve:
+                with self.assertRaisesMessage(CommandError, "RAIZES_VIEW_GATE"):
+                    run("servir", **options)
+                serve.assert_not_called()
+
+    def test_without_a_proxy_waitress_trusts_no_forwarded_header(self):
+        serve, _output = self.serve()
+
+        self.assertNotIn("trusted_proxy", serve.call_args.kwargs)
+
+    def test_behind_a_proxy_waitress_trusts_only_the_local_proxy(self):
+        for header, expected in (
+            ("CF-Connecting-IP", {"x-forwarded-proto"}),
+            ("X-Forwarded-For", {"x-forwarded-proto", "x-forwarded-for"}),
+        ):
+            with self.subTest(header=header), override_settings(RAIZES_PROXY_HEADER=header):
+                serve, _output = self.serve()
+                kwargs = serve.call_args.kwargs
+                self.assertEqual(kwargs["trusted_proxy"], "127.0.0.1")
+                self.assertEqual(set(kwargs["trusted_proxy_headers"]), expected)
 
     @override_settings(DEBUG=False)
     def test_network_flag_binds_everywhere_and_prints_both_addresses(self):
@@ -414,8 +442,7 @@ class ServeTests(SimpleTestCase):
         self.assertIn("http://localhost:8123/", output)
         self.assertIn("http://192.168.0.7:8123/", output)
 
-    @override_settings(DEBUG=True)
-    def test_local_host_is_allowed_with_debug_on(self):
+    def test_port_can_be_chosen(self):
         serve, _output = self.serve(port=8001)
 
         self.assertEqual(serve.call_args.kwargs["port"], 8001)

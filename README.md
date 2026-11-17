@@ -40,7 +40,7 @@ ative o ambiente virtual. É preciso fazer isso uma vez em cada terminal novo:
 |---|---|
 | Carregar a família inventada (apaga e recria o banco de demonstração; mostra a senha de visualização dela, `demo-raizes`) | `python manage.py load_demo` |
 | Instalar pela primeira vez (idioma, nome da família, senha de visualização e o seu usuário) | `python manage.py instalar` |
-| Servir neste computador (`servir --rede` abre para os aparelhos da casa e mostra o endereço; precisa de `RAIZES_DEBUG=false`, que o `instalar` já grava) | `python manage.py servir` |
+| Servir neste computador (`servir --rede` abre para os aparelhos da casa e mostra o endereço; precisa de `RAIZES_DEBUG=false`, que o `instalar` já grava, e da senha de visualização ligada) | `python manage.py servir` |
 | Guardar uma cópia de tudo em `backups/` | `python manage.py backup` |
 | Voltar uma cópia (`--force` para sobrescrever) | `python manage.py restaurar backups/arquivo.zip` |
 | Criar o seu usuário do painel (uma vez por banco) | `python manage.py createsuperuser` |
@@ -110,7 +110,10 @@ de um jeito e mudar depois (veja [Mudar de lugar](#mudar-de-lugar)).
 Antes de qualquer caminho, rode uma vez `python manage.py instalar`. Ele
 pergunta o nome da família, o idioma, o seu e-mail e a senha de visualização,
 e grava `RAIZES_DEBUG=false` no `.env` (o modo de depuração mostra pedaços do
-código quando algo dá errado: só serve para quem programa).
+código quando algo dá errado: só serve para quem programa, com o `runserver`).
+
+O `servir` não começa com `RAIZES_DEBUG=true` nem com `RAIZES_VIEW_GATE=false`:
+o site da família nunca fica aberto sem a senha, nem mostra o código.
 
 O `servir` usa um processo só (as tentativas de senha erradas são contadas na
 memória dele). Não rode dois `servir` para o mesmo site.
@@ -135,7 +138,6 @@ endereço no celular ou no computador de quem está no mesmo Wi-Fi. Na primeira
 vez o Windows pergunta se o Python pode usar a rede: marque **Redes privadas**
 e permita.
 
-- Só funciona com `RAIZES_DEBUG=false` no `.env` (o `instalar` já grava).
 - O endereço da casa pode mudar quando o roteador reinicia: o `servir --rede`
   mostra o novo a cada vez.
 - Na rede de casa o site abre com `http://` (sem o cadeado). Para abrir de
@@ -262,9 +264,12 @@ domínio apontando para ele. O Caddy cuida do `https://` sozinho.
    As cópias ficam em `backups/`. De vez em quando, baixe uma para o seu
    computador e apague as antigas.
 
-O `https://` liga sozinho os cookies só por HTTPS e o aviso ao navegador para
-usar sempre HTTPS (HSTS). Quem manda o `http://` para o `https://` é o Caddy
-ou o túnel, não o Django.
+Com `RAIZES_PUBLIC_URL=https://...` e `RAIZES_PROXY_HEADER` preenchido (os dois
+caminhos acima pedem os dois), o site liga sozinho os cookies só por HTTPS e o
+aviso ao navegador para usar sempre HTTPS (HSTS). Quem manda o `http://` para
+o `https://` é o Caddy ou a Cloudflare, não o Django. Na Cloudflare, ligue
+**SSL/TLS > Edge Certificates > Always Use HTTPS** no painel do seu domínio:
+assim ninguém digita a senha num `http://` sem cadeado.
 
 ### Por que não o GitHub Pages
 

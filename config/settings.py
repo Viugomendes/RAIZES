@@ -41,10 +41,6 @@ if RAIZES_PUBLIC_URL and (
     )
 RAIZES_PUBLIC_HTTPS = _public.scheme == "https"
 
-# Debug mode shows the code of errors: it is the default only without a public address.
-_debug = os.environ.get("RAIZES_DEBUG", "").strip()
-DEBUG = parse_bool(_debug, "RAIZES_DEBUG") if _debug else not RAIZES_PUBLIC_URL
-
 # The names this site answers to. Never "*": a request for another name is refused.
 RAIZES_EXTRA_HOSTS = parse_list(os.environ.get("RAIZES_EXTRA_HOSTS", ""))
 if "*" in RAIZES_EXTRA_HOSTS:
@@ -70,6 +66,17 @@ if _proxy and _proxy.lower() not in _proxy_headers:
     )
 RAIZES_PROXY_HEADER = _proxy_headers.get(_proxy.lower(), "")
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if RAIZES_PROXY_HEADER else None
+
+# Debug mode shows code, settings and folders when something goes wrong. It is
+# the default only on this computer, and refused when the site is published.
+_published = bool(RAIZES_PUBLIC_URL or RAIZES_PROXY_HEADER)
+_debug = os.environ.get("RAIZES_DEBUG", "").strip()
+DEBUG = parse_bool(_debug, "RAIZES_DEBUG") if _debug else not _published
+if DEBUG and _published:
+    raise ImproperlyConfigured(
+        "RAIZES_DEBUG cannot be true with RAIZES_PUBLIC_URL or RAIZES_PROXY_HEADER: "
+        "the debug pages would be open to the internet. Set RAIZES_DEBUG=false in .env."
+    )
 
 # With an https address the cookies only travel over https, and the browser is told
 # to always use https (HSTS, one year). The tunnel or the proxy sends http to https.
@@ -124,6 +131,11 @@ RAIZES_HIDDEN_SECTIONS = set(parse_list(os.environ.get("RAIZES_HIDDEN_SECTIONS",
 # The family pages, photos and data need the view password (set in the panel).
 # The tests switch it off (config/test_runner.py); only the tests of the gate turn it on.
 RAIZES_VIEW_GATE = parse_bool(os.environ.get("RAIZES_VIEW_GATE"), "RAIZES_VIEW_GATE")
+if not RAIZES_VIEW_GATE and RAIZES_PUBLIC_URL:
+    raise ImproperlyConfigured(
+        "RAIZES_VIEW_GATE cannot be false with RAIZES_PUBLIC_URL: the family site would "
+        "be open to anybody. Set RAIZES_VIEW_GATE=true in .env."
+    )
 
 
 # ---------------------------------------------------------------------------

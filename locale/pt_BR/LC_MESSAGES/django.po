@@ -1183,8 +1183,11 @@ msgstr "Já existe uma cópia com este nome. Espere um segundo e tente de novo."
 msgid "Address to listen on (default 127.0.0.1: this computer only)."
 msgstr "Endereço em que escutar (padrão 127.0.0.1: só este computador)."
 
-msgid "Debug mode is on (RAIZES_DEBUG), so the site cannot be opened to the network. Set RAIZES_DEBUG=false in .env and try again."
-msgstr "O modo de depuração está ligado (RAIZES_DEBUG); por isso o site não pode ser aberto para a rede. Ponha RAIZES_DEBUG=false no .env e tente de novo."
+msgid "Debug mode is on (RAIZES_DEBUG) and it shows pieces of the code, so servir does not start. Set RAIZES_DEBUG=false in .env and try again. To work on the code, use python manage.py runserver."
+msgstr "O modo de depuração está ligado (RAIZES_DEBUG) e ele mostra pedaços do código; por isso o servir não começa. Ponha RAIZES_DEBUG=false no .env e tente de novo. Para mexer no código, use python manage.py runserver."
+
+msgid "The view password is off (RAIZES_VIEW_GATE=false), so servir does not start: the family site would be open to anybody. Set RAIZES_VIEW_GATE=true in .env and try again."
+msgstr "A senha de visualização está desligada (RAIZES_VIEW_GATE=false); por isso o servir não começa: o site da família ficaria aberto para qualquer pessoa. Ponha RAIZES_VIEW_GATE=true no .env e tente de novo."
 
 msgid "RAIZES_PROXY_HEADER is set, so the site only listens on this computer (the tunnel or the proxy brings the visits). Remove --rede or --host."
 msgstr "RAIZES_PROXY_HEADER está preenchido; por isso o site só escuta neste computador (o túnel ou o proxy traz as visitas). Tire o --rede ou o --host."

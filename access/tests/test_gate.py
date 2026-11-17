@@ -20,7 +20,9 @@ from access import ratelimit
 from access.middleware import SESSION_KEY
 from access.models import SiteSettings, ViewerDevice
 from family.export import export_site
+from family.models import Clip
 from family.tests.base import DemoFamilyTestCase
+from family.tests.test_images import save_image
 
 PASSWORD = "bolo-de-fuba"
 ANDROID_CHROME = (
@@ -203,6 +205,37 @@ class GateTests(TestCase):
             with self.subTest(next_url=next_url):
                 response = self.enter(next_url=next_url)
                 self.assertRedirects(response, "/", fetch_redirect_response=False)
+
+    def test_what_passed_the_gate_is_never_kept_by_a_cache(self):
+        # A tunnel or proxy cache must never hand the family's data to a stranger.
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        media = Path(folder.name) / "media"
+        override = override_settings(MEDIA_ROOT=media, RAIZES_CACHE_DIR=Path(folder.name) / "cache")
+        override.enable()
+        self.addCleanup(override.disable)
+        save_image(media / "photos" / "avo.jpg")
+        clip = media / "clips" / "conversa.mp3"
+        clip.parent.mkdir(parents=True)
+        clip.write_bytes(b"ID3 not really a song")
+        Clip.objects.create(file="clips/conversa.mp3")
+        self.enter()
+
+        for path in ("/pt-br/", "/data/family.js", "/media/v/480/photos/avo.jpg.jpg", "/media/clips/conversa.mp3"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                response.close()  # files are streamed: let Windows delete the folder
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.get("Cache-Control"), "private, no-store")
+
+        staff = get_user_model().objects.create_user("dona", password="x", is_staff=True)
+        self.client.force_login(staff)
+        self.assertEqual(self.client.get("/data/family.js")["Cache-Control"], "private, no-store")
+
+    def test_public_answers_are_not_marked_private(self):
+        for path in ("/entrar/", "/robots.txt"):
+            with self.subTest(path=path):
+                self.assertNotIn("Cache-Control", self.client.get(path))
 
     def test_next_is_kept_in_the_form(self):
         response = self.client.get("/entrar/?next=/pt-br/tree/")

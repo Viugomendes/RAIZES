@@ -23,6 +23,21 @@ def network_ip():
         return None
 
 
+def waitress_options():
+    """Behind a tunnel or a proxy, waitress keeps its forwarded headers.
+
+    By default waitress deletes them. Only the proxy on this computer is trusted,
+    and only for the headers it sets: the scheme (https) and, with Caddy, the
+    visitor's address (waitress keeps only the last X-Forwarded-For entry).
+    """
+    if not settings.RAIZES_PROXY_HEADER:
+        return {}
+    headers = {"x-forwarded-proto"}
+    if settings.RAIZES_PROXY_HEADER == "X-Forwarded-For":
+        headers.add("x-forwarded-for")
+    return {"trusted_proxy": "127.0.0.1", "trusted_proxy_headers": headers}
+
+
 class Command(BaseCommand):
     help = _("Serves the site and the panel to the devices of the home network.")
 
@@ -46,11 +61,21 @@ class Command(BaseCommand):
         if options["rede"]:
             host = "0.0.0.0"
         local_only = host in ("127.0.0.1", "localhost", "::1")
-        if not local_only and settings.DEBUG:
+        # Even on this computer only: a tunnel or a proxy may be publishing it.
+        if settings.DEBUG:
             raise CommandError(
                 _(
-                    "Debug mode is on (RAIZES_DEBUG), so the site cannot be opened to the "
-                    "network. Set RAIZES_DEBUG=false in .env and try again."
+                    "Debug mode is on (RAIZES_DEBUG) and it shows pieces of the code, so "
+                    "servir does not start. Set RAIZES_DEBUG=false in .env and try again. "
+                    "To work on the code, use python manage.py runserver."
+                )
+            )
+        if not settings.RAIZES_VIEW_GATE:
+            raise CommandError(
+                _(
+                    "The view password is off (RAIZES_VIEW_GATE=false), so servir does not "
+                    "start: the family site would be open to anybody. Set "
+                    "RAIZES_VIEW_GATE=true in .env and try again."
                 )
             )
         if not local_only and settings.RAIZES_PROXY_HEADER:
@@ -77,7 +102,7 @@ class Command(BaseCommand):
                     % {"ip": ip, "port": port}
                 )
         self.stdout.write(_("Press Ctrl+C to stop."))
-        waitress.serve(application, host=host, port=port, threads=8)
+        waitress.serve(application, host=host, port=port, threads=8, **waitress_options())
 
     def allow(self, ip, port):
         """Let this run answer at the network address (settings are already loaded)."""

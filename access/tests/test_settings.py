@@ -3,18 +3,25 @@
 The settings are built in a separate Python process with the given environment,
 so nothing changes in the settings of the running tests.
 """
+import http.client
 import json
 import os
 import re
 import subprocess
 import sys
 import tempfile
+import threading
 from pathlib import Path
+from urllib.parse import urlencode
 
 from django.conf import settings
+from django.core.cache import cache
+from django.core.handlers.wsgi import WSGIHandler
 from django.core.management import call_command
-from django.test import RequestFactory, SimpleTestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TransactionTestCase, override_settings
 
+from access.management.commands.servir import waitress_options
+from access.models import SiteSettings
 from access.ratelimit import client_ip
 
 BASE_DIR = Path(settings.BASE_DIR)
@@ -134,10 +141,20 @@ class SettingsTests(SimpleTestCase):
         self.assertEqual(built["SECURE_HSTS_SECONDS"], 0)
         self.assertIsNone(built["SECURE_PROXY_SSL_HEADER"])
 
-    def test_an_explicit_debug_value_always_wins_and_a_typo_is_refused(self):
-        self.assertTrue(self.build(RAIZES_PUBLIC_URL="https://a.example", RAIZES_DEBUG="true")["DEBUG"])
+    def test_an_explicit_debug_value_wins_and_a_typo_is_refused(self):
         self.assertFalse(self.build(RAIZES_DEBUG="false")["DEBUG"])
+        self.assertTrue(self.build(RAIZES_DEBUG="true")["DEBUG"])
         self.assertRefused(RAIZES_DEBUG="talvez")
+
+    def test_debug_is_refused_on_a_public_address_or_behind_a_proxy(self):
+        # The debug pages show code, settings and folders: never to the internet.
+        self.assertRefused(RAIZES_PUBLIC_URL="https://a.example", RAIZES_DEBUG="true")
+        self.assertRefused(RAIZES_PROXY_HEADER="CF-Connecting-IP", RAIZES_DEBUG="true")
+        self.assertFalse(self.build(RAIZES_PROXY_HEADER="CF-Connecting-IP")["DEBUG"])
+
+    def test_a_public_address_without_the_view_password_is_refused(self):
+        self.assertRefused(RAIZES_PUBLIC_URL="https://a.example", RAIZES_VIEW_GATE="false")
+        self.assertIsNotNone(build_settings(RAIZES_VIEW_GATE="false")[0])
 
     def test_extra_hosts_are_added_and_never_everything(self):
         built = self.build(RAIZES_EXTRA_HOSTS="raizes.local, 192.168.0.7")
@@ -224,6 +241,88 @@ class StaticFilesTests(SimpleTestCase):
             )
             self.assertIn("Content-Security-Policy", response.headers)
             self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
+
+
+@override_settings(
+    RAIZES_VIEW_GATE=True,
+    SECURE_HSTS_SECONDS=31536000,
+    SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https"),
+)
+class BehindAProxyTests(TransactionTestCase):
+    """The real waitress, as `servir` starts it, receiving visits from a local proxy."""
+
+    def setUp(self):
+        cache.clear()
+        self.addCleanup(cache.clear)
+        SiteSettings.get().set_view_password("bolo-de-fuba")
+
+    def start(self):
+        import waitress
+
+        server = waitress.create_server(
+            WSGIHandler(), host="127.0.0.1", port=0, threads=2, **waitress_options()
+        )
+        thread = threading.Thread(target=server.run, daemon=True)
+        thread.start()
+        self.addCleanup(thread.join, 5)
+        self.addCleanup(server.close)
+        return server.effective_port
+
+    def request(self, port, method, path, headers, body=None):
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+        try:
+            connection.request(method, path, body=body, headers=headers)
+            response = connection.getresponse()
+            return response.status, response.msg, response.read().decode()
+        finally:
+            connection.close()
+
+    def wrong_password(self, port, forwarded):
+        """One wrong attempt at /entrar/, with the CSRF cookie and token of a real browser."""
+        status, headers, html = self.request(port, "GET", "/entrar/", forwarded)
+        self.assertEqual(status, 200, html[:300])
+        cookie = re.search(r"csrftoken=([^;]+)", " ".join(headers.get_all("Set-Cookie")))[1]
+        token = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', html)[1]
+        body = urlencode({"csrfmiddlewaretoken": token, "password": "errada", "next": "/"})
+        status, _headers, _html = self.request(
+            port, "POST", "/entrar/", {
+                **forwarded,
+                "Cookie": f"csrftoken={cookie}",
+                "Content-Type": "application/x-www-form-urlencoded",
+            }, body,
+        )
+        return status
+
+    @override_settings(RAIZES_PROXY_HEADER="X-Forwarded-For")
+    def test_each_forwarded_visitor_has_its_own_attempt_count(self):
+        port = self.start()
+        first = {"X-Forwarded-For": "6.6.6.6, 203.0.113.1"}
+        for _attempt in range(10):
+            self.assertEqual(self.wrong_password(port, first), 200)
+
+        self.assertEqual(self.wrong_password(port, first), 429)
+        # Another visitor (and a different spoofed first entry) is not locked out.
+        self.assertEqual(self.wrong_password(port, {"X-Forwarded-For": "6.6.6.6, 203.0.113.2"}), 200)
+
+    @override_settings(RAIZES_PROXY_HEADER="CF-Connecting-IP")
+    def test_cloudflare_visitors_have_their_own_attempt_count(self):
+        port = self.start()
+        for _attempt in range(11):
+            last = self.wrong_password(port, {"CF-Connecting-IP": "203.0.113.1"})
+
+        self.assertEqual(last, 429)
+        self.assertEqual(self.wrong_password(port, {"CF-Connecting-IP": "203.0.113.2"}), 200)
+
+    def test_https_from_the_proxy_turns_on_hsts(self):
+        for header in ("X-Forwarded-For", "CF-Connecting-IP"):
+            with self.subTest(header=header), override_settings(RAIZES_PROXY_HEADER=header):
+                port = self.start()
+                _status, headers, _html = self.request(
+                    port, "GET", "/robots.txt", {"X-Forwarded-Proto": "https"}
+                )
+                self.assertEqual(headers.get("Strict-Transport-Security"), "max-age=31536000")
+                _status, headers, _html = self.request(port, "GET", "/robots.txt", {})
+                self.assertNotIn("Strict-Transport-Security", headers)
 
 
 class ClientIpTests(SimpleTestCase):
