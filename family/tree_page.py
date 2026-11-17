@@ -1,8 +1,9 @@
 """Gathers everything the tree page shows: the drawing and its legend."""
 from dataclasses import dataclass
 
-from django.conf import settings
 from django.urls import reverse
+
+from access.config import central_person_identifier
 
 from .graph import load_family_graph
 from .images import TREE, variant_url
@@ -55,7 +56,7 @@ def build_tree_page() -> dict:
         return {"tree": None}
 
     graph = load_family_graph()
-    wanted_central = settings.RAIZES_CENTRAL_PERSON
+    wanted_central = central_person_identifier()
     central = people.get(wanted_central)
     # Without a central person everybody is drawn at the same size.
     distances = graph.distances(central.identifier) if central else {i: 1 for i in people}

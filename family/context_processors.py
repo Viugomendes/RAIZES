@@ -3,6 +3,8 @@ from django.conf import settings
 from django.urls import translate_url
 from django.utils.translation import get_language
 
+from access.config import family_name
+
 
 def site(request):
     """Family name, demo flag and the links of the language selector."""
@@ -17,7 +19,7 @@ def site(request):
         for code, name in settings.LANGUAGES
     ]
     return {
-        "family_name": settings.RAIZES_FAMILY_NAME,
+        "family_name": family_name(),
         "is_demo": settings.RAIZES_DATASET == "demo",
         "site_languages": languages,
     }

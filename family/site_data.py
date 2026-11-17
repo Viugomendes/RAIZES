@@ -14,6 +14,8 @@ from pathlib import Path
 
 from django.conf import settings
 
+from access.config import central_person_identifier
+
 from .dates import PartialDate
 from .graph import load_family_graph
 from .images import AVATAR, LARGE, THUMB, variant_url
@@ -102,7 +104,8 @@ def build_site_data(today: datetime.date | None = None) -> dict:
     today = today or datetime.date.today()
     graph = load_family_graph()
     people = {person.identifier: person for person in Person.objects.prefetch_related("lived_in")}
-    central = settings.RAIZES_CENTRAL_PERSON if settings.RAIZES_CENTRAL_PERSON in people else None
+    wanted_central = central_person_identifier()
+    central = wanted_central if wanted_central in people else None
 
     photo_counts: dict[str, int] = {}
     photos = []

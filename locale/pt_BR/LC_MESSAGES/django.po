@@ -916,3 +916,29 @@ msgstr "Mais longe da pessoa central: menor"
 
 msgid "See in the tree"
 msgstr "Ver na árvore"
+
+# --- Acceso (2026-11-17) ---
+
+msgid "Access"
+msgstr "Acesso"
+
+msgid "family name"
+msgstr "nome da família"
+
+msgid "central person"
+msgstr "pessoa central"
+
+msgid "site settings"
+msgstr "configurações do site"
+
+msgid "browser"
+msgstr "navegador"
+
+msgid "revoked"
+msgstr "revogado"
+
+msgid "viewer device"
+msgstr "aparelho de visualização"
+
+msgid "viewer devices"
+msgstr "aparelhos de visualização"

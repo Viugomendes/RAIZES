@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_distill",
     "family",
+    "access",
 ]
 
 MIDDLEWARE = [

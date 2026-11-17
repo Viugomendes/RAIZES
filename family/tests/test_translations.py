@@ -54,7 +54,7 @@ def po_path(locale: str) -> Path:
 def texts_in_python_files() -> set[str]:
     """Every text passed to a translation function in the project's code."""
     found = set()
-    for folder in ("family", "config"):
+    for folder in ("family", "config", "access"):
         for path in (PROJECT_DIR / folder).rglob("*.py"):
             if "tests" in path.parts or "migrations" in path.parts:
                 continue
@@ -77,7 +77,8 @@ def texts_in_python_files() -> set[str]:
 def texts_in_templates() -> set[str]:
     """Every text inside a {% translate %} or {% blocktranslate %} tag."""
     found = set()
-    for path in (PROJECT_DIR / "family" / "templates").rglob("*.html"):
+    folders = [PROJECT_DIR / app / "templates" for app in ("family", "access")]
+    for path in (p for folder in folders for p in folder.rglob("*.html")):
         source = path.read_text(encoding="utf-8")
         for match in TEMPLATE_TAG.finditer(source):
             found.add(match[1] if match[1] is not None else match[2])
