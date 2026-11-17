@@ -1,4 +1,4 @@
-{% load i18n %}<nav class="view-tabs" aria-label="{% translate 'View' %}">
+{% load i18n %}<nav class="view-tabs" aria-label="{% translate 'Tree view' %}">
   <a href="{% url 'family:tree' %}"{% if mode == "tree" %} aria-current="page"{% endif %}>{% translate "Tree" %}</a>
   <a href="{% url 'family:map' %}"{% if mode == "map" %} aria-current="page"{% endif %}>{% translate "Map" %}</a>
 </nav>

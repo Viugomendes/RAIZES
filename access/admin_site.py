@@ -22,8 +22,12 @@ from django.contrib.auth.models import Group, User
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.http import HttpResponseRedirect
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_noop
 
 from . import ratelimit
+
+# Django's own texts that its pt-br and es catalogs do not translate yet (locale/ does).
+DJANGO_TEXTS = (gettext_noop("- Select an option -"),)
 
 SCOPE = "admin-login"
 RESET_SCOPE = "password-reset"
@@ -82,6 +86,9 @@ class PasswordResetView(auth_views.PasswordResetView):
     """Django's reset; over a limit it shows the same "sent" page and sends nothing."""
 
     form_class = PanelPasswordResetForm
+    # Our own e-mail: no "your username" line (the account logs in by e-mail).
+    email_template_name = "access/password_reset_email.html"
+    subject_template_name = "access/password_reset_subject.txt"
 
     def form_valid(self, form):
         email = form.cleaned_data["email"].strip().lower()

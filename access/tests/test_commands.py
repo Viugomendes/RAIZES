@@ -91,6 +91,9 @@ class InstallTests(TempProject, TestCase):
         self.assertEqual(user.username, EMAIL)
         password = password_in(message.body, user)
         self.assertTrue(password)
+        # In the chosen language (es), speaking to the reader as "tú".
+        self.assertEqual(message.subject, "La contraseña de tu panel de Raízes")
+        self.assertIn("El panel está en /painel/. Entra con este correo", message.body)
         self.assertTrue(self.client.login(username=EMAIL, password=password))
         self.assertEqual(self.client.get("/painel/").status_code, 200)
 

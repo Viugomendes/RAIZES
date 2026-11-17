@@ -636,9 +636,6 @@ msgstr "Búsqueda"
 msgid "Map"
 msgstr "Mapa"
 
-msgid "View"
-msgstr "Vista"
-
 msgid "Family map"
 msgstr "Mapa de la familia"
 
@@ -939,10 +936,10 @@ msgid "revoked"
 msgstr "revocado"
 
 msgid "viewer device"
-msgstr "dispositivo de visualización"
+msgstr "Dispositivo conectado"
 
 msgid "viewer devices"
-msgstr "Conectados"
+msgstr "Dispositivos conectados"
 
 msgid "The family site is closed until a view password is set in the panel."
 msgstr "El sitio de la familia está cerrado hasta que se defina una contraseña de visualización en el panel."
@@ -990,7 +987,7 @@ msgid "Forgot the password"
 msgstr "Olvidé la contraseña"
 
 msgid "Log in"
-msgstr "Entrar"
+msgstr "Iniciar sesión"
 
 msgid "Another account already uses this e-mail."
 msgstr "Otra cuenta ya usa este correo electrónico."
@@ -1053,7 +1050,7 @@ msgid "The password cannot be only spaces."
 msgstr "La contraseña no puede ser solo espacios."
 
 msgid ".env already exists and is different. Use --force to overwrite it."
-msgstr ".env ya existe y es diferente. Use --force para sobrescribirlo."
+msgstr ".env ya existe y es diferente. Usa --force para sobrescribirlo."
 
 msgid "Backup restored."
 msgstr "Copia de seguridad restaurada."
@@ -1062,7 +1059,7 @@ msgid "Backup saved: %(file)s"
 msgstr "Copia de seguridad guardada: %(file)s"
 
 msgid "E-mail of the owner (it receives the password)."
-msgstr "Correo electrónico de la dueña (recibe la contraseña)."
+msgstr "Correo electrónico de quien administra el sitio (recibe la contraseña)."
 
 msgid "Family name: "
 msgstr "Nombre de la familia: "
@@ -1073,14 +1070,14 @@ msgstr "Contraseña de visualización de la familia (8 o más caracteres): "
 msgid "File not found: %(file)s"
 msgstr "Archivo no encontrado: %(file)s"
 
-msgid "Hello!\n\nThe panel is at /painel/ . Log in with this e-mail and this password:\n\n%(password)s\n\nKeep it safe."
-msgstr "¡Hola!\n\nEl panel está en /painel/ . Entre con este correo y esta contraseña:\n\n%(password)s\n\nGuárdela bien."
+msgid "Hello!\n\nThe panel is at /painel/. Log in with this e-mail and this password:\n\n%(password)s\n\nKeep it safe."
+msgstr "¡Hola!\n\nEl panel está en /painel/. Entra con este correo y esta contraseña:\n\n%(password)s\n\nGuárdala bien."
 
 msgid "Installed. The site opens in the chosen language."
 msgstr "Instalado. El sitio se abre en el idioma elegido."
 
 msgid "It holds private data and passwords: keep it in a safe place."
-msgstr "Contiene datos privados y contraseñas: guárdela en un lugar seguro."
+msgstr "Contiene datos privados y contraseñas: guárdala en un lugar seguro."
 
 msgid "Language (pt-br or es): "
 msgstr "Idioma (pt-br o es): "
@@ -1098,10 +1095,10 @@ msgid "Never ask: every option is required."
 msgstr "No preguntar nunca: todas las opciones son obligatorias."
 
 msgid "Open on the home network: http://%(ip)s:%(port)d/"
-msgstr "Abra en la red de la casa: http://%(ip)s:%(port)d/"
+msgstr "Abre en la red de la casa: http://%(ip)s:%(port)d/"
 
 msgid "Open on this computer: http://localhost:%(port)d/"
-msgstr "Abra en este computador: http://localhost:%(port)d/"
+msgstr "Abre en este computador: http://localhost:%(port)d/"
 
 msgid "Overwrite data that is already there."
 msgstr "Sobrescribir los datos que ya existen."
@@ -1116,7 +1113,7 @@ msgid "Port (default 8000)."
 msgstr "Puerto (por defecto 8000)."
 
 msgid "Press Ctrl+C to stop."
-msgstr "Presione Ctrl+C para detener."
+msgstr "Pulsa Ctrl+C para detener."
 
 msgid "Restores a backup made by the backup command."
 msgstr "Restaura una copia hecha por el comando backup."
@@ -1125,7 +1122,7 @@ msgid "Serves the site and the panel to the devices of the home network."
 msgstr "Sirve el sitio y el panel a los dispositivos de la red de la casa."
 
 msgid "Sets up Raízes: language, family name, view password and the owner's account."
-msgstr "Instala Raízes: idioma, nombre de la familia, contraseña de visualización y la cuenta de la dueña."
+msgstr "Instala Raízes: idioma, nombre de la familia, contraseña de visualización y la cuenta de quien administra el sitio."
 
 msgid "The backup .zip file."
 msgstr "El archivo .zip de la copia de seguridad."
@@ -1134,10 +1131,10 @@ msgid "The backup is empty."
 msgstr "La copia de seguridad está vacía."
 
 msgid "The data folder is not empty. Use --force to overwrite it."
-msgstr "La carpeta de datos no está vacía. Use --force para sobrescribirla."
+msgstr "La carpeta de datos no está vacía. Usa --force para sobrescribirla."
 
 msgid "The e-mail could not be sent (e-mail is not configured yet; see the README, section about e-mail). Write this panel password down now, it will not be shown again:"
-msgstr "No se pudo enviar el correo (el correo aún no está configurado; vea el README, sección sobre correo). Anote ahora esta contraseña del panel, no se mostrará de nuevo:"
+msgstr "No se pudo enviar el correo (el correo aún no está configurado; ve el README, sección sobre correo). Anota ahora esta contraseña del panel, no se mostrará de nuevo:"
 
 msgid "The panel password was sent to %(email)s."
 msgstr "La contraseña del panel fue enviada a %(email)s."
@@ -1152,46 +1149,46 @@ msgid "There is already an account with this e-mail."
 msgstr "Ya existe una cuenta con este correo."
 
 msgid "This backup does not belong here (unexpected entry: %(name)s)."
-msgstr "Esta copia no pertenece a este lugar (elemento inesperado: %(name)s)."
+msgstr "Esta copia no es de este sistema (elemento inesperado: %(name)s)."
 
 msgid "This is not a valid backup file."
 msgstr "Este no es un archivo de copia de seguridad válido."
 
 msgid "Type a valid e-mail."
-msgstr "Escriba un correo electrónico válido."
+msgstr "Escribe un correo electrónico válido."
 
 msgid "Type it again: "
-msgstr "Escríbala de nuevo: "
+msgstr "Escríbela de nuevo: "
 
 msgid "Unsafe path inside the backup: %(name)s"
 msgstr "Ruta insegura dentro de la copia: %(name)s"
 
 msgid "With --no-input, give --family-name, --language, --email and --view-password."
-msgstr "Con --no-input, indique --family-name, --language, --email y --view-password."
+msgstr "Con --no-input, indica --family-name, --language, --email y --view-password."
 
 msgid "Your Raízes panel password"
-msgstr "La contraseña de su panel de Raízes"
+msgstr "La contraseña de tu panel de Raízes"
 
 msgid "Your e-mail (the panel login): "
-msgstr "Su correo electrónico (el acceso al panel): "
+msgstr "Tu correo electrónico (el acceso al panel): "
 
 msgid ".env could not be written (%(error)s). Nothing was installed."
 msgstr "No se pudo escribir el .env (%(error)s). No se instaló nada."
 
 msgid "A backup with this name already exists. Wait a second and try again."
-msgstr "Ya existe una copia con este nombre. Espere un segundo e inténtelo de nuevo."
+msgstr "Ya existe una copia con este nombre. Espera un segundo e inténtalo de nuevo."
 
 msgid "Address to listen on (default 127.0.0.1: this computer only)."
 msgstr "Dirección en la que escuchar (por defecto 127.0.0.1: solo este computador)."
 
 msgid "Debug mode is on (RAIZES_DEBUG) and it shows pieces of the code, so servir does not start. Set RAIZES_DEBUG=false in .env and try again. To work on the code, use python manage.py runserver."
-msgstr "El modo de depuración está activado (RAIZES_DEBUG) y muestra partes del código; por eso servir no arranca. Ponga RAIZES_DEBUG=false en el .env e inténtelo de nuevo. Para trabajar en el código, use python manage.py runserver."
+msgstr "El modo de depuración está activado (RAIZES_DEBUG) y muestra partes del código; por eso servir no arranca. Pon RAIZES_DEBUG=false en el .env e inténtalo de nuevo. Para trabajar en el código, usa python manage.py runserver."
 
 msgid "The view password is off (RAIZES_VIEW_GATE=false), so servir does not start: the family site would be open to anybody. Set RAIZES_VIEW_GATE=true in .env and try again."
-msgstr "La contraseña de visualización está desactivada (RAIZES_VIEW_GATE=false); por eso servir no arranca: el sitio de la familia quedaría abierto a cualquiera. Ponga RAIZES_VIEW_GATE=true en el .env e inténtelo de nuevo."
+msgstr "La contraseña de visualización está desactivada (RAIZES_VIEW_GATE=false); por eso servir no arranca: el sitio de la familia quedaría abierto a cualquiera. Pon RAIZES_VIEW_GATE=true en el .env e inténtalo de nuevo."
 
 msgid "RAIZES_PROXY_HEADER is set, so the site only listens on this computer (the tunnel or the proxy brings the visits). Remove --rede or --host."
-msgstr "RAIZES_PROXY_HEADER está definido; por eso el sitio solo escucha en este computador (el túnel o el proxy trae las visitas). Quite el --rede o el --host."
+msgstr "RAIZES_PROXY_HEADER está definido; por eso el sitio solo escucha en este computador (el túnel o el proxy trae las visitas). Quita el --rede o el --host."
 
 msgid "Open the site to the devices of the home network (listens on 0.0.0.0)."
 msgstr "Abre el sitio a los dispositivos de la red de la casa (escucha en 0.0.0.0)."
@@ -1206,3 +1203,24 @@ msgstr "La copia falló (%(error)s). No se guardó nada."
 
 msgid "The site published on Cloudflare Pages has its own password: changing it here only affects the site served by this program. To change that one, run npx wrangler pages secret put SITE_PASSWORD (its devices are not listed here)."
 msgstr "El sitio publicado en Cloudflare Pages tiene su propia contraseña: cambiarla aquí solo vale para el sitio servido por este programa. Para cambiar esa, ejecuta npx wrangler pages secret put SITE_PASSWORD (sus dispositivos no aparecen aquí)."
+
+msgid "Tree view"
+msgstr "Vista"
+
+msgid "Network (start of the IP)"
+msgstr "Red (inicio de la IP)"
+
+msgid "- Select an option -"
+msgstr "- Elige una opción -"
+
+msgid "Hello!"
+msgstr "¡Hola!"
+
+msgid "Somebody asked for a new password for the Raízes panel with this e-mail. To choose a new password, open this address:"
+msgstr "Alguien pidió una nueva contraseña para el panel de Raízes con este correo. Para elegir una nueva contraseña, abre esta dirección:"
+
+msgid "If you did not ask for it, ignore this e-mail: the password stays the same."
+msgstr "Si no lo pediste, ignora este correo: la contraseña sigue siendo la misma."
+
+msgid "Raízes panel: new password"
+msgstr "Panel de Raízes: nueva contraseña"

@@ -113,7 +113,7 @@ class Command(BaseCommand):
                     str(_("Your Raízes panel password")),
                     str(
                         _(
-                            "Hello!\n\nThe panel is at /painel/ . Log in with this e-mail and "
+                            "Hello!\n\nThe panel is at /painel/. Log in with this e-mail and "
                             "this password:\n\n%(password)s\n\nKeep it safe."
                         )
                     )

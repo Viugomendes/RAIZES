@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
-from django.utils.text import format_lazy
+from django.utils.text import capfirst, format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from .admin_site import site
@@ -80,7 +80,7 @@ class OnlineFilter(admin.SimpleListFilter):
 
 @admin.register(ViewerDevice, site=site)
 class ViewerDeviceAdmin(admin.ModelAdmin):
-    list_display = ("status", "name", "browser", "ip_prefix", "entered", "last_visit")
+    list_display = ("status", "name", "browser", "network", "entered", "last_visit")
     list_display_links = ("name",)
     list_filter = (OnlineFilter,)
     actions = ["disconnect"]
@@ -94,6 +94,11 @@ class ViewerDeviceAdmin(admin.ModelAdmin):
         # The current password number comes in the same query, not one per row.
         current = SiteSettings.objects.filter(pk=1).values("password_version")[:1]
         return super().get_queryset(request).annotate(current_version=Subquery(current))
+
+    def changelist_view(self, request, extra_context=None):
+        # Not Django's "Select ... to view": the page is the list of devices.
+        title = capfirst(ViewerDevice._meta.verbose_name_plural)
+        return super().changelist_view(request, {"title": title, **(extra_context or {})})
 
     def has_add_permission(self, request):
         return False
@@ -114,6 +119,10 @@ class ViewerDeviceAdmin(admin.ModelAdmin):
         if obj.is_online:
             return format_html('<span class="raizes-status raizes-on">{}</span>', _("Online"))
         return format_html('<span class="raizes-status">{}</span>', _("Offline"))
+
+    @admin.display(description=_("Network (start of the IP)"), ordering="ip_prefix")
+    def network(self, obj):
+        return obj.ip_prefix
 
     @admin.display(description=_("Entered"), ordering="created_at")
     def entered(self, obj):

@@ -112,6 +112,31 @@ class ConnectedPageTests(TestCase):
         self.assertTrue(ViewerDevice.objects.get(pk=device.pk).revoked)
         self.assertEqual(response.status_code, 200)
 
+    def test_connected_page_speaks_the_family_language(self):
+        make_device(self.site)
+        for language, texts in (
+            ("pt-br", ("Aparelhos conectados", "Rede (início do IP)", "- Escolha uma opção -")),
+            ("es", ("Dispositivos conectados", "Red (inicio de la IP)", "- Elige una opción -")),
+        ):
+            with self.subTest(language=language):
+                response = self.client.get(self.url, HTTP_ACCEPT_LANGUAGE=language)
+                for text in texts:
+                    self.assertContains(response, text)
+                self.assertContains(response, f"<h1>{texts[0]}</h1>", html=True)
+                self.assertNotContains(response, "Select an option")
+                self.assertNotContains(response, "Ip prefix")
+                # Not Django's "Select ... to view" title.
+                self.assertNotContains(response, "para visualizar")
+                self.assertNotContains(response, "para ver")
+
+    def test_panel_home_has_plain_link_names(self):
+        response = self.client.get(reverse("admin:index"), HTTP_ACCEPT_LANGUAGE="pt-br")
+
+        self.assertContains(response, "Aparelhos conectados")
+        # Django's own word for a page that can only be looked at.
+        self.assertContains(response, "Visualizar")
+        self.assertNotContains(response, "Visualização")
+
     def test_connected_page_refreshes_itself(self):
         self.assertContains(self.client.get(self.url), '<meta http-equiv="refresh" content="30">')
         other = reverse("admin:access_sitesettings_change", args=[1])

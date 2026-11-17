@@ -635,9 +635,6 @@ msgstr "Busca"
 msgid "Map"
 msgstr "Mapa"
 
-msgid "View"
-msgstr "Visualização"
-
 msgid "Family map"
 msgstr "Mapa da família"
 
@@ -938,10 +935,10 @@ msgid "revoked"
 msgstr "revogado"
 
 msgid "viewer device"
-msgstr "aparelho de visualização"
+msgstr "Aparelho conectado"
 
 msgid "viewer devices"
-msgstr "Conectados"
+msgstr "Aparelhos conectados"
 
 msgid "The family site is closed until a view password is set in the panel."
 msgstr "O site da família está fechado até que uma senha de visualização seja definida no painel."
@@ -1061,7 +1058,7 @@ msgid "Backup saved: %(file)s"
 msgstr "Cópia de segurança salva: %(file)s"
 
 msgid "E-mail of the owner (it receives the password)."
-msgstr "E-mail da dona (ele recebe a senha)."
+msgstr "E-mail de quem administra o site (recebe a senha)."
 
 msgid "Family name: "
 msgstr "Nome da família: "
@@ -1072,8 +1069,8 @@ msgstr "Senha de visualização da família (8 ou mais caracteres): "
 msgid "File not found: %(file)s"
 msgstr "Arquivo não encontrado: %(file)s"
 
-msgid "Hello!\n\nThe panel is at /painel/ . Log in with this e-mail and this password:\n\n%(password)s\n\nKeep it safe."
-msgstr "Olá!\n\nO painel fica em /painel/ . Entre com este e-mail e esta senha:\n\n%(password)s\n\nGuarde-a bem."
+msgid "Hello!\n\nThe panel is at /painel/. Log in with this e-mail and this password:\n\n%(password)s\n\nKeep it safe."
+msgstr "Olá!\n\nO painel fica em /painel/. Entre com este e-mail e esta senha:\n\n%(password)s\n\nGuarde-a bem."
 
 msgid "Installed. The site opens in the chosen language."
 msgstr "Instalado. O site abre no idioma escolhido."
@@ -1124,7 +1121,7 @@ msgid "Serves the site and the panel to the devices of the home network."
 msgstr "Serve o site e o painel aos aparelhos da rede da casa."
 
 msgid "Sets up Raízes: language, family name, view password and the owner's account."
-msgstr "Instala o Raízes: idioma, nome da família, senha de visualização e a conta da dona."
+msgstr "Instala o Raízes: idioma, nome da família, senha de visualização e a conta de quem administra o site."
 
 msgid "The backup .zip file."
 msgstr "O arquivo .zip da cópia de segurança."
@@ -1151,7 +1148,7 @@ msgid "There is already an account with this e-mail."
 msgstr "Já existe uma conta com este e-mail."
 
 msgid "This backup does not belong here (unexpected entry: %(name)s)."
-msgstr "Esta cópia não pertence a este lugar (item inesperado: %(name)s)."
+msgstr "Esta cópia não é deste sistema (item inesperado: %(name)s)."
 
 msgid "This is not a valid backup file."
 msgstr "Este não é um arquivo de cópia de segurança válido."
@@ -1205,3 +1202,24 @@ msgstr "A cópia falhou (%(error)s). Nada foi salvo."
 
 msgid "The site published on Cloudflare Pages has its own password: changing it here only affects the site served by this program. To change that one, run npx wrangler pages secret put SITE_PASSWORD (its devices are not listed here)."
 msgstr "O site publicado na Cloudflare Pages tem a sua própria senha: trocar aqui só vale para o site servido por este programa. Para trocar aquela, rode npx wrangler pages secret put SITE_PASSWORD (os aparelhos de lá não aparecem aqui)."
+
+msgid "Tree view"
+msgstr "Visualização"
+
+msgid "Network (start of the IP)"
+msgstr "Rede (início do IP)"
+
+msgid "- Select an option -"
+msgstr "- Escolha uma opção -"
+
+msgid "Hello!"
+msgstr "Olá!"
+
+msgid "Somebody asked for a new password for the Raízes panel with this e-mail. To choose a new password, open this address:"
+msgstr "Alguém pediu uma nova senha para o painel do Raízes com este e-mail. Para escolher uma nova senha, abra este endereço:"
+
+msgid "If you did not ask for it, ignore this e-mail: the password stays the same."
+msgstr "Se não foi você que pediu, ignore este e-mail: a senha continua a mesma."
+
+msgid "Raízes panel: new password"
+msgstr "Painel do Raízes: nova senha"

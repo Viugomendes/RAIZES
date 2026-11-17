@@ -144,6 +144,31 @@ class AdminLoginTests(TestCase):
         self.assertRedirects(done, "/painel/senha/pronto/")
         self.assertRedirects(self.log_in(password="outra-senha-comprida-7"), "/painel/")
 
+    def test_password_reset_e_mail_speaks_the_page_language_and_shows_no_username(self):
+        # The account logs in with its e-mail: a username line would only confuse.
+        for language, subject, words in (
+            ("pt-br", "Painel do Raízes: nova senha", "Para escolher uma nova senha"),
+            ("es", "Panel de Raízes: nueva contraseña", "Para elegir una nueva contraseña"),
+        ):
+            with self.subTest(language=language):
+                clear_caches()
+                mail.outbox = []
+                self.client.post(
+                    "/painel/senha/", {"email": EMAIL}, HTTP_ACCEPT_LANGUAGE=language
+                )
+                (message,) = mail.outbox
+                self.assertEqual(message.subject, subject)
+                self.assertIn(words, message.body)
+                self.assertRegex(message.body, r"http://testserver/painel/senha/\S+/\S+/")
+                self.assertNotIn("dona", message.body)
+                self.assertNotIn("esquecido", message.body)
+
+    def test_login_button_speaks_the_page_language(self):
+        for language, button in (("pt-br", "Entrar"), ("es", "Iniciar sesión")):
+            with self.subTest(language=language):
+                response = self.client.get("/painel/login/", HTTP_ACCEPT_LANGUAGE=language)
+                self.assertContains(response, f'value="{button}"')
+
     @override_settings(RAIZES_PUBLIC_URL="https://familia.example.org")
     def test_password_reset_link_points_at_the_public_address(self):
         # The request may arrive through a tunnel as plain http to localhost.

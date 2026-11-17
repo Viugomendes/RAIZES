@@ -78,7 +78,8 @@ def texts_in_templates() -> set[str]:
     """Every text inside a {% translate %} or {% blocktranslate %} tag."""
     found = set()
     folders = [PROJECT_DIR / app / "templates" for app in ("family", "access")]
-    for path in (p for folder in folders for p in folder.rglob("*.html")):
+    paths = (p for folder in folders for pattern in ("*.html", "*.txt") for p in folder.rglob(pattern))
+    for path in paths:
         source = path.read_text(encoding="utf-8")
         for match in TEMPLATE_TAG.finditer(source):
             found.add(match[1] if match[1] is not None else match[2])
