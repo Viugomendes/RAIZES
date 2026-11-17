@@ -4,6 +4,7 @@ from django.urls import translate_url
 from django.utils.translation import get_language
 
 from access.config import family_name
+from access.middleware import SESSION_KEY
 
 
 def site(request):
@@ -20,6 +21,12 @@ def site(request):
     ]
     return {
         "family_name": family_name(),
+        # A viewer's own device (never staff, never the static export): can leave.
+        "can_leave": bool(
+            hasattr(request, "session")
+            and request.session.get(SESSION_KEY)
+            and not request.user.is_staff
+        ),
         "is_demo": settings.RAIZES_DATASET == "demo",
         "site_languages": languages,
     }

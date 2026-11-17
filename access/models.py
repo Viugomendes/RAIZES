@@ -4,6 +4,7 @@ import uuid
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -31,6 +32,9 @@ class SiteSettings(models.Model):
         verbose_name = _("site settings")
         verbose_name_plural = _("site settings")
 
+    def __str__(self) -> str:
+        return str(self.family_name or self._meta.verbose_name)
+
     @classmethod
     def get(cls) -> "SiteSettings":
         # Read on every request (view password, header): one query with the person.
@@ -38,9 +42,15 @@ class SiteSettings(models.Model):
         return settings_row
 
     def set_view_password(self, raw: str) -> None:
-        self.view_password_hash = make_password(raw)
-        self.password_version += 1
-        self.save()
+        if not raw or not raw.strip():
+            raise ValueError("The view password cannot be empty.")
+        if self.pk is None:
+            self.save()
+        # In the database, so a stale instance loses no bump and overwrites no other field.
+        type(self).objects.filter(pk=self.pk).update(
+            view_password_hash=make_password(raw), password_version=F("password_version") + 1
+        )
+        self.refresh_from_db(fields=["view_password_hash", "password_version"])
 
     def check_view_password(self, raw: str) -> bool:
         return bool(self.view_password_hash) and check_password(raw, self.view_password_hash)

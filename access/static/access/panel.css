@@ -1,0 +1,20 @@
+/* Connected devices: big, readable status with a dot (the word is always there). */
+.raizes-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--body-quiet-color, #666);
+}
+.raizes-status::before {
+  content: "";
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: #9a9a9a;
+}
+.raizes-on { color: var(--body-fg, #222); }
+.raizes-on::before { background: #1f9d55; box-shadow: 0 0 0 3px rgba(31, 157, 85, 0.25); }
+.raizes-off::before { background: transparent; border: 2px solid #b3261e; box-sizing: border-box; }
+#result_list td, #result_list th { font-size: 1rem; padding-top: 0.7rem; padding-bottom: 0.7rem; }

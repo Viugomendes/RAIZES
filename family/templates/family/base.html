@@ -40,6 +40,12 @@
   </main>
   <footer class="site-footer">
     <p>Raízes{% if family_name %} · {{ family_name }}{% endif %}</p>
+    {% if can_leave %}
+      <form class="leave-form" method="post" action="{% url 'access:leave' %}">
+        {% csrf_token %}
+        <button type="submit" class="leave-button">{% translate "Leave" %}</button>
+      </form>
+    {% endif %}
   </footer>
   {% block scripts %}{% endblock %}
 </body>

@@ -941,7 +941,7 @@ msgid "viewer device"
 msgstr "aparelho de visualização"
 
 msgid "viewer devices"
-msgstr "aparelhos de visualização"
+msgstr "Conectados"
 
 msgid "The family site is closed until a view password is set in the panel."
 msgstr "O site da família está fechado até que uma senha de visualização seja definida no painel."
@@ -993,3 +993,57 @@ msgstr "Entrar"
 
 msgid "Another account already uses this e-mail."
 msgstr "Outra conta já usa este e-mail."
+
+msgid "New family password"
+msgstr "Nova senha da família"
+
+msgid "Leave empty to keep the current password. Minimum 8 characters."
+msgstr "Deixe em branco para manter a senha atual. Mínimo de 8 caracteres."
+
+msgid "Repeat the new password"
+msgstr "Repita a nova senha"
+
+msgid "The two passwords are different."
+msgstr "As duas senhas são diferentes."
+
+msgid "The password needs at least 8 characters."
+msgstr "A senha precisa de pelo menos 8 caracteres."
+
+msgid "Saving a new password disconnects every device. The site language is chosen in the installer (the .env file) and is not changed here."
+msgstr "Salvar uma nova senha desconecta todos os aparelhos. O idioma do site é escolhido no instalador (o arquivo .env) e não muda aqui."
+
+msgid "The new password was saved. All devices were disconnected."
+msgstr "A nova senha foi salva. Todos os aparelhos foram desconectados."
+
+msgid "online now"
+msgstr "online agora"
+
+msgid "Online now"
+msgstr "Online agora"
+
+msgid "Status"
+msgstr "Situação"
+
+msgid "Disconnected"
+msgstr "Desconectado"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "Offline"
+msgstr "Offline"
+
+msgid "Entered"
+msgstr "Entrou em"
+
+msgid "Last visit"
+msgstr "Última visita"
+
+msgid "Disconnect the selected devices"
+msgstr "Desconectar os aparelhos selecionados"
+
+msgid "Devices disconnected: %(count)d."
+msgstr "Aparelhos desconectados: %(count)d."
+
+msgid "Leave"
+msgstr "Sair"

@@ -205,6 +205,26 @@ h3 {
   margin: 0;
 }
 
+.leave-form {
+  margin: 0.6rem 0 0;
+}
+
+.leave-button {
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  cursor: pointer;
+}
+
+.leave-button:hover,
+.leave-button:focus-visible {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+
 .notice {
   padding: 0.8rem 1rem;
   border-radius: var(--radius);
