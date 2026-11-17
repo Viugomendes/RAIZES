@@ -206,18 +206,47 @@ class RoleTests(TestCase):
         self.assertEqual(self.client.get("/painel/auth/user/").status_code, 200)
         self.assertEqual(self.client.get("/painel/auth/group/").status_code, 200)
 
-    def test_roles_get_back_a_missing_permission_after_migrate(self):
-        administrators = Group.objects.get(name=ADMINISTRATORS)
-        reviewers = Group.objects.get(name=REVIEWERS)
-        add_person = Permission.objects.get(codename="add_person")
-        view_person = Permission.objects.get(codename="view_person")
-        administrators.permissions.remove(add_person)
-        reviewers.permissions.remove(view_person)
-
+    def migrate_again(self):
         emit_post_migrate_signal(verbosity=0, interactive=False, db="default")
 
-        self.assertIn(add_person, administrators.permissions.all())
-        self.assertIn(view_person, reviewers.permissions.all())
+    def test_a_permission_removed_on_purpose_stays_removed_after_migrate(self):
+        administrators = Group.objects.get(name=ADMINISTRATORS)
+        change_person = Permission.objects.get(codename="change_person")
+        administrators.permissions.remove(change_person)
+
+        self.migrate_again()
+
+        self.assertNotIn(change_person, administrators.permissions.all())
+        self.assertTrue(administrators.permissions.filter(codename="add_person").exists())
+
+    def test_a_model_new_to_a_role_gets_its_permissions_after_migrate(self):
+        # A model added in a later version looks like this: the role has none
+        # of its permissions. (Accepted edge: a role whose owner removed every
+        # permission of one model gets them back too.)
+        administrators = Group.objects.get(name=ADMINISTRATORS)
+        reviewers = Group.objects.get(name=REVIEWERS)
+        recipe = Permission.objects.filter(content_type__model="recipe")
+        administrators.permissions.remove(*recipe)
+        reviewers.permissions.remove(*recipe)
+
+        self.migrate_again()
+
+        self.assertQuerySetEqual(
+            administrators.permissions.filter(content_type__model="recipe"), recipe, ordered=False
+        )
+        self.assertQuerySetEqual(
+            reviewers.permissions.filter(content_type__model="recipe"),
+            recipe.filter(codename__startswith="view_"),
+            ordered=False,
+        )
+
+    def test_a_deleted_role_is_not_created_again_after_migrate(self):
+        Group.objects.filter(name=REVIEWERS).delete()
+
+        self.migrate_again()
+
+        self.assertFalse(Group.objects.filter(name=REVIEWERS).exists())
+        self.assertTrue(Group.objects.filter(name=ADMINISTRATORS).exists())
 
 
 class UserAdminTests(TestCase):

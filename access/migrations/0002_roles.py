@@ -10,9 +10,15 @@ def add_roles(apps, schema_editor):
     for label in APPS:
         app_config = apps.get_app_config(label)
         app_config.models_module = True
-        create_permissions(app_config, apps=apps, verbosity=0)
+        create_permissions(
+            app_config, apps=apps, verbosity=0, using=schema_editor.connection.alias
+        )
         app_config.models_module = None
-    create_roles(apps.get_model("auth", "Group"), apps.get_model("auth", "Permission"))
+    create_roles(
+        apps.get_model("auth", "Group"),
+        apps.get_model("auth", "Permission"),
+        using=schema_editor.connection.alias,
+    )
 
 
 class Migration(migrations.Migration):
