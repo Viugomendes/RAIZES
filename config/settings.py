@@ -133,8 +133,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# A device that typed the view password stays in for a year.
-SESSION_COOKIE_AGE = 365 * 24 * 60 * 60
+# Sessions keep Django's default life (2 weeks). A device that typed the view
+# password is given a year in access/views.py.
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 

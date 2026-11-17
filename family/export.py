@@ -147,6 +147,7 @@ def _render_pages(output_dir: Path) -> int:
     written: set[Path] = set()
     try:
         # The pages are asked from Django itself: the view password does not apply.
+        # The flag is thread-local, so rendering must stay in this thread.
         with exporting(), DistillRenderer() as renderer:
             for pattern, parameters in _pages_to_render(renderer):
                 for language in get_langs():

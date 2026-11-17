@@ -1,7 +1,9 @@
 """The view password: nobody sees the family site without it."""
 import datetime
 import tempfile
+import time
 from pathlib import Path
+from unittest import mock
 from urllib.parse import parse_qs, urlsplit
 
 from django.conf import settings
@@ -110,6 +112,58 @@ class GateTests(TestCase):
         self.assertEqual(response.status_code, 429)
         self.assertFalse(ViewerDevice.objects.exists())
 
+    def test_the_block_lifts_after_15_minutes(self):
+        for _attempt in range(11):
+            self.enter(password="errada")
+        self.assertEqual(self.enter().status_code, 429)
+
+        # LocMemCache reads the clock through time.time(): move it 16 minutes on.
+        later = time.time() + 16 * 60
+        with mock.patch("django.core.cache.backends.locmem.time.time", return_value=later):
+            response = self.enter()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(ViewerDevice.objects.exists())
+
+    def test_right_password_clears_the_count(self):
+        for _attempt in range(9):
+            self.enter(password="errada")
+        self.enter()
+        for _attempt in range(9):
+            self.enter(password="errada")
+
+        self.assertEqual(self.enter().status_code, 302)
+
+    def test_ipv6_addresses_are_grouped_by_their_64_prefix(self):
+        for number in range(10):
+            self.enter(password="errada", REMOTE_ADDR=f"2001:db8:1:2::{number + 1}")
+
+        self.assertEqual(self.enter(REMOTE_ADDR="2001:db8:1:2:ffff::9").status_code, 429)
+        self.assertEqual(self.enter(REMOTE_ADDR="2001:db8:1:3::1").status_code, 302)
+
+    def test_viewer_session_lasts_a_year_but_a_staff_session_does_not(self):
+        year = datetime.timedelta(days=364).total_seconds()
+        user = get_user_model().objects.create_user("dona", password="x", is_staff=True)
+        self.client.force_login(user)
+        self.assertLess(self.client.session.get_expiry_age(), year)
+
+        viewer = self.client_class()
+        viewer.post("/entrar/", {"password": PASSWORD, "next": "/"})
+        self.assertGreaterEqual(viewer.session.get_expiry_age(), year)
+
+    def test_malformed_device_in_the_session_means_no_device(self):
+        session = self.client.session
+        session[SESSION_KEY] = "not-a-uuid"
+        session.save()
+
+        self.assertEqual(next_of(self.client.get("/pt-br/")), "/pt-br/")
+
+        session = self.client.session
+        session[SESSION_KEY] = "not-a-uuid"
+        session.save()
+        response = self.client.post("/sair/")
+        self.assertRedirects(response, "/entrar/", fetch_redirect_response=False)
+
     def test_attempts_are_counted_per_address(self):
         for _attempt in range(10):
             self.enter(password="errada", REMOTE_ADDR="10.0.0.1")
@@ -210,12 +264,18 @@ class GateTests(TestCase):
         self.assertEqual(robots.status_code, 200)
         self.assertIn("Disallow: /", robots.content.decode())
 
-        for path in ("/static/css/site.css", "/favicon.ico", "/entrar/", reverse("admin:index")):
-            with self.subTest(path=path):
-                response = self.client.get(path)
-                self.assertFalse(
-                    response.get("Location", "").startswith("/entrar/"), response.get("Location")
-                )
+        self.assertEqual(self.client.get("/entrar/").status_code, 200)
+        # The panel asks for its own login, not for the view password.
+        admin = self.client.get(reverse("admin:index"))
+        self.assertEqual(admin.status_code, 302)
+        self.assertTrue(admin["Location"].startswith(reverse("admin:login")))
+        # No favicon.ico exists: a plain 404, not the password page.
+        self.assertEqual(self.client.get("/favicon.ico").status_code, 404)
+
+        with override_settings(ROOT_URLCONF="access.tests.urls_with_static"):
+            static = self.client.get("/static/css/site.css")
+            self.assertEqual(static.status_code, 200)
+            self.assertIn(b":root", b"".join(static.streaming_content))
 
     def test_password_page_follows_the_browser_language_and_has_the_flags(self):
         response = self.client.get("/entrar/?next=/es/tree/", HTTP_ACCEPT_LANGUAGE="es")

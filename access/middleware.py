@@ -6,6 +6,7 @@ from inside the program) pass without a password.
 """
 import datetime
 import threading
+import uuid
 from contextlib import contextmanager
 from urllib.parse import urlencode
 
@@ -52,14 +53,22 @@ def _public_prefixes() -> tuple[str, ...]:
 def current_device(request, site: SiteSettings) -> ViewerDevice | None:
     """The device of this session, if it is still allowed in."""
     device_id = request.session.get(SESSION_KEY)
-    if not device_id:
+    if device_id is None:
         return None
-    # The session lives on the server: only this code writes the id.
-    device = ViewerDevice.objects.filter(pk=device_id).first()
+    device = ViewerDevice.objects.filter(pk=device_id).first() if is_device_id(device_id) else None
     if device is None or not device.is_valid(site):
         request.session.pop(SESSION_KEY, None)
         return None
     return device
+
+
+def is_device_id(value) -> bool:
+    """A malformed value in the session counts as no device, never an error."""
+    try:
+        uuid.UUID(str(value))
+    except ValueError:
+        return False
+    return True
 
 
 def enter_url(next_path: str) -> str:

@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.middleware.csrf import rotate_token
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import translation
@@ -12,12 +13,19 @@ from django.views.decorators.http import require_POST
 
 from . import ratelimit
 from .devices import describe_browser, ip_prefix
-from .middleware import SESSION_KEY, current_device, set_language_cookie, site_closed
+from .middleware import (
+    SESSION_KEY,
+    current_device,
+    is_device_id,
+    set_language_cookie,
+    site_closed,
+)
 from .models import SiteSettings, ViewerDevice
 
 # One "/" and then visible ASCII; never "//" or "/\" (another site for the browser).
 _SAFE_NEXT = re.compile(r"/(?![/\\])[\x21-\x7e]*")
 NAME_MAX = 80
+VIEWER_SESSION_AGE = 365 * 24 * 60 * 60
 SCOPE = "enter"
 
 
@@ -49,7 +57,8 @@ def enter(request):
 
     if request.method == "POST":
         ip = _client_ip(request)
-        if ratelimit.too_many(SCOPE, ip):
+        # Counted before the check, so parallel guesses cannot slip past the limit.
+        if ratelimit.attempt(SCOPE, ip):
             error = _("Too many wrong attempts. Wait 15 minutes and try again.")
             status = 429
         elif site.check_view_password(request.POST.get("password", "")):
@@ -62,11 +71,13 @@ def enter(request):
             )
             # A new session key, so a key known before the password is useless.
             request.session.cycle_key()
+            rotate_token(request)
             request.session[SESSION_KEY] = str(device.pk)
-            request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+            # A viewer stays in for a year; a staff session keeps its own, shorter life.
+            if not request.user.is_staff:
+                request.session.set_expiry(VIEWER_SESSION_AGE)
             return redirect(next_url)
         else:
-            ratelimit.record_failure(SCOPE, ip)
             error = _("Wrong password. Check it and try again.")
 
     current = translation.get_language()
@@ -99,7 +110,7 @@ def enter(request):
 @require_POST
 def leave(request):
     device_id = request.session.pop(SESSION_KEY, None)
-    if device_id:
+    if is_device_id(device_id):
         ViewerDevice.objects.filter(pk=device_id).update(revoked=True)
     return redirect("access:enter")
 
