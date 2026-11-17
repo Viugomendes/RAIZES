@@ -33,7 +33,8 @@ class SiteSettings(models.Model):
 
     @classmethod
     def get(cls) -> "SiteSettings":
-        settings_row, _created = cls.objects.get_or_create(pk=1)
+        # Read on every request (view password, header): one query with the person.
+        settings_row, _created = cls.objects.select_related("central_person").get_or_create(pk=1)
         return settings_row
 
     def set_view_password(self, raw: str) -> None:

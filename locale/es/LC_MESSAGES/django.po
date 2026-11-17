@@ -943,3 +943,39 @@ msgstr "dispositivo de visualización"
 
 msgid "viewer devices"
 msgstr "dispositivos de visualización"
+
+msgid "The family site is closed until a view password is set in the panel."
+msgstr "El sitio de la familia está cerrado hasta que se defina una contraseña de visualización en el panel."
+
+msgid "Too many wrong attempts. Wait 15 minutes and try again."
+msgstr "Demasiados intentos equivocados. Espera 15 minutos y vuelve a intentarlo."
+
+msgid "Wrong password. Check it and try again."
+msgstr "Contraseña equivocada. Revísala y vuelve a intentarlo."
+
+msgid "Family password"
+msgstr "Contraseña de la familia"
+
+msgid "Type the family password to see the site."
+msgstr "Escribe la contraseña de la familia para ver el sitio."
+
+msgid "This device is already connected. Open the site"
+msgstr "Este dispositivo ya está conectado. Abrir el sitio"
+
+msgid "Your name"
+msgstr "Tu nombre"
+
+msgid "(optional)"
+msgstr "(opcional)"
+
+msgid "So the family knows who is visiting."
+msgstr "Para que la familia sepa quién está de visita."
+
+msgid "Password"
+msgstr "Contraseña"
+
+msgid "Open the site"
+msgstr "Abrir el sitio"
+
+msgid "This device stays connected for a year."
+msgstr "Este dispositivo queda conectado durante un año."

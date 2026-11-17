@@ -1,0 +1,50 @@
+{% load i18n static %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% translate "Family password" %} · {% if family_name %}{{ family_name }} · {% endif %}Raízes</title>
+  <link rel="icon" href="{% static 'icons/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body class="enter-page">
+  <nav class="enter-languages" aria-label="{% translate 'Language' %}">
+    {% for language in enter_languages %}
+      <a href="{{ language.url }}" lang="{{ language.code }}" hreflang="{{ language.code }}"{% if language.is_current %} aria-current="true"{% endif %}>
+        {% if language.code == "pt-br" %}<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#009b3a"/><path d="M10 2 18 7 10 12 2 7z" fill="#fedf00"/><circle cx="10" cy="7" r="3" fill="#002776"/></svg>
+        {% elif language.code == "es" %}<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#c60b1e"/><rect y="3.5" width="20" height="7" fill="#ffc400"/></svg>{% endif %}
+        <span>{{ language.name }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
+  <main class="enter-door">
+    <img class="enter-mark" src="{% static 'icons/favicon.svg' %}" alt="" width="72" height="72">
+    <h1>{% if family_name %}{{ family_name }}{% else %}Raízes{% endif %}</h1>
+    <p class="enter-lead">{% translate "Type the family password to see the site." %}</p>
+
+    {% if already_in %}
+      <p class="enter-already"><a href="{{ next }}">{% translate "This device is already connected. Open the site" %}</a></p>
+    {% endif %}
+
+    {% if error %}
+      <p class="enter-error" role="alert">{{ error }}</p>
+    {% endif %}
+
+    <form class="enter-form" method="post" action="{% url 'access:enter' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <label for="enter-name">{% translate "Your name" %} <span class="enter-optional">{% translate "(optional)" %}</span></label>
+      <input id="enter-name" type="text" name="name" value="{{ name }}" maxlength="80" autocomplete="name" aria-describedby="enter-name-help">
+      <p id="enter-name-help" class="enter-help">{% translate "So the family knows who is visiting." %}</p>
+
+      <label for="enter-password">{% translate "Password" %}</label>
+      <input id="enter-password" type="password" name="password" required autocomplete="current-password"{% if error %} aria-invalid="true"{% endif %} autofocus>
+
+      <button type="submit">{% translate "Open the site" %}</button>
+    </form>
+    <p class="enter-help enter-stay">{% translate "This device stays connected for a year." %}</p>
+  </main>
+</body>
+</html>

@@ -1282,3 +1282,156 @@ body.map-is-full {
     display: none;
   }
 }
+
+/* ---------- Password page (/entrar/) ---------- */
+/* Large text and big targets: the people typing here may be grandparents. */
+
+.enter-page {
+  align-items: center;
+  font-size: 1.15rem;
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--accent-soft) 0, transparent 60%),
+    var(--paper);
+}
+
+.enter-languages {
+  align-self: flex-end;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.9rem 1.25rem 0;
+}
+
+.enter-languages a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.enter-languages a[aria-current] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.enter-languages svg {
+  width: 26px;
+  height: 18px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.enter-door {
+  width: 100%;
+  max-width: 27rem;
+  margin: auto;
+  padding: 2rem 1.25rem 3rem;
+  text-align: center;
+}
+
+.enter-mark {
+  display: block;
+  margin: 0 auto 1rem;
+}
+
+.enter-door h1 {
+  font-size: 2.2rem;
+}
+
+.enter-lead {
+  margin: 0 0 1.5rem;
+  color: var(--ink-soft);
+}
+
+.enter-error,
+.enter-already {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.enter-error {
+  border-left: 5px solid #a33a2a;
+  background: #fbe9e5;
+  color: #7a2416;
+  font-weight: 600;
+}
+
+.enter-already {
+  background: var(--accent-soft);
+}
+
+.enter-form {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  text-align: left;
+}
+
+.enter-form label {
+  font-weight: 600;
+}
+
+.enter-optional {
+  color: var(--ink-soft);
+  font-weight: normal;
+}
+
+.enter-form input {
+  width: 100%;
+  min-height: 3.2rem;
+  margin-top: 0.35rem;
+  padding: 0.5rem 0.8rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  font-size: 1.3rem;
+}
+
+.enter-form input:focus {
+  border-color: var(--accent);
+}
+
+.enter-form input[aria-invalid] {
+  border-color: #a33a2a;
+}
+
+.enter-form #enter-password {
+  margin-bottom: 1.4rem;
+}
+
+.enter-help {
+  margin: 0.35rem 0 1.2rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.enter-form button {
+  min-height: 3.4rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.enter-form button:hover {
+  background: #344b2d;
+}
+
+.enter-stay {
+  margin-top: 1rem;
+}

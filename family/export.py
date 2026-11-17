@@ -23,6 +23,8 @@ from django_distill.renderer import DistillRenderer, render_pattern
 from django_distill.request import get_static_filepath, get_uri_values
 from django_distill.utils import get_langs
 
+from access.middleware import exporting
+
 from .models import Clip, Person, Photo, Recipe
 from .images import URL_PREFIX, VariantError, make_variant, parse_variant_path
 from .site_data import update_history
@@ -144,7 +146,8 @@ def _render_pages(output_dir: Path) -> int:
     language_before = translation.get_language()
     written: set[Path] = set()
     try:
-        with DistillRenderer() as renderer:
+        # The pages are asked from Django itself: the view password does not apply.
+        with exporting(), DistillRenderer() as renderer:
             for pattern, parameters in _pages_to_render(renderer):
                 for language in get_langs():
                     uri, file_name, _status, _headers, body = render_pattern(

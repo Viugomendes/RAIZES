@@ -64,6 +64,10 @@ RAIZES_EXPORT_DIR = BASE_DIR / "dist"
 # tastes, childhood, work, love, origins, memories, legacy, remembrance, gallery.
 RAIZES_HIDDEN_SECTIONS = set(parse_list(os.environ.get("RAIZES_HIDDEN_SECTIONS", "")))
 
+# The family pages, photos and data need the view password (set in the panel).
+# The tests switch it off (config/test_runner.py); only the tests of the gate turn it on.
+RAIZES_VIEW_GATE = os.environ.get("RAIZES_VIEW_GATE", "true").lower() in ("1", "true", "yes")
+
 
 # ---------------------------------------------------------------------------
 # Django
@@ -88,6 +92,9 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    # After the login and the messages: staff pass, and the "site closed" notice is shown.
+    "access.middleware.ViewPasswordMiddleware",
+    "access.middleware.LanguageCookieMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -125,6 +132,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# A device that typed the view password stays in for a year.
+SESSION_COOKIE_AGE = 365 * 24 * 60 * 60
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+
+TEST_RUNNER = "config.test_runner.RaizesTestRunner"
 
 # ---------------------------------------------------------------------------
 # Languages
