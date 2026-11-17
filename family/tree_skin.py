@@ -18,6 +18,8 @@ another skin changes the look without touching the rules of position.
 """
 from dataclasses import dataclass
 
+from django.conf import settings
+
 from .kinship import ADOPTIVE, CENTER, FOSTER
 from .tree_layout import Band, PersonPlace, UnionPlace
 
@@ -58,6 +60,11 @@ def _mix_with_white(colour: str, share: float) -> str:
     return "#{:02x}{:02x}{:02x}".format(*mixed)
 
 
+def side_colors() -> list[str]:
+    """The colours of the sides: the family's choice (RAIZES_SIDE_COLORS) or the default."""
+    return list(getattr(settings, "RAIZES_SIDE_COLORS", None) or SIDE_COLORS)
+
+
 def side_color(side: str | None, parental_figures: list[str]) -> str:
     """Base colour of a person from their side (None = no link to the centre)."""
     if side is None:
@@ -65,7 +72,8 @@ def side_color(side: str | None, parental_figures: list[str]) -> str:
     if side == CENTER:
         return CENTER_COLOR
     index = parental_figures.index(side)
-    return SIDE_COLORS[index] if index < len(SIDE_COLORS) else OTHER_SIDES_COLOR
+    colors = side_colors()
+    return colors[index] if index < len(colors) else OTHER_SIDES_COLOR
 
 
 def _step(distance: int | None) -> int:

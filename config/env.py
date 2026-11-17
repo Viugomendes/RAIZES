@@ -5,6 +5,7 @@ that must stay secret. Git ignores it, so nothing written there is published.
 The format is one `NAME=value` per line; lines starting with `#` are comments.
 """
 import os
+import re
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
@@ -35,6 +36,23 @@ def load_env_file(path: Path) -> None:
     """
     for name, value in read_env_file(path).items():
         os.environ.setdefault(name, value)
+
+
+def parse_list(text: str) -> list[str]:
+    """ "tastes, Legacy" -> ["tastes", "legacy"]."""
+    return [part.strip().lower() for part in (text or "").split(",") if part.strip()]
+
+
+_COLOR = re.compile(r"^#[0-9a-f]{6}$")
+
+
+def parse_colors(text: str) -> list[str]:
+    """ "#2a78d6, #EB6834" -> ["#2a78d6", "#eb6834"]. Raises ValueError on a bad colour."""
+    colors = parse_list(text)
+    for color in colors:
+        if not _COLOR.match(color):
+            raise ValueError(f"not a colour like #2a78d6: {color!r}")
+    return colors
 
 
 def get_or_create_secret_key(path: Path, name: str = "RAIZES_SECRET_KEY") -> str:

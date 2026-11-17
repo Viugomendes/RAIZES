@@ -8,7 +8,7 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
-from .env import get_or_create_secret_key, load_env_file
+from .env import get_or_create_secret_key, load_env_file, parse_colors, parse_list
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -59,6 +59,17 @@ RAIZES_FAMILY_NAME = (
 )
 # Where the static site is written by `python manage.py export_site`.
 RAIZES_EXPORT_DIR = BASE_DIR / "dist"
+
+# Sections of the person page that this family does not want to show:
+# tastes, childhood, work, love, origins, memories, legacy, remembrance, gallery.
+RAIZES_HIDDEN_SECTIONS = set(parse_list(os.environ.get("RAIZES_HIDDEN_SECTIONS", "")))
+
+# Colours of the sides of the tree, in the order of the parental figures.
+# Empty: the default ones, checked for colour blindness (family/tree_skin.py).
+try:
+    RAIZES_SIDE_COLORS = parse_colors(os.environ.get("RAIZES_SIDE_COLORS", ""))
+except ValueError as error:
+    raise ImproperlyConfigured(f"RAIZES_SIDE_COLORS in .env: {error}") from error
 
 # ---------------------------------------------------------------------------
 # Django
@@ -124,11 +135,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Languages
 # ---------------------------------------------------------------------------
 # The code is written in English; the interface is translated in locale/.
-LANGUAGE_CODE = "pt-br"
 LANGUAGES = [
     ("pt-br", "Português"),
     ("es", "Español"),
 ]
+# The language the site opens in (the other one is a flag away).
+LANGUAGE_CODE = os.environ.get("RAIZES_LANGUAGE", "pt-br").strip().lower() or "pt-br"
+if LANGUAGE_CODE not in dict(LANGUAGES):
+    raise ImproperlyConfigured(
+        "RAIZES_LANGUAGE in .env must be one of: " + ", ".join(dict(LANGUAGES))
+    )
 LOCALE_PATHS = [BASE_DIR / "locale"]
 USE_I18N = True
 TIME_ZONE = "America/Sao_Paulo"

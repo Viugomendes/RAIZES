@@ -25,8 +25,8 @@ from .tree_skin import (
     FONT_SIZES,
     OTHER_SIDES_COLOR,
     RADII,
-    SIDE_COLORS,
     UNLINKED_COLOR,
+    side_colors,
 )
 
 NEWS_DAYS = 30  # "new on the site" shows what was first published in these days
@@ -202,7 +202,7 @@ def build_site_data(today: datetime.date | None = None) -> dict:
     return {
         "central": central,
         "colors": {
-            "sides": SIDE_COLORS,
+            "sides": side_colors(),
             "otherSides": OTHER_SIDES_COLOR,
             "center": CENTER_COLOR,
             "unlinked": UNLINKED_COLOR,

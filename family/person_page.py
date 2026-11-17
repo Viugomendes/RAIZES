@@ -6,6 +6,7 @@ admin. A section appears only when it has something to show.
 """
 from dataclasses import dataclass, field
 
+from django.conf import settings
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 
@@ -123,8 +124,11 @@ def build_person_page(person: Person) -> dict:
             )
         )
 
+    hidden = settings.RAIZES_HIDDEN_SECTIONS
     sections = []
     for key, title in TEXT_SECTIONS:
+        if key in hidden:
+            continue
         html = render_text(getattr(person, key), targets, video_id=person.youtube_id).html
         stories = [union for union in unions if union.story] if key == "love" else []
         if html or stories:
@@ -156,7 +160,8 @@ def build_person_page(person: Person) -> dict:
         "recipes": recipes,
         "personal_places": personal_places,
         "map_places": [entry for entry in personal_places if entry["lat"] is not None],
-        "has_gallery": bool(video_id or photos or clips or recipes or personal_places),
+        "has_gallery": "gallery" not in hidden
+        and bool(video_id or photos or clips or recipes or personal_places),
     }
 
 

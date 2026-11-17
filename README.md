@@ -131,6 +131,16 @@ família está carregada. Veja o modelo em [.env.example](.env.example).
 | `demo` (padrão) | `demo/demo.sqlite3` | `demo/media/` |
 | `real` | `data/raizes.sqlite3` | `data/media/` |
 
+Outras escolhas de cada família, também no `.env`:
+
+| Variável | Para quê |
+|---|---|
+| `RAIZES_FAMILY_NAME` | Nome no topo das páginas |
+| `RAIZES_CENTRAL_PERSON` | A pessoa a partir de quem a árvore se organiza |
+| `RAIZES_LANGUAGE` | Idioma em que o site abre: `pt-br` ou `es` |
+| `RAIZES_HIDDEN_SECTIONS` | Seções da ficha que não aparecem, por exemplo `origins, legacy` |
+| `RAIZES_SIDE_COLORS` | Cores dos lados da árvore (as de fábrica foram testadas para daltonismo) |
+
 O cabeçalho do painel sempre mostra qual família está aberta. O comando
 `load_demo` se recusa a rodar com `RAIZES_DATASET=real`, para nunca apagar a
 família real.
