@@ -143,6 +143,10 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / ".build" / "static"
 
-# Photos uploaded through the admin panel.
+# Photos uploaded through the admin panel (the originals: never exported).
 MEDIA_URL = "/media/"
 MEDIA_ROOT = DATA_DIR / "media"
+# Smaller copies of the photos, made once and reused.
+RAIZES_CACHE_DIR = DATA_DIR / "cache"
+# When each person, photo and recipe was first exported ("new on the site").
+RAIZES_HISTORY_FILE = DATA_DIR / "export-history.json"

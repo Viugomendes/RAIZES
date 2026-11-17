@@ -30,7 +30,8 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 _(
                     "Invented family loaded: %(people)d people, %(unions)d unions, "
-                    "%(places)d places, %(recipes)d recipes."
+                    "%(places)d places, %(photos)d photos, %(clips)d recordings, "
+                    "%(recipes)d recipes."
                 )
                 % counts
             )

@@ -43,6 +43,8 @@ class LinkTargets:
     people: dict[str, str] = field(default_factory=dict)
     places: dict[str, str] = field(default_factory=dict)
     recipes: dict[str, str] = field(default_factory=dict)
+    # Places with coordinates: only these can open the map.
+    mapped_places: set[str] = field(default_factory=set)
 
     @classmethod
     def from_database(cls) -> "LinkTargets":
@@ -52,6 +54,9 @@ class LinkTargets:
             people={person.identifier: person.full_name for person in Person.objects.all()},
             places=dict(Place.objects.values_list("slug", "name")),
             recipes=dict(Recipe.objects.values_list("slug", "title")),
+            mapped_places=set(
+                Place.objects.filter(latitude__isnull=False).values_list("slug", flat=True)
+            ),
         )
 
 
@@ -83,10 +88,16 @@ class _WikiLinkProcessor(InlineProcessor):
         prefix = prefix.strip().lower()
 
         if separator and prefix in _PLACE_PREFIXES:
-            element = self._named(rest, label, self.targets.places, "place-name")
+            slug = rest.strip()
+            href = None
+            if slug in self.targets.mapped_places:
+                href = reverse("family:map") + f"#place-{slug}"
+            element = self._named(slug, label, self.targets.places, "place-link", href)
             problem = _("%(link)s: there is no place with this identifier.")
         elif separator and prefix in _RECIPE_PREFIXES:
-            element = self._named(rest, label, self.targets.recipes, "recipe-name")
+            slug = rest.strip()
+            href = reverse("family:recipe_detail", args=[slug]) if slug in self.targets.recipes else None
+            element = self._named(slug, label, self.targets.recipes, "recipe-link", href)
             problem = _("%(link)s: there is no recipe with this identifier.")
         else:
             element = self._person(target, label)
@@ -107,12 +118,14 @@ class _WikiLinkProcessor(InlineProcessor):
         element.text = label or self.targets.people[identifier]
         return element
 
-    def _named(self, slug: str, label: str, names: dict[str, str], css_class: str):
-        slug = slug.strip()
+    def _named(self, slug: str, label: str, names: dict[str, str], css_class: str, href):
+        """A link to a place or a recipe; plain text when there is nowhere to go."""
         if slug not in names:
             return None
-        element = etree.Element("span")
+        element = etree.Element("a" if href else "span")
         element.set("class", css_class)
+        if href:
+            element.set("href", href)
         element.text = label or names[slug]
         return element
 

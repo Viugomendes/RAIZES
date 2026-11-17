@@ -89,9 +89,11 @@ def node_style(
 
     label_lines = given_name.split()[:1] + surname.split()[-1:]
     longest = max((len(line) for line in label_lines), default=0)
-    label_width = longest * font_size * LABEL_CHAR_WIDTH
-    ring = 6 if is_central else 0
-    slot_width = max(2 * (radius + ring), label_width) + SLOT_PADDING
+    # The room is measured for the largest look a person can get, because
+    # "see from..." in the browser can make anyone the central person
+    # without moving anybody.
+    label_width = longest * max(FONT_SIZES) * LABEL_CHAR_WIDTH
+    slot_width = max(2 * (max(RADII) + 6), label_width) + SLOT_PADDING
 
     if is_deceased:
         # Only the outline: an empty circle drawn in the side's colour.

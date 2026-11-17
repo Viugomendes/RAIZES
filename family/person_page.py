@@ -130,6 +130,11 @@ def build_person_page(person: Person) -> dict:
         if html or stories:
             sections.append(SectionView(key, title, html, stories))
 
+    photos = list(person.photos.prefetch_related("people").select_related("place"))
+    clips = list(person.clips.prefetch_related("people"))
+    recipes = list(person.recipes.all())
+    personal_places = places_of(person, photos)
+
     video_id = person.youtube_id
     return {
         "person": person,
@@ -146,4 +151,39 @@ def build_person_page(person: Person) -> dict:
         "interview_embed_url": embed_url(video_id) if video_id else "",
         "interview_watch_url": watch_url(video_id) if video_id else "",
         "lived_in": list(person.lived_in.all()),
+        "photos": photos,
+        "clips": clips,
+        "recipes": recipes,
+        "personal_places": personal_places,
+        "map_places": [entry for entry in personal_places if entry["lat"] is not None],
+        "has_gallery": bool(video_id or photos or clips or recipes or personal_places),
     }
+
+
+def places_of(person: Person, photos: list) -> list[dict]:
+    """Every place in the life of a person, with what happened there.
+
+    Used by the list of places and the personal map of section 10.
+    """
+    roles: dict[str, dict] = {}
+
+    def add(place, role):
+        if place is None:
+            return
+        entry = roles.setdefault(
+            place.slug,
+            {"slug": place.slug, "name": place.name, "lat": place.latitude, "lon": place.longitude, "roles": []},
+        )
+        if role not in entry["roles"]:
+            entry["roles"].append(role)
+
+    add(person.birth_place, _("born"))
+    for place in person.lived_in.all():
+        add(place, _("lived"))
+    if not person.is_deceased:
+        add(person.lives_in, _("lives"))
+    add(person.death_place, _("died"))
+    add(person.resting_place, _("rests"))
+    for photo in photos:
+        add(photo.place, _("photos"))
+    return list(roles.values())

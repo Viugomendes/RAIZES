@@ -242,9 +242,6 @@ msgstr "longitud"
 msgid "file"
 msgstr "archivo"
 
-msgid "year"
-msgstr "año"
-
 msgid "years"
 msgstr "años"
 
@@ -478,9 +475,6 @@ msgstr "Entrevista"
 msgid "Watch on YouTube"
 msgstr "Ver en YouTube"
 
-msgid "Places where they lived"
-msgstr "Lugares donde vivió"
-
 msgid "Nobody has been added yet."
 msgstr "Todavía no se ha añadido a nadie."
 
@@ -555,13 +549,6 @@ msgstr "Lados y distancia"
 msgid "Further away: smaller and lighter"
 msgstr "Más lejos: más pequeño y más claro"
 
-msgid ""
-"Drag to move, use the mouse wheel or pinch to zoom, and click a person to "
-"open their page."
-msgstr ""
-"Arrastra para mover, usa la rueda del ratón o el gesto de pinza para acercar, "
-"y haz clic en una persona para abrir su página."
-
 msgid "Side of %(name)s"
 msgstr "Lado de %(name)s"
 
@@ -596,13 +583,6 @@ msgid ""
 msgstr ""
 "Este comando borra la base de datos antes de cargar la familia inventada, "
 "por eso solo funciona con RAIZES_DATASET=demo. La familia real no se ha tocado."
-
-msgid ""
-"Invented family loaded: %(people)d people, %(unions)d unions, %(places)d "
-"places, %(recipes)d recipes."
-msgstr ""
-"Familia inventada cargada: %(people)d personas, %(unions)d uniones, "
-"%(places)d lugares, %(recipes)d recetas."
 
 # --- Exportación ---
 
@@ -659,3 +639,311 @@ msgstr "Fiabilidad"
 
 msgid "Texts of the page (all optional)"
 msgstr "Textos de la ficha (todos opcionales)"
+
+# --- Novedades, búsqueda, mapa, fotos (2026-11-17) ---
+
+msgid "News"
+msgstr "Novedades"
+
+msgid "Search"
+msgstr "Búsqueda"
+
+msgid "Map"
+msgstr "Mapa"
+
+msgid "View"
+msgstr "Vista"
+
+msgid "Family map"
+msgstr "Mapa de la familia"
+
+msgid "Full screen"
+msgstr "Pantalla completa"
+
+msgid "Exit full screen"
+msgstr "Salir de pantalla completa"
+
+msgid "See from"
+msgstr "Ver a partir de"
+
+msgid "See the tree from this person"
+msgstr "Ver el árbol a partir de esta persona"
+
+msgid "Hold Ctrl and turn the mouse wheel to zoom."
+msgstr "Mantén Ctrl y gira la rueda del ratón para acercar."
+
+msgid "Use two fingers to move and zoom, or open the full screen."
+msgstr "Usa dos dedos para mover y acercar, o abre la pantalla completa."
+
+msgid "Drag to move, hold Ctrl and turn the mouse wheel (or pinch with two fingers) to zoom, and click a person to open their page."
+msgstr "Arrastra para mover, mantén Ctrl y gira la rueda del ratón (o usa dos dedos) para acercar, y haz clic en una persona para abrir su página."
+
+msgid "All sides"
+msgstr "Todos los lados"
+
+msgid "All generations"
+msgstr "Todas las generaciones"
+
+msgid "Great-great-grandparents"
+msgstr "Tatarabuelos"
+
+msgid "Great-grandparents"
+msgstr "Bisabuelos"
+
+msgid "Grandparents"
+msgstr "Abuelos"
+
+msgid "Parents, uncles and aunts"
+msgstr "Padres y tíos"
+
+msgid "Generation of %(name)s"
+msgstr "Generación de %(name)s"
+
+msgid "Children, nephews and nieces"
+msgstr "Hijos y sobrinos"
+
+msgid "Generation %(number)s"
+msgstr "Generación %(number)s"
+
+msgid "Side"
+msgstr "Lado"
+
+msgid "Generation"
+msgstr "Generación"
+
+msgid "Distance"
+msgstr "Distancia"
+
+msgid "born"
+msgstr "nació"
+
+msgid "lived"
+msgstr "vivió"
+
+msgid "lives"
+msgstr "vive"
+
+msgid "died"
+msgstr "falleció"
+
+msgid "rests"
+msgstr "descansa"
+
+msgid "No place with coordinates matches these filters."
+msgstr "Ningún lugar con coordenadas coincide con estos filtros."
+
+msgid "Click the map to zoom with the mouse wheel."
+msgstr "Haz clic en el mapa para acercar con la rueda del ratón."
+
+msgid "Map images: OpenStreetMap. They are loaded from the OpenStreetMap servers."
+msgstr "Imágenes del mapa: OpenStreetMap. Se cargan desde los servidores de OpenStreetMap."
+
+msgid "The map needs JavaScript turned on."
+msgstr "El mapa necesita JavaScript activado."
+
+msgid "Recipes"
+msgstr "Recetas"
+
+msgid "Nobody matches these filters."
+msgstr "Nadie coincide con estos filtros."
+
+msgid "Recipe of %(name)s"
+msgstr "Receta de %(name)s"
+
+msgid "Recipe of"
+msgstr "Receta de"
+
+msgid "Birthdays this week"
+msgstr "Cumpleaños de la semana"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "On this day"
+msgstr "En este día"
+
+msgid "In memory"
+msgstr "En memoria"
+
+msgid "New on the site"
+msgstr "Nuevo en el sitio"
+
+msgid "Memory of the day"
+msgstr "Recuerdo del día"
+
+msgid "New page: %(name)s"
+msgstr "Ficha nueva: %(name)s"
+
+msgid "New photo"
+msgstr "Foto nueva"
+
+msgid "New recipe: %(title)s"
+msgstr "Receta nueva: %(title)s"
+
+msgid "and %(count)s more"
+msgstr "y %(count)s más"
+
+msgid "Nothing to show yet."
+msgstr "Todavía no hay nada que mostrar."
+
+msgid "The mural is calculated by the browser every day: it needs JavaScript turned on."
+msgstr "El mural lo calcula el navegador cada día: necesita JavaScript activado."
+
+msgid "Who is this?"
+msgstr "¿Quién es?"
+
+msgid "In these photos there is someone nobody has identified yet. If you know who it is, tell the person who takes care of the site."
+msgstr "En estas fotos hay alguien que nadie ha identificado todavía. Si sabes quién es, avisa a quien cuida del sitio."
+
+msgid "Also in the photo:"
+msgstr "También en la foto:"
+
+msgid "Everybody in the photos has been identified."
+msgstr "Todas las personas de las fotos ya están identificadas."
+
+msgid "The search runs in the browser: it needs JavaScript turned on."
+msgstr "La búsqueda funciona en el navegador: necesita JavaScript activado."
+
+msgid "Name, surname, nickname or other names"
+msgstr "Nombre, apellidos, apodo u otros nombres"
+
+msgid "Born from (year)"
+msgstr "Nacido desde (año)"
+
+msgid "to (year)"
+msgstr "hasta (año)"
+
+msgid "Born in"
+msgstr "Nació en"
+
+msgid "Lived in"
+msgstr "Vivió en"
+
+msgid "Living or deceased"
+msgstr "Vivo o fallecido"
+
+msgid "Living"
+msgstr "Vivo"
+
+msgid "Deceased"
+msgstr "Fallecido"
+
+msgid "Tag"
+msgstr "Etiqueta"
+
+msgid "Has"
+msgstr "Tiene"
+
+msgid "interview"
+msgstr "entrevista"
+
+msgid "Clear filters"
+msgstr "Borrar filtros"
+
+msgid "Photos"
+msgstr "Fotos"
+
+msgid "Recordings"
+msgstr "Grabaciones"
+
+msgid "Places"
+msgstr "Lugares"
+
+msgid "date"
+msgstr "fecha"
+
+msgid "When it was taken: complete (14/03/1962) or just the year. Empty if unknown."
+msgstr "Cuándo se tomó: completa (14/03/1962) o solo el año. En blanco si se desconoce."
+
+msgid "The original stays on this computer. The site only receives smaller copies, without the hidden data of the file (camera, GPS)."
+msgstr "El original se queda en este ordenador. El sitio solo recibe copias más pequeñas, sin los datos ocultos del archivo (cámara, GPS)."
+
+msgid "audio or video clip"
+msgstr "audio o vídeo corto"
+
+msgid "audio and video clips"
+msgstr "audios y vídeos cortos"
+
+msgid "people in the recording"
+msgstr "personas en la grabación"
+
+msgid "Audio (mp3, m4a, ogg, wav) or short video (mp4, webm), up to 25 MB. Long interviews go on YouTube."
+msgstr "Audio (mp3, m4a, ogg, wav) o vídeo corto (mp4, webm), hasta 25 MB. Las entrevistas largas van a YouTube."
+
+msgid "The file is too big for the site (maximum 25 MB). Long interviews go on YouTube as unlisted videos."
+msgstr "El archivo es demasiado grande para el sitio (máximo 25 MB). Las entrevistas largas van a YouTube como vídeos no listados."
+
+msgid "Missing or unreadable photo: %(file)s"
+msgstr "Foto ausente o ilegible: %(file)s"
+
+msgid "Missing file: %(file)s"
+msgstr "Archivo ausente: %(file)s"
+
+msgid "Some files used by the pages could not be written."
+msgstr "Algunos archivos usados por las páginas no se pudieron escribir."
+
+msgid "Invented family loaded: %(people)d people, %(unions)d unions, %(places)d places, %(photos)d photos, %(clips)d recordings, %(recipes)d recipes."
+msgstr "Familia inventada cargada: %(people)d personas, %(unions)d uniones, %(places)d lugares, %(photos)d fotos, %(clips)d grabaciones, %(recipes)d recetas."
+
+msgid "%(count)s person"
+msgid_plural "%(count)s people"
+msgstr[0] "%(count)s persona"
+msgstr[1] "%(count)s personas"
+
+msgid "%(count)s person found"
+msgid_plural "%(count)s people found"
+msgstr[0] "%(count)s persona encontrada"
+msgstr[1] "%(count)s personas encontradas"
+
+msgid "%(count)s step away"
+msgid_plural "%(count)s steps away"
+msgstr[0] "hasta %(count)s paso de distancia"
+msgstr[1] "hasta %(count)s pasos de distancia"
+
+msgid "%(counter)s photo has someone nobody has identified yet."
+msgid_plural "%(counter)s photos have someone nobody has identified yet."
+msgstr[0] "%(counter)s foto tiene a alguien que nadie ha identificado todavía."
+msgstr[1] "%(counter)s fotos tienen a alguien que nadie ha identificado todavía."
+
+msgid "%(name)s turns %(years)s year old today"
+msgid_plural "%(name)s turns %(years)s years old today"
+msgstr[0] "%(name)s cumple %(years)s año hoy"
+msgstr[1] "%(name)s cumple %(years)s años hoy"
+
+msgid "%(years)s year ago, %(a)s and %(b)s got married"
+msgid_plural "%(years)s years ago, %(a)s and %(b)s got married"
+msgstr[0] "Hace %(years)s año, %(a)s y %(b)s se casaban"
+msgstr[1] "Hace %(years)s años, %(a)s y %(b)s se casaban"
+
+msgid "%(years)s year ago, %(a)s and %(b)s started dating"
+msgid_plural "%(years)s years ago, %(a)s and %(b)s started dating"
+msgstr[0] "Hace %(years)s año, %(a)s y %(b)s empezaban a salir"
+msgstr[1] "Hace %(years)s años, %(a)s y %(b)s empezaban a salir"
+
+msgid "%(years)s year ago, %(a)s and %(b)s started their life together"
+msgid_plural "%(years)s years ago, %(a)s and %(b)s started their life together"
+msgstr[0] "Hace %(years)s año, %(a)s y %(b)s empezaban su vida juntos"
+msgstr[1] "Hace %(years)s años, %(a)s y %(b)s empezaban su vida juntos"
+
+msgid "%(years)s year ago, %(name)s passed away"
+msgid_plural "%(years)s years ago, %(name)s passed away"
+msgstr[0] "Hace %(years)s año, falleció %(name)s"
+msgstr[1] "Hace %(years)s años, falleció %(name)s"
+
+msgid "%(years)s year ago, %(name)s was born"
+msgid_plural "%(years)s years ago, %(name)s was born"
+msgstr[0] "Hace %(years)s año nacía %(name)s"
+msgstr[1] "Hace %(years)s años nacía %(name)s"
+
+msgid "Photo from %(years)s year ago"
+msgid_plural "Photo from %(years)s years ago"
+msgstr[0] "Foto de hace %(years)s año"
+msgstr[1] "Foto de hace %(years)s años"
+
+msgid "turns %(years)s"
+msgid_plural "turns %(years)s"
+msgstr[0] "cumple %(years)s año"
+msgstr[1] "cumple %(years)s años"
+
+msgid "Close family of %(name)s"
+msgstr "Familia cercana de %(name)s"

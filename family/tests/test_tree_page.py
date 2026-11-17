@@ -122,7 +122,7 @@ class LineClassTests(SimpleTestCase):
 
 class TreePageTests(DemoFamilyTestCase):
     def setUp(self):
-        self.html = self.client.get("/pt-br/").content.decode()
+        self.html = self.client.get("/pt-br/tree/").content.decode()
         self.svg = re.search(r'<svg id="family-tree".*?</svg>', self.html, re.DOTALL).group(0)
 
     def test_the_whole_family_is_drawn(self):
@@ -211,7 +211,7 @@ class TreePageTests(DemoFamilyTestCase):
                 self.assertIn(text, legend)
 
     def test_legend_is_translated(self):
-        html = self.client.get("/es/").content.decode()
+        html = self.client.get("/es/tree/").content.decode()
 
         self.assertIn("Persona fallecida", html)
         self.assertIn("Lado de Rui Pinheiro", html)
@@ -235,7 +235,7 @@ class TreePageTests(DemoFamilyTestCase):
 
     @override_settings(RAIZES_CENTRAL_PERSON="")
     def test_tree_without_a_central_person_is_drawn_with_a_notice(self):
-        html = self.client.get("/pt-br/").content.decode()
+        html = self.client.get("/pt-br/tree/").content.decode()
 
         self.assertIn("RAIZES_CENTRAL_PERSON", html)
         self.assertEqual(html.count('class="person'), Person.objects.count())
@@ -243,7 +243,7 @@ class TreePageTests(DemoFamilyTestCase):
 
     @override_settings(RAIZES_CENTRAL_PERSON="someone-else-1900")
     def test_central_person_that_does_not_exist_gives_a_notice(self):
-        html = self.client.get("/pt-br/").content.decode()
+        html = self.client.get("/pt-br/tree/").content.decode()
 
         self.assertIn("someone-else-1900", html)
         self.assertIn("RAIZES_CENTRAL_PERSON", html)
@@ -251,7 +251,7 @@ class TreePageTests(DemoFamilyTestCase):
 
 class SmallTreeTests(TestCase):
     def test_empty_family_shows_a_notice_instead_of_a_tree(self):
-        html = self.client.get("/pt-br/").content.decode()
+        html = self.client.get("/pt-br/tree/").content.decode()
 
         self.assertIn("Ninguém foi cadastrado ainda.", html)
         self.assertNotIn("<svg id=\"family-tree\"", html)
@@ -262,7 +262,7 @@ class SmallTreeTests(TestCase):
         make_union(ana, make_person("Luis", "Pérez", birth_date="1938"))
         make_person("Solitário", "Silva", birth_date="1950")
 
-        html = self.client.get("/pt-br/").content.decode()
+        html = self.client.get("/pt-br/tree/").content.decode()
 
         self.assertEqual(html.count('class="person'), 3)
         self.assertIn(UNLINKED_COLOR, html)

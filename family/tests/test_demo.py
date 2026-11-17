@@ -1,5 +1,5 @@
 """The invented family in demo/: it must contain every hard case."""
-import tempfile
+import shutil
 from io import StringIO
 from pathlib import Path
 
@@ -10,15 +10,9 @@ from django.db.models import Count
 from django.test import TestCase, override_settings
 
 from family.demo import DEMO_FILE, load_demo_family, read_demo_file
-from family.models import ChildLink, Person, Place, Recipe, Union
+from family.models import ChildLink, Clip, Person, Photo, Place, Recipe, Union
 
-
-class DemoFamilyTestCase(TestCase):
-    """Base class for tests that need the invented family loaded."""
-
-    @classmethod
-    def setUpTestData(cls):
-        load_demo_family(with_portraits=False)
+from .base import DemoFamilyTestCase, IsolatedFilesMixin
 
 
 class DemoContentsTests(DemoFamilyTestCase):
@@ -96,22 +90,43 @@ class DemoContentsTests(DemoFamilyTestCase):
         self.assertGreater(without_texts.count(), Person.objects.count() / 2)
 
 
-class DemoLoadingTests(TestCase):
+class DemoLoadingTests(IsolatedFilesMixin, TestCase):
+    def setUp(self):
+        # The database is emptied after each test, the files are not.
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+
     def test_loading_twice_does_not_duplicate_anything(self):
-        first = load_demo_family(with_portraits=False)
-        second = load_demo_family(with_portraits=False)
+        first = load_demo_family()
+        second = load_demo_family()
 
         self.assertEqual(first, second)
         self.assertEqual(Person.objects.count(), first["people"])
+        self.assertEqual(Photo.objects.count(), first["photos"])
+        files = [path for path in Path(settings.MEDIA_ROOT).rglob("*") if path.is_file()]
+        expected = Person.objects.exclude(photo="").count() + Photo.objects.count()
+        expected += Clip.objects.count() + Recipe.objects.exclude(photo="").count()
+        self.assertEqual(len(files), expected)
 
-    def test_portraits_are_drawn_for_the_people_marked_in_the_file(self):
-        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
-            load_demo_family(with_portraits=True)
+    def test_pictures_and_recordings_are_drawn_into_the_media_folder(self):
+        load_demo_family()
+        media = Path(settings.MEDIA_ROOT)
 
-            with_photo = Person.objects.exclude(photo="")
-            self.assertGreaterEqual(with_photo.count(), 5)
-            for person in with_photo:
-                self.assertTrue((Path(media) / person.photo.name).is_file())
+        self.assertGreaterEqual(Person.objects.exclude(photo="").count(), 5)
+        for name in (
+            [person.photo.name for person in Person.objects.exclude(photo="")]
+            + [photo.image.name for photo in Photo.objects.all()]
+            + [clip.file.name for clip in Clip.objects.all()]
+        ):
+            with self.subTest(file=name):
+                self.assertTrue((media / name).is_file())
+
+    def test_photos_have_people_dates_and_unidentified_faces(self):
+        load_demo_family()
+
+        self.assertGreaterEqual(Photo.objects.count(), 5)
+        self.assertTrue(Photo.objects.filter(has_unidentified_people=True).exists())
+        self.assertTrue(Photo.objects.filter(date__regex=r"^\d{4}-\d{2}-\d{2}$").exists())
+        self.assertTrue(all(photo.people.exists() for photo in Photo.objects.all()))
 
     def test_demo_file_is_inside_the_demo_folder(self):
         self.assertEqual(DEMO_FILE, Path(settings.BASE_DIR) / "demo" / "family.toml")
@@ -125,9 +140,8 @@ class DemoLoadingTests(TestCase):
 
     @override_settings(RAIZES_DATASET="demo")
     def test_command_loads_the_family(self):
-        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
-            output = StringIO()
-            call_command("load_demo", stdout=output)
+        output = StringIO()
+        call_command("load_demo", stdout=output)
 
         self.assertTrue(Person.objects.filter(identifier=settings.DEMO_CENTRAL_PERSON).exists())
         self.assertIn(str(Person.objects.count()), output.getvalue())

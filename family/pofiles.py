@@ -4,15 +4,18 @@ Django reads translations from compiled .mo files. Its own command for that,
 `compilemessages`, needs the GNU gettext programs, which Windows does not
 have. This small module does the same job without installing anything.
 
-Supported: `msgctxt`, `msgid`, `msgstr`, comments and strings split over
-several lines. Plural forms are not used in this project.
+Supported: `msgctxt`, `msgid`, `msgstr`, plural forms (`msgid_plural`,
+`msgstr[0]`, `msgstr[1]`...), comments and strings split over several lines.
+
+A plural entry is kept the way .mo files store it: the original is
+"singular\\0plural" and the translation "form 0\\0form 1".
 """
 import re
 import struct
 from pathlib import Path
 
 _ESCAPES = {"n": "\n", "t": "\t", "r": "\r", '"': '"', "\\": "\\"}
-_KEYWORD_LINE = re.compile(r'^(msgctxt|msgid|msgstr)\s+"(.*)"\s*$')
+_KEYWORD_LINE = re.compile(r'^(msgctxt|msgid_plural|msgid|msgstr(?:\[\d+\])?)\s+"(.*)"\s*$')
 _CONTINUATION_LINE = re.compile(r'^"(.*)"\s*$')
 
 
@@ -24,6 +27,7 @@ def parse_po(text: str) -> dict[tuple[str | None, str], str]:
     """Return {(context, original): translation} for every entry in the file.
 
     The header (the entry with an empty original) is included under ("", "").
+    A plural entry with any form left empty counts as untranslated ("").
     """
     messages: dict[tuple[str | None, str], str] = {}
     entry: dict[str, str] = {}
@@ -31,7 +35,14 @@ def parse_po(text: str) -> dict[tuple[str | None, str], str]:
 
     def finish_entry():
         if "msgid" in entry:
-            messages[(entry.get("msgctxt"), entry["msgid"])] = entry.get("msgstr", "")
+            original = entry["msgid"]
+            if "msgid_plural" in entry:
+                original += "\x00" + entry["msgid_plural"]
+                forms = [entry[key] for key in sorted(k for k in entry if k.startswith("msgstr["))]
+                translation = "\x00".join(forms) if forms and all(forms) else ""
+            else:
+                translation = entry.get("msgstr", "")
+            messages[(entry.get("msgctxt"), original)] = translation
         entry.clear()
 
     for number, line in enumerate(text.splitlines(), start=1):

@@ -1,4 +1,5 @@
 """The static export: the whole site as files that open without Django."""
+import json
 import re
 import tempfile
 from io import StringIO
@@ -10,11 +11,15 @@ from django.core.management.base import CommandError
 from django.test import override_settings
 from django.utils import translation
 
-from family.demo import load_demo_family
 from family.export import ExportError, export_site, find_dead_links
-from family.models import Person
+from family.models import Clip, Person, Photo, Recipe
 
 from .test_demo import DemoFamilyTestCase
+
+
+def expected_pages() -> int:
+    """Two languages x (news, tree, map, search, who is this, people, recipes)."""
+    return 2 * (5 + Person.objects.count() + Recipe.objects.count())
 
 
 class ExportTestCase(DemoFamilyTestCase):
@@ -45,10 +50,22 @@ class ExportedFilesTests(DemoFamilyTestCase):
     def read(self, relative_path: str) -> str:
         return (self.output / relative_path).read_text(encoding="utf-8")
 
-    def test_tree_and_people_list_in_both_languages(self):
-        for path in ("pt-br/index.html", "es/index.html", "pt-br/people/index.html", "es/people/index.html"):
-            with self.subTest(path=path):
-                self.assertTrue((self.output / path).is_file())
+    def test_every_page_of_the_plan_in_both_languages(self):
+        for page in ("index.html", "tree/index.html", "tree/map/index.html", "search/index.html", "photos/who/index.html"):
+            for path in (f"pt-br/{page}", f"es/{page}"):
+                with self.subTest(path=path):
+                    self.assertTrue((self.output / path).is_file())
+
+    def test_data_for_the_browser_is_exported_once(self):
+        script = self.read("data/family.js")
+
+        self.assertTrue(script.startswith("window.RAIZES_DATA = {"))
+        self.assertIn("lia-carvalho-1996", script)
+
+    def test_one_page_per_recipe(self):
+        for slug in Recipe.objects.values_list("slug", flat=True):
+            with self.subTest(recipe=slug):
+                self.assertTrue((self.output / "es" / "recipes" / slug / "index.html").is_file())
 
     def test_one_page_per_person_in_each_language(self):
         for identifier in Person.objects.values_list("identifier", flat=True):
@@ -59,8 +76,7 @@ class ExportedFilesTests(DemoFamilyTestCase):
                     )
 
     def test_report_counts_the_pages(self):
-        # Two languages x (tree + list + one page per person).
-        self.assertEqual(self.report.pages, 2 * (2 + Person.objects.count()))
+        self.assertEqual(self.report.pages, expected_pages())
 
     def test_front_door_sends_the_visitor_to_the_default_language(self):
         html = self.read("index.html")
@@ -70,11 +86,20 @@ class ExportedFilesTests(DemoFamilyTestCase):
         self.assertIn('href="pt-br/index.html"', html)
 
     def test_pages_are_in_the_right_language(self):
-        self.assertIn("Árvore da família", self.read("pt-br/index.html"))
-        self.assertIn("Árbol de la familia", self.read("es/index.html"))
+        self.assertIn("Árvore da família", self.read("pt-br/tree/index.html"))
+        self.assertIn("Árbol de la familia", self.read("es/tree/index.html"))
+        self.assertIn("<h1>Novidades</h1>", self.read("pt-br/index.html"))
 
     def test_css_javascript_and_icon_are_copied(self):
-        for path in ("static/css/site.css", "static/js/tree.js", "static/js/person.js", "static/icons/favicon.svg"):
+        for path in (
+            "static/css/site.css",
+            "static/js/tree.js",
+            "static/js/mural.js",
+            "static/js/search.js",
+            "static/vendor/leaflet/leaflet.js",
+            "static/vendor/leaflet/leaflet.css",
+            "static/icons/favicon.svg",
+        ):
             with self.subTest(path=path):
                 self.assertTrue((self.output / path).is_file())
 
@@ -90,13 +115,17 @@ class ExportedFilesTests(DemoFamilyTestCase):
         for page in self.output.rglob("*.html"):
             html = page.read_text(encoding="utf-8")
             with self.subTest(page=str(page.relative_to(self.output))):
-                self.assertEqual(re.findall(r'(?:href|src)="/[^"]*"', html), [])
+                self.assertEqual(re.findall(r'(?:href|src|data-root)="/[^"]*"', html), [])
+
+    def test_scripts_know_where_the_root_of_the_site_is(self):
+        self.assertIn('data-root="../index.html"', self.read("pt-br/index.html"))
+        self.assertIn('data-root="../../../index.html"', self.read("pt-br/people/lia-carvalho-1996/index.html"))
 
     def test_every_link_leads_to_a_file_that_exists(self):
         self.assertEqual(find_dead_links(self.output), [])
 
     def test_tree_links_to_the_page_of_a_person(self):
-        self.assertIn('href="people/lia-carvalho-1996/index.html"', self.read("pt-br/index.html"))
+        self.assertIn('href="../people/lia-carvalho-1996/index.html"', self.read("pt-br/tree/index.html"))
 
     def test_person_page_links_back_and_to_the_other_language(self):
         html = self.read("pt-br/people/lia-carvalho-1996/index.html")
@@ -122,28 +151,80 @@ class ExportLanguageTests(ExportTestCase):
             self.assertEqual(translation.get_language(), "es")
 
 
-class ExportedPhotosTests(ExportTestCase):
-    def test_only_the_photos_in_use_are_copied(self):
-        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
-            load_demo_family(with_portraits=True)
-            (Path(media) / "people" / "not-used-anywhere.png").write_bytes(b"private")
-            (Path(media) / "originals").mkdir()
-            (Path(media) / "originals" / "scan.tiff").write_bytes(b"private")
+class ExportedMediaTests(ExportTestCase):
+    def test_only_small_copies_of_the_photos_in_use_are_exported(self):
+        media = Path(settings.MEDIA_ROOT)
+        (media / "people" / "not-used-anywhere.png").write_bytes(b"private")
+        (media / "originals").mkdir(exist_ok=True)
+        (media / "originals" / "scan.tiff").write_bytes(b"private")
 
-            export_site(self.output)
+        export_site(self.output)
 
-        copied = sorted(path.name for path in (self.output / "media").rglob("*") if path.is_file())
-        with_photo = Person.objects.exclude(photo="").count()
-        self.assertEqual(len(copied), with_photo)
-        self.assertIn("lia-carvalho-1996.png", copied)
-        self.assertNotIn("not-used-anywhere.png", copied)
-        self.assertNotIn("scan.tiff", copied)
-        self.assertIn(
-            'src="../../../media/people/lia-carvalho-1996.png"',
-            self.read("pt-br/people/lia-carvalho-1996/index.html"),
-        )
+        exported = [path for path in (self.output / "media").rglob("*") if path.is_file()]
+        names = {path.relative_to(self.output / "media").as_posix() for path in exported}
+        for photo in Photo.objects.all():
+            with self.subTest(photo=photo.caption):
+                self.assertIn(f"v/480/{photo.image.name}.jpg", names)
+                self.assertIn(f"v/1600/{photo.image.name}.jpg", names)
+                self.assertNotIn(photo.image.name, names)
+        self.assertIn("v/320/people/lia-carvalho-1996.png.jpg", names)
+        self.assertNotIn("people/lia-carvalho-1996.png", names)
+        self.assertFalse(any("not-used-anywhere" in name or "scan.tiff" in name for name in names))
+        self.assertTrue(all(name.startswith(("v/", "clips/")) for name in names))
         self.assertEqual(find_dead_links(self.output), [])
 
+    def test_recordings_are_copied_as_they_are(self):
+        export_site(self.output)
+
+        clip = Clip.objects.get()
+        copied = self.output / "media" / clip.file.name
+        self.assertEqual(copied.read_bytes(), (Path(settings.MEDIA_ROOT) / clip.file.name).read_bytes())
+
+    def test_missing_original_stops_the_export_with_a_clear_message(self):
+        photo = Photo.objects.first()
+        original = Path(settings.MEDIA_ROOT) / photo.image.name
+        # The files are shared by the tests of this class: put it back afterwards.
+        saved = original.read_bytes()
+        self.addCleanup(original.write_bytes, saved)
+        original.unlink()
+
+        with self.assertRaises(ExportError) as caught:
+            export_site(self.output)
+
+        self.assertTrue(any(photo.image.name in problem for problem in caught.exception.problems))
+
+
+class NewOnTheSiteTests(ExportTestCase):
+    def setUp(self):
+        super().setUp()
+        # The history file is shared by the tests of this class.
+        Path(settings.RAIZES_HISTORY_FILE).unlink(missing_ok=True)
+
+    def test_export_remembers_when_each_item_was_first_published(self):
+        export_site(self.output)
+
+        history = json.loads(Path(settings.RAIZES_HISTORY_FILE).read_text())
+        self.assertIn("person:lia-carvalho-1996", history)
+        self.assertIn(f"photo:{Photo.objects.first().pk}", history)
+        self.assertIn("recipe:bolo-de-fuba-da-dalva", history)
+
+    def test_first_publication_date_is_kept_on_later_exports(self):
+        Path(settings.RAIZES_HISTORY_FILE).write_text(json.dumps({"person:lia-carvalho-1996": "2020-01-01"}))
+
+        export_site(self.output)
+
+        history = json.loads(Path(settings.RAIZES_HISTORY_FILE).read_text())
+        self.assertEqual(history["person:lia-carvalho-1996"], "2020-01-01")
+
+    def test_failed_export_does_not_touch_the_history(self):
+        lia = Person.objects.get(identifier="lia-carvalho-1996")
+        lia.work = "[[ninguem-1]]"
+        lia.save()
+
+        with self.assertRaises(ExportError):
+            export_site(self.output)
+
+        self.assertFalse(Path(settings.RAIZES_HISTORY_FILE).exists())
 
 class ExportSafetyTests(ExportTestCase):
     def break_a_link(self):
@@ -191,12 +272,11 @@ class ExportSafetyTests(ExportTestCase):
 
     def test_exporting_again_replaces_the_previous_export(self):
         export_site(self.output)
-        Person.objects.get(identifier="olga-figueira-1943").parent_links.all().delete()
-        Person.objects.get(identifier="olga-figueira-1943").delete()
+        Person.objects.get(identifier="sofia-ipe-2006").delete()
 
         export_site(self.output)
 
-        self.assertFalse((self.output / "pt-br" / "people" / "olga-figueira-1943").exists())
+        self.assertFalse((self.output / "pt-br" / "people" / "sofia-ipe-2006").exists())
         self.assertTrue((self.output / "pt-br" / "people" / "lia-carvalho-1996").exists())
         self.assertEqual(find_dead_links(self.output), [])
 
@@ -217,7 +297,7 @@ class ExportCommandTests(ExportTestCase):
         call_command("export_site", output=str(self.output), stdout=output)
 
         self.assertTrue((self.output / "index.html").is_file())
-        self.assertIn(str(2 * (2 + Person.objects.count())), output.getvalue())
+        self.assertIn(str(expected_pages()), output.getvalue())
         self.assertIn("index.html", output.getvalue())
 
     def test_command_lists_the_broken_links(self):

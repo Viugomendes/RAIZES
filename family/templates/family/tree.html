@@ -5,7 +5,10 @@
 {% block body_class %}wide{% endblock %}
 
 {% block content %}
-  <h1 class="tree-title">{% translate "Family tree" %}</h1>
+  <div class="page-heading">
+    <h1>{% translate "Family tree" %}</h1>
+    {% include "family/_tree_tabs.html" %}
+  </div>
 
   {% if not tree %}
     <p class="notice">{% translate "Nobody has been added yet." %}</p>
@@ -21,15 +24,22 @@
       </p>
     {% endif %}
 
-    <div class="tree-frame">
+    <div class="tree-controls" hidden>
+      <label for="tree-from">{% translate "See from" %}</label>
+      <select id="tree-from"></select>
+    </div>
+
+    <div class="tree-frame" id="tree-frame">
       <div class="tree-toolbar" role="group" aria-label="{% translate 'Zoom' %}">
         <button type="button" id="tree-zoom-in" title="{% translate 'Zoom in' %}" aria-label="{% translate 'Zoom in' %}">+</button>
         <button type="button" id="tree-zoom-out" title="{% translate 'Zoom out' %}" aria-label="{% translate 'Zoom out' %}">−</button>
         <button type="button" id="tree-fit" title="{% translate 'Show the whole family' %}">{% translate "Whole family" %}</button>
+        <button type="button" id="tree-full" aria-pressed="false">{% translate "Full screen" %}</button>
       </div>
+      <p class="tree-hint" id="tree-hint" aria-live="polite"></p>
 
       {% localize off %}
-      <svg id="family-tree" viewBox="{{ tree.view_box }}" style="aspect-ratio: {{ tree.width }} / {{ tree.height }}" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="{% translate 'Family tree' %}">
+      <svg id="family-tree" viewBox="{{ tree.view_box }}" style="aspect-ratio: {{ tree.width }} / {{ tree.height }}" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="{% translate 'Family tree' %}" tabindex="0">
         <g class="bands">
           {% for x, y, width, height in tree.bands %}<rect x="{{ x }}" y="{{ y }}" width="{{ width }}" height="{{ height }}"/>{% endfor %}
         </g>
@@ -41,11 +51,11 @@
           {% for css, path in tree.union_lines %}<path class="union-line {{ css }}" d="{{ path }}"/>
           {% endfor %}
         </g>
-        <g class="people">
-          {% for person in tree.people %}<a class="{{ person.css_class }}" href="{{ person.url }}">
+        <g class="people" id="tree-people">
+          {% for person in tree.people %}<a class="{{ person.css_class }}" href="{{ person.url }}" data-id="{{ person.id }}">
             <title>{{ person.title }}</title>
             {% if person.ring_radius %}<circle class="ring" cx="{{ person.x }}" cy="{{ person.y }}" r="{{ person.ring_radius }}" fill="#ffffff" stroke="{{ person.stroke }}" stroke-width="2"/>{% endif %}
-            <circle cx="{{ person.x }}" cy="{{ person.y }}" r="{{ person.radius }}" fill="{{ person.fill }}" stroke="{{ person.stroke }}" stroke-width="{{ person.stroke_width }}"/>
+            <circle class="dot" cx="{{ person.x }}" cy="{{ person.y }}" r="{{ person.radius }}" fill="{{ person.fill }}" stroke="{{ person.stroke }}" stroke-width="{{ person.stroke_width }}"/>
             <text x="{{ person.x }}" font-size="{{ person.font_size }}">{% for line, y in person.label %}<tspan x="{{ person.x }}" y="{{ y }}">{{ line }}</tspan>{% endfor %}</text>
           </a>
           {% endfor %}
@@ -87,19 +97,27 @@
         </div>
         <div>
           <h2>{% translate "Sides and distance" %}</h2>
-          <ul>
+          <ul id="legend-sides">
             {% for colour, label in legend_sides %}
-              <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="10" fill="{{ colour }}"/></svg> {{ label }}</li>
+              <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="10" fill="{{ colour }}"/></svg> <span>{{ label }}</span></li>
             {% endfor %}
+          </ul>
+          <ul>
             <li><svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="9" cy="14" r="8" fill="#3a3531"/><circle cx="25" cy="14" r="6" fill="#8d8985"/><circle cx="38" cy="14" r="4" fill="#bdbbb9"/></svg> {% translate "Further away: smaller and lighter" %}</li>
           </ul>
         </div>
       </div>
-      <p class="muted">{% translate "Drag to move, use the mouse wheel or pinch to zoom, and click a person to open their page." %}</p>
+      <p class="muted">{% translate "Drag to move, hold Ctrl and turn the mouse wheel (or pinch with two fingers) to zoom, and click a person to open their page." %}</p>
     </details>
+    {{ strings|json_script:"tree-strings" }}
   {% endif %}
 {% endblock %}
 
 {% block scripts %}
-  {% if tree %}<script src="{% static 'js/tree.js' %}" defer></script>{% endif %}
+  {% if tree %}
+    <script src="{% url 'family_data' %}"></script>
+    <script src="{% static 'js/common.js' %}"></script>
+    <script src="{% static 'js/kinship.js' %}"></script>
+    <script src="{% static 'js/tree.js' %}" defer></script>
+  {% endif %}
 {% endblock %}

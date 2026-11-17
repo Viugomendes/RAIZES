@@ -1,0 +1,21 @@
+{% extends "family/base.html" %}
+{% load i18n static raizes %}
+
+{% block title %}{{ recipe.title }} · {% endblock %}
+
+{% block content %}
+<article class="recipe">
+  <header class="recipe-header">
+    <h1>{{ recipe.title }}</h1>
+    {% if recipe.author %}
+      <p class="muted">{% translate "Recipe of" %} <a href="{% url 'family:person_detail' recipe.author.identifier %}">{{ recipe.author.full_name }}</a></p>
+    {% endif %}
+  </header>
+  {% if recipe.photo %}
+    <a class="photo-link recipe-photo" href="{{ recipe.photo|photo_url:'large' }}" data-caption="{{ recipe.title }}"><img src="{{ recipe.photo|photo_url:'thumb' }}" alt="{{ recipe.title }}"></a>
+  {% endif %}
+  {% if text %}<section class="page-section"><div class="prose">{{ text }}</div></section>{% endif %}
+</article>
+{% endblock %}
+
+{% block scripts %}{% if recipe.photo %}<script src="{% static 'js/gallery.js' %}" defer></script>{% endif %}{% endblock %}

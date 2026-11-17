@@ -1,11 +1,7 @@
-"""The page of a person, with its 10 sections, and the list of people."""
+"""The page of a person, with its 10 sections, and the other pages of the site."""
 import re
-import tempfile
 
-from django.test import override_settings
-
-from family.demo import load_demo_family
-from family.models import Person
+from family.models import Person, Photo, Recipe
 from family.textcheck import all_text_problems
 
 from .test_demo import DemoFamilyTestCase
@@ -42,7 +38,7 @@ class PersonHeaderTests(PersonPageTestCase):
         self.assertIn("ilustradora", header)
 
     def test_person_without_photo_shows_their_initials(self):
-        html = self.page("lia-carvalho-1996")
+        html = self.page("davi-amoreira-1995")
 
         self.assertIn('class="avatar avatar-initials"', html)
         self.assertNotIn("<img class=\"avatar\"", html)
@@ -63,15 +59,15 @@ class PersonHeaderTests(PersonPageTestCase):
                 self.page(identifier, language="es")
 
 
-class PersonPhotoTests(DemoFamilyTestCase):
-    def test_person_with_photo_shows_it(self):
-        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
-            load_demo_family(with_portraits=True)
+class PersonPhotoTests(PersonPageTestCase):
+    def test_person_with_photo_shows_a_small_copy_of_it(self):
+        html = self.page("lia-carvalho-1996")
 
-            html = self.client.get("/pt-br/people/lia-carvalho-1996/").content.decode()
-
-        self.assertIn('<img class="avatar" src="/media/people/lia-carvalho-1996.png"', html)
+        self.assertIn('<img class="avatar" src="/media/v/320/people/lia-carvalho-1996.png.jpg"', html)
         self.assertNotIn("avatar-initials", html)
+
+    def test_link_to_the_tree_seen_from_this_person(self):
+        self.assertIn('href="/pt-br/tree/?from=lia-carvalho-1996"', self.page("lia-carvalho-1996"))
 
 
 class BasicDataTests(PersonPageTestCase):
@@ -222,8 +218,8 @@ class TextSectionsTests(PersonPageTestCase):
             with self.subTest(section=empty):
                 self.assertEqual(section(html, empty), "")
 
-    def test_child_with_only_basic_data_has_a_single_section(self):
-        html = self.page("theo-carvalho-2021")
+    def test_person_with_only_basic_data_has_a_single_section(self):
+        html = self.page("maria-jacaranda-1")
 
         self.assertEqual(html.count("<section id="), 1)
         self.assertNotEqual(section(html, "basic-data"), "")
@@ -291,34 +287,109 @@ class GallerySectionTests(PersonPageTestCase):
                 self.assertIn(place, gallery)
 
     def test_person_without_interview_or_places_has_no_gallery_section(self):
-        self.assertEqual(section(self.page("theo-carvalho-2021"), "gallery"), "")
+        self.assertEqual(section(self.page("maria-jacaranda-1"), "gallery"), "")
 
     def test_page_without_interview_loads_nothing_from_youtube(self):
         self.assertNotIn("youtube", self.page("lia-carvalho-1996"))
 
 
-class PersonListTests(PersonPageTestCase):
-    def test_list_links_to_every_person(self):
-        html = self.client.get("/pt-br/people/").content.decode()
+class GalleryContentsTests(PersonPageTestCase):
+    def test_photos_where_the_person_appears_with_small_and_large_copies(self):
+        gallery = section(self.page("lia-carvalho-1996"), "gallery")
+        photos = Photo.objects.filter(people__identifier="lia-carvalho-1996")
 
-        for identifier in Person.objects.values_list("identifier", flat=True):
-            with self.subTest(person=identifier):
-                self.assertIn(f'href="/pt-br/people/{identifier}/"', html)
+        self.assertEqual(gallery.count('class="photo-link"'), photos.count())
+        for photo in photos:
+            with self.subTest(photo=photo.caption):
+                self.assertIn(f'href="/media/v/1600/{photo.image.name}.jpg"', gallery)
+                self.assertIn(f'src="/media/v/480/{photo.image.name}.jpg"', gallery)
+        self.assertNotIn(f'src="/media/{photos[0].image.name}"', gallery)
 
-    def test_list_is_alphabetical_ignoring_accents(self):
-        html = self.client.get("/pt-br/people/").content.decode()
-        names = re.findall(r'<a href="/pt-br/people/[\w-]+/">([^<]+)</a>', html)
+    def test_other_people_in_the_photo_are_linked(self):
+        gallery = section(self.page("lia-carvalho-1996"), "gallery")
 
-        self.assertLess(names.index("Alice Videira Loureiro"), names.index("Álvaro Oliveira Figueira"))
-        self.assertLess(names.index("Álvaro Oliveira Figueira"), names.index("Amélia Castanheira"))
-        self.assertLess(names.index("Inês Oliveira Figueira"), names.index("Íris Salgueiro"))
-        self.assertLess(names.index("Íris Salgueiro"), names.index("Jandira Mangueira"))
+        self.assertIn('href="/pt-br/people/theo-carvalho-2021/">Theo</a>', gallery)
 
-    def test_list_shows_the_years(self):
-        html = self.client.get("/pt-br/people/").content.decode()
+    def test_photo_with_someone_unidentified_links_to_who_is_this(self):
+        gallery = section(self.page("helena-figueira-1970"), "gallery")
 
-        self.assertIn("1940–2015", html)
+        self.assertIn('href="/pt-br/photos/who/"', gallery)
 
+    def test_recording_is_played_inside_the_page(self):
+        gallery = section(self.page("dalva-oliveira-1944"), "gallery")
+
+        self.assertIn('<audio controls preload="none" src="/media/clips/segredo-do-bolo', gallery)
+
+    def test_recipes_of_the_person(self):
+        gallery = section(self.page("dalva-oliveira-1944"), "gallery")
+
+        self.assertIn('href="/pt-br/recipes/bolo-de-fuba-da-dalva/"', gallery)
+
+    def test_personal_map_with_every_place_of_the_life(self):
+        html = self.page("anselmo-figueira-1940")
+        places = re.search(r'<script id="personal-places" type="application/json">(.*?)</script>', html).group(1)
+
+        self.assertIn("Ouro Preto, Brasil", places)
+        self.assertIn('id="personal-map"', html)
+        self.assertIn("leaflet.js", html)
+
+    def test_person_without_places_loads_no_map(self):
+        self.assertNotIn("leaflet", self.page("maria-jacaranda-1"))
+
+
+class OtherPagesTests(PersonPageTestCase):
+    def test_recipe_page(self):
+        response = self.client.get("/pt-br/recipes/bolo-de-fuba-da-dalva/")
+
+        self.assertContains(response, "<h1>Bolo de fubá da vó Dalva</h1>")
+        self.assertContains(response, 'href="/pt-br/people/dalva-oliveira-1944/"')
+        self.assertContains(response, "<strong>Ingredientes:</strong>")
+
+    def test_every_recipe_has_a_page(self):
+        for slug in Recipe.objects.values_list("slug", flat=True):
+            with self.subTest(recipe=slug):
+                self.assertEqual(self.client.get(f"/es/recipes/{slug}/").status_code, 200)
+
+    def test_who_is_this_lists_only_photos_with_someone_unidentified(self):
+        html = self.client.get("/pt-br/photos/who/").content.decode()
+
+        for photo in Photo.objects.all():
+            with self.subTest(photo=photo.caption):
+                self.assertEqual(f"/media/v/480/{photo.image.name}.jpg" in html, photo.has_unidentified_people)
+
+    def test_place_link_in_a_text_opens_the_map(self):
+        html = self.page("lia-carvalho-1996")
+
+        self.assertIn('<a class="place-link" href="/pt-br/tree/map/#place-ouro-preto">', html)
+
+    def test_recipe_link_in_a_text_opens_the_recipe(self):
+        html = self.page("lia-carvalho-1996")
+
+        self.assertIn('<a class="recipe-link" href="/pt-br/recipes/bolo-de-fuba-da-dalva/">', html)
+
+    def test_news_search_and_map_pages_load_their_scripts_and_texts(self):
+        for path, script, strings in (
+            ("/pt-br/", "js/mural.js", "mural-strings"),
+            ("/pt-br/search/", "js/search.js", "search-strings"),
+            ("/pt-br/tree/map/", "js/map.js", "map-strings"),
+        ):
+            with self.subTest(page=path):
+                response = self.client.get(path)
+                self.assertContains(response, script)
+                self.assertContains(response, f'id="{strings}"')
+                self.assertContains(response, 'src="/data/family.js"')
+
+    def test_navigation_follows_the_plan(self):
+        html = self.client.get("/pt-br/").content.decode()
+        nav = re.search(r'<nav class="site-nav".*?</nav>', html, re.DOTALL).group(0)
+
+        self.assertEqual(re.findall(r">([^<]+)</a>", nav), ["Novidades", "Árvore", "Busca"])
+
+    def test_language_flags_are_small_pictures_with_the_language_name(self):
+        html = self.client.get("/pt-br/").content.decode()
+        flags = re.findall(r'<a class="flag"[^>]*aria-label="([^"]+)"', html)
+
+        self.assertEqual(flags, ["Português", "Español"])
 
 class DemoTextsTests(DemoFamilyTestCase):
     def test_invented_family_has_no_broken_links(self):

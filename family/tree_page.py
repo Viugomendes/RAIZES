@@ -24,6 +24,7 @@ from .tree_skin import (
 
 @dataclass
 class PersonDrawing:
+    id: str
     url: str
     title: str
     css_class: str
@@ -36,6 +37,26 @@ class PersonDrawing:
     stroke_width: float
     font_size: float
     label: list[tuple[str, float]]  # (text, y of the line)
+
+
+def legend_entries(figure_names: list[str], central_name: str | None, has_unlinked: bool):
+    """(colour, text) for each side in the legend. tree.js builds the same list
+    in the browser when the visitor picks another central person."""
+    entries = [
+        (side_color(str(index), [str(i) for i in range(len(figure_names))]), _("Side of %(name)s") % {"name": name})
+        for index, name in enumerate(figure_names)
+    ]
+    if central_name:
+        entries.append(
+            (
+                CENTER_COLOR,
+                _("%(name)s, siblings, descendants, partners' families and relatives on more than one side")
+                % {"name": central_name},
+            )
+        )
+        if has_unlinked:
+            entries.append((UNLINKED_COLOR, _("No link to %(name)s") % {"name": central_name}))
+    return entries
 
 
 def build_tree_page() -> dict:
@@ -91,6 +112,7 @@ def build_tree_page() -> dict:
         first_line = place.y + max(style.radius, ring_radius) + style.font_size + 4
         drawings.append(
             PersonDrawing(
+                id=identifier,
                 url=reverse("family:person_detail", args=[identifier]),
                 title=f"{person.full_name} ({years})" if years else person.full_name,
                 css_class=css_class,
@@ -129,21 +151,11 @@ def build_tree_page() -> dict:
                 )
             )
 
-    legend_sides = [
-        (side_color(figure, figures), _("Side of %(name)s") % {"name": people[figure].full_name})
-        for figure in figures
-    ]
-    if central:
-        legend_sides.append(
-            (
-                CENTER_COLOR,
-                _("%(name)s, siblings, descendants, partners' families and relatives on more than one side") % {"name": central.full_name},
-            )
-        )
-        if len(distances) < len(people):
-            legend_sides.append(
-                (UNLINKED_COLOR, _("No link to %(name)s") % {"name": central.full_name})
-            )
+    legend_sides = legend_entries(
+        [people[figure].full_name for figure in figures],
+        central.full_name if central else None,
+        has_unlinked=len(distances) < len(people),
+    )
 
     return {
         "tree": {

@@ -5,17 +5,28 @@ the site live under a language prefix: /pt-br/... and /es/...
 """
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
+
+from family import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # The data the pages read in the browser (tree, search, mural, maps).
+    path("data/family.js", views.family_data, name="family_data", distill_path=True),
+    # Smaller copies of the photos, made on request while working locally.
+    # The export writes the same files into dist/media/v/.
+    re_path(r"^media/v/(?P<path>.+)$", views.media_variant, name="media_variant"),
+    # Clips are the only media files sent as they are.
+    re_path(
+        r"^media/(?P<path>clips/.+)$",
+        serve,
+        {"document_root": settings.MEDIA_ROOT},
+        name="media_clip",
+    ),
 ]
 
 urlpatterns += i18n_patterns(
     path("", include("family.urls")),
 )
-
-# Photos are served by Django only while working locally.
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -4,7 +4,11 @@ Only facts are stored here. Parents, siblings, children and grandchildren are
 never typed in: they are calculated from the unions (see kinship.py).
 """
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    FileExtensionValidator,
+    MaxValueValidator,
+    MinValueValidator,
+)
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -517,8 +521,18 @@ class ChildLink(models.Model):
 class Photo(models.Model):
     """A photo of the gallery, with the people who appear in it."""
 
-    image = models.ImageField(_("file"), upload_to="photos/")
-    year = models.PositiveSmallIntegerField(_("year"), null=True, blank=True)
+    image = models.ImageField(
+        _("file"),
+        upload_to="photos/",
+        help_text=_(
+            "The original stays on this computer. The site only receives smaller "
+            "copies, without the hidden data of the file (camera, GPS)."
+        ),
+    )
+    date = PartialDateField(
+        _("date"),
+        help_text=_("When it was taken: complete (14/03/1962) or just the year. Empty if unknown."),
+    )
     place = models.ForeignKey(
         Place,
         verbose_name=_("place"),
@@ -539,12 +553,72 @@ class Photo(models.Model):
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
 
     class Meta:
-        ordering = ["year", "id"]
+        ordering = ["date", "id"]
         verbose_name = _("photo")
         verbose_name_plural = _("photos")
 
     def __str__(self):
         return self.caption or self.image.name
+
+    @property
+    def taken(self):
+        return parse_stored_date(self.date)
+
+
+# Clips are copied to the site as they are, so they must be small.
+CLIP_MAX_BYTES = 25 * 1024 * 1024  # the limit of one file on Cloudflare Pages
+AUDIO_EXTENSIONS = ("mp3", "m4a", "ogg", "oga", "wav")
+VIDEO_EXTENSIONS = ("mp4", "webm")
+
+
+def validate_clip_size(file) -> None:
+    if file.size > CLIP_MAX_BYTES:
+        raise ValidationError(
+            _(
+                "The file is too big for the site (maximum 25 MB). Long interviews "
+                "go on YouTube as unlisted videos."
+            ),
+            code="clip_too_big",
+        )
+
+
+class Clip(models.Model):
+    """A short audio or video recording, shown inside the site."""
+
+    file = models.FileField(
+        _("file"),
+        upload_to="clips/",
+        validators=[
+            FileExtensionValidator(AUDIO_EXTENSIONS + VIDEO_EXTENSIONS),
+            validate_clip_size,
+        ],
+        help_text=_(
+            "Audio (mp3, m4a, ogg, wav) or short video (mp4, webm), up to 25 MB. "
+            "Long interviews go on YouTube."
+        ),
+    )
+    caption = models.CharField(_("caption"), max_length=300, blank=True)
+    date = PartialDateField(_("date"))
+    people = models.ManyToManyField(
+        Person, verbose_name=_("people in the recording"), blank=True, related_name="clips"
+    )
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+
+    class Meta:
+        ordering = ["date", "id"]
+        verbose_name = _("audio or video clip")
+        verbose_name_plural = _("audio and video clips")
+
+    def __str__(self):
+        return self.caption or self.file.name
+
+    @property
+    def taken(self):
+        return parse_stored_date(self.date)
+
+    @property
+    def is_video(self) -> bool:
+        return self.file.name.lower().rsplit(".", 1)[-1] in VIDEO_EXTENSIONS
 
 
 class Recipe(models.Model):

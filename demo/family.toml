@@ -271,6 +271,9 @@ tastes = """
 **Prato que faz melhor:** bolo de fubá, que ninguém mais acerta.
 **Frase que sempre repete:** "Quem tem pressa come cru."
 """
+legacy = """
+> A comida boa é a que junta a família na mesa.
+"""
 
 [[people]]
 identifier = "olga-figueira-1943"
@@ -796,6 +799,68 @@ partners = ["baltazar-carvalho-1880"]
 children = ["vicente-carvalho-1910"]
 
 # ---------------------------------------------------------------------------
+# Photos and recordings. The pictures and the sound are drawn by the loader:
+# they are placeholders, not real photos. "unknown = true" puts the photo in
+# the "Who is this?" list.
+# ---------------------------------------------------------------------------
+
+[[photos]]
+name = "casamento-anselmo-dalva"
+caption = "Casamento de Anselmo e Dalva"
+date = "1961-11-18"
+place = "ouro-preto"
+people = ["anselmo-figueira-1940", "dalva-oliveira-1944", "olga-figueira-1943"]
+
+[[photos]]
+name = "domingo-na-praia"
+caption = "Domingo na praia"
+date = "1975-01-12"
+place = "santos"
+people = ["joaquim-carvalho-1938", "amelia-castanheira-1941", "regina-carvalho-1964", "tomas-carvalho-1968"]
+
+[[photos]]
+name = "festa-junina"
+caption = "Festa junina em Santos"
+date = "1990-06-24"
+place = "santos"
+people = ["helena-figueira-1970", "tomas-carvalho-1968", "marta-figueira-1966"]
+has_unidentified_people = true
+
+[[photos]]
+name = "oficina-do-ferreiro"
+caption = "Oficina do ferreiro"
+date = "1930"
+place = "ouro-preto"
+people = ["teodoro-figueira-1885", "horacio-figueira-1912"]
+has_unidentified_people = true
+
+[[photos]]
+name = "natal-em-curitiba"
+caption = "Natal com todos os filhos"
+date = "2008-12-25"
+place = "curitiba"
+people = ["helena-figueira-1970", "rui-pinheiro-1965", "bento-carvalho-1993", "lia-carvalho-1996", "nina-pinheiro-2007"]
+
+[[photos]]
+name = "formatura-da-lia"
+caption = "Formatura da Lia"
+date = "2018-12-14"
+place = "curitiba"
+people = ["lia-carvalho-1996", "helena-figueira-1970", "rui-pinheiro-1965", "tomas-carvalho-1968"]
+
+[[photos]]
+name = "primeiro-aniversario-do-theo"
+caption = "Primeiro aniversário do Theo"
+date = "2022-08-17"
+place = "sao-paulo"
+people = ["theo-carvalho-2021", "bento-carvalho-1993", "iris-salgueiro-1994", "lia-carvalho-1996"]
+
+[[clips]]
+name = "segredo-do-bolo"
+caption = "A vó Dalva conta o segredo do bolo (gravação inventada)"
+date = "2019-05-10"
+people = ["dalva-oliveira-1944"]
+# ---------------------------------------------------------------------------
 # Recipes
 # ---------------------------------------------------------------------------
 
@@ -807,4 +872,24 @@ text = """
 **Ingredientes:** 3 ovos, 2 xícaras de fubá, 1 xícara de açúcar, 1 xícara de leite, meia xícara de óleo, 1 colher de fermento e uma pitada de erva-doce.
 
 **Modo de preparo:** bata tudo, menos o fermento, que entra por último. Forno médio por quarenta minutos. Não abra o forno antes da hora.
+"""
+
+[[recipes]]
+slug = "arroz-de-forno-da-cecilia"
+title = "Arroz de forno da tia Cecília"
+author = "cecilia-figueira-1964"
+text = """
+**Ingredientes:** arroz cozido do dia anterior, frango desfiado, milho, ervilha, creme de leite e queijo para gratinar.
+
+**Modo de preparo:** misture tudo menos o queijo, espalhe numa travessa, cubra com o queijo e leve ao forno até dourar.
+"""
+
+[[recipes]]
+slug = "pao-de-queijo-da-olga"
+title = "Pão de queijo da tia Olga"
+author = "olga-figueira-1943"
+text = """
+**Ingredientes:** 500 g de polvilho, 1 copo de leite, meio copo de óleo, 2 ovos, 250 g de queijo meia-cura ralado e sal.
+
+**Modo de preparo:** escalde o polvilho com o leite e o óleo ferventes, deixe amornar, junte os ovos e o queijo e faça bolinhas. Forno quente por vinte e cinco minutos.
 """

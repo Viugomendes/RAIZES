@@ -1,5 +1,5 @@
 {% load i18n static %}<!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="{{ LANGUAGE_CODE }}" data-root="/" data-lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,18 +12,23 @@
 <body class="{% block body_class %}{% endblock %}">
   <a class="skip-link" href="#content">{% translate "Skip to content" %}</a>
   <header class="site-header">
-    <a class="brand" href="{% url 'family:tree' %}">
+    <a class="brand" href="{% url 'family:home' %}">
       <img src="{% static 'icons/favicon.svg' %}" alt="" width="28" height="28">
       <span class="brand-name">Raízes</span>
       {% if family_name %}<span class="brand-family">{{ family_name }}</span>{% endif %}
     </a>
     <nav class="site-nav" aria-label="{% translate 'Pages' %}">
+      <a href="{% url 'family:home' %}"{% if nav == "home" %} aria-current="page"{% endif %}>{% translate "News" %}</a>
       <a href="{% url 'family:tree' %}"{% if nav == "tree" %} aria-current="page"{% endif %}>{% translate "Tree" %}</a>
-      <a href="{% url 'family:person_list' %}"{% if nav == "people" %} aria-current="page"{% endif %}>{% translate "People" %}</a>
+      <a href="{% url 'family:search' %}"{% if nav == "search" %} aria-current="page"{% endif %}>{% translate "Search" %}</a>
     </nav>
     <nav class="language-nav" aria-label="{% translate 'Language' %}">
       {% for language in site_languages %}
-        <a href="{{ language.url }}" lang="{{ language.code }}" hreflang="{{ language.code }}"{% if language.is_current %} aria-current="true"{% endif %}>{{ language.name }}</a>
+        <a class="flag" href="{{ language.url }}" lang="{{ language.code }}" hreflang="{{ language.code }}" title="{{ language.name }}" aria-label="{{ language.name }}"{% if language.is_current %} aria-current="true"{% endif %}>
+          {% if language.code == "pt-br" %}<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#009b3a"/><path d="M10 2 18 7 10 12 2 7z" fill="#fedf00"/><circle cx="10" cy="7" r="3" fill="#002776"/></svg>
+          {% elif language.code == "es" %}<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#c60b1e"/><rect y="3.5" width="20" height="7" fill="#ffc400"/></svg>
+          {% else %}{{ language.code }}{% endif %}
+        </a>
       {% endfor %}
     </nav>
   </header>

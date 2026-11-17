@@ -1,0 +1,46 @@
+{% extends "family/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% translate "Search" %} · {% endblock %}
+
+{% block content %}
+  <h1>{% translate "Search" %}</h1>
+  <noscript><p class="notice">{% translate "The search runs in the browser: it needs JavaScript turned on." %}</p></noscript>
+  <form id="search-form" class="filters search-form" role="search" hidden>
+    <label class="wide-field">{% translate "Name, surname, nickname or other names" %}
+      <input type="search" name="text" autocomplete="off" autofocus>
+    </label>
+    <label>{% translate "Born from (year)" %} <input type="number" name="from" min="1000" max="2999" inputmode="numeric"></label>
+    <label>{% translate "to (year)" %} <input type="number" name="to" min="1000" max="2999" inputmode="numeric"></label>
+    <label>{% translate "Born in" %} <select name="born"><option value="">—</option></select></label>
+    <label>{% translate "Lived in" %} <select name="lived"><option value="">—</option></select></label>
+    <label>{% translate "Side" %} <select name="side"><option value="">—</option></select></label>
+    <label>{% translate "Distance" %} <select name="distance"><option value="">—</option></select></label>
+    <label>{% translate "Generation" %} <select name="generation"><option value="">—</option></select></label>
+    <label>{% translate "Living or deceased" %}
+      <select name="status">
+        <option value="">—</option>
+        <option value="living">{% translate "Living" %}</option>
+        <option value="deceased">{% translate "Deceased" %}</option>
+      </select>
+    </label>
+    <label>{% translate "Occupation" %} <input type="text" name="occupation" autocomplete="off"></label>
+    <label>{% translate "Tag" %} <select name="tag"><option value="">—</option></select></label>
+    <fieldset class="checks">
+      <legend>{% translate "Has" %}</legend>
+      <label><input type="checkbox" name="photos"> {% translate "photos" %}</label>
+      <label><input type="checkbox" name="interview"> {% translate "interview" %}</label>
+      <label><input type="checkbox" name="recipe"> {% translate "recipe" %}</label>
+    </fieldset>
+    <p class="form-actions"><button type="reset">{% translate "Clear filters" %}</button></p>
+  </form>
+  <div id="search-results" aria-live="polite"></div>
+  {{ strings|json_script:"search-strings" }}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% url 'family_data' %}"></script>
+  <script src="{% static 'js/common.js' %}"></script>
+  <script src="{% static 'js/kinship.js' %}"></script>
+  <script src="{% static 'js/search.js' %}"></script>
+{% endblock %}

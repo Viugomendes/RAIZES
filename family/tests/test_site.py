@@ -21,9 +21,9 @@ class SiteSkeletonTests(TestCase):
         self.assertContains(response, '<html lang="es"')
 
     def test_language_selector_links_to_the_same_page_in_the_other_language(self):
-        response = self.client.get("/pt-br/people/")
+        response = self.client.get("/pt-br/search/")
 
-        self.assertContains(response, 'href="/es/people/"')
+        self.assertContains(response, 'href="/es/search/"')
 
     @override_settings(RAIZES_FAMILY_NAME="Família Teste")
     def test_family_name_appears_in_the_header(self):

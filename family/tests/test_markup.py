@@ -5,8 +5,9 @@ from family.markup import LinkTargets, render_text
 
 TARGETS = LinkTargets(
     people={"ramon-garcia-1962": "Ramón García Ortega", "marta-garcia-1964": "Marta García"},
-    places={"valencia": "Valência, Espanha"},
+    places={"valencia": "Valência, Espanha", "aldeia": "Aldeia sem mapa"},
     recipes={"feijoada-da-vo": "Feijoada da vó"},
+    mapped_places={"valencia"},
 )
 VIDEO = "dQw4w9WgXcQ"
 
@@ -114,24 +115,29 @@ class PlaceAndRecipeLinkTests(SimpleTestCase):
     def test_place_shows_its_name(self):
         result = render("Nasceu em [[lugar:valencia]].")
 
-        self.assertIn('<span class="place-name">Valência, Espanha</span>', result.html)
+        self.assertIn('<a class="place-link" href="/pt-br/tree/map/#place-valencia">Valência, Espanha</a>', result.html)
         self.assertEqual(result.problems, [])
 
     def test_place_with_a_chosen_text(self):
         html = render("Voltou à [[lugar:valencia|terra natal]].").html
 
-        self.assertIn('<span class="place-name">terra natal</span>', html)
+        self.assertIn('href="/pt-br/tree/map/#place-valencia">terra natal</a>', html)
+
+    def test_place_without_coordinates_is_plain_text(self):
+        html = render("[[lugar:aldeia]]").html
+
+        self.assertIn('<span class="place-link">Aldeia sem mapa</span>', html)
 
     def test_recipe_shows_its_title(self):
         html = render("Fazia a [[receita:feijoada-da-vo]].").html
 
-        self.assertIn('<span class="recipe-name">Feijoada da vó</span>', html)
+        self.assertIn('<a class="recipe-link" href="/pt-br/recipes/feijoada-da-vo/">Feijoada da vó</a>', html)
 
     def test_spanish_and_english_prefixes_are_accepted(self):
         html = render("[[receta:feijoada-da-vo]] [[recipe:feijoada-da-vo]] [[place:valencia]]").html
 
-        self.assertEqual(html.count('class="recipe-name"'), 2)
-        self.assertEqual(html.count('class="place-name"'), 1)
+        self.assertEqual(html.count('class="recipe-link"'), 2)
+        self.assertEqual(html.count('class="place-link"'), 1)
 
     def test_place_that_does_not_exist_is_a_problem(self):
         result = render("[[lugar:atlantida]]")

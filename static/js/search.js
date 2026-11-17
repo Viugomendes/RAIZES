@@ -1,0 +1,271 @@
+// 3 · Search: runs in the browser, ignoring accents and capitals.
+(function (root, factory) {
+  "use strict";
+  if (typeof module === "object" && module.exports) {
+    module.exports = factory(require("./common.js"), require("./kinship.js"));
+  } else {
+    root.RaizesSearch = factory(root.Raizes, root.RaizesKinship);
+    if (root.document) {
+      root.document.addEventListener("DOMContentLoaded", function () {
+        root.RaizesSearch.start(root.document, root.RAIZES_DATA);
+      });
+    }
+  }
+})(typeof self !== "undefined" ? self : this, function (Raizes, Kinship) {
+  "use strict";
+
+  var N = Raizes.normalize;
+
+  function placeNames(data, slugs) {
+    return slugs
+      .filter(Boolean)
+      .map(function (slug) {
+        return data.places[slug] ? N(data.places[slug].name) + " " + slug : slug;
+      })
+      .join(" | ");
+  }
+
+  // Everything a person can be found by, computed once.
+  function buildIndex(data) {
+    var kin = data.central ? new Kinship.FamilyGraph(data).walk(data.central) : null;
+    return data.people.map(function (person) {
+      return {
+        person: person,
+        names: N([person.name, person.given, person.surname, person.nickname, person.otherNames].join(" ")),
+        birthYear: person.birth ? person.birth[0] : null,
+        born: placeNames(data, [person.birthPlace]),
+        lived: placeNames(data, [person.livesIn].concat(person.livedIn)),
+        occupation: N(person.occupation),
+        tags: person.tags.map(N),
+        side: kin ? kin.side[person.id] : undefined,
+        distance: kin ? kin.distance[person.id] : undefined,
+        generation: kin ? kin.generation[person.id] : undefined,
+      };
+    });
+  }
+
+  function words(text) {
+    return N(text).split(/\s+/).filter(Boolean);
+  }
+
+  // criteria: {text, from, to, born, lived, side, distance, generation,
+  //            status ("living"|"deceased"), occupation, tag, photos, interview, recipe}
+  function filterPeople(index, criteria) {
+    var textWords = words(criteria.text);
+    var occupationWords = words(criteria.occupation);
+    var from = criteria.from ? Number(criteria.from) : null;
+    var to = criteria.to ? Number(criteria.to) : null;
+    return index.filter(function (entry) {
+      var person = entry.person;
+      if (!textWords.every(function (word) { return entry.names.indexOf(word) !== -1; })) {
+        return false;
+      }
+      if ((from !== null || to !== null) && entry.birthYear === null) {
+        return false;
+      }
+      if (from !== null && entry.birthYear < from) {
+        return false;
+      }
+      if (to !== null && entry.birthYear > to) {
+        return false;
+      }
+      if (criteria.born && entry.born.indexOf(N(criteria.born)) === -1) {
+        return false;
+      }
+      if (criteria.lived && entry.lived.indexOf(N(criteria.lived)) === -1) {
+        return false;
+      }
+      if (criteria.side && entry.side !== criteria.side) {
+        return false;
+      }
+      if (criteria.distance !== undefined && criteria.distance !== "" && !(entry.distance <= Number(criteria.distance))) {
+        return false;
+      }
+      if (criteria.generation !== undefined && criteria.generation !== "" && entry.generation !== Number(criteria.generation)) {
+        return false;
+      }
+      if (criteria.status === "living" && person.deceased) {
+        return false;
+      }
+      if (criteria.status === "deceased" && !person.deceased) {
+        return false;
+      }
+      if (!occupationWords.every(function (word) { return entry.occupation.indexOf(word) !== -1; })) {
+        return false;
+      }
+      if (criteria.tag && entry.tags.indexOf(N(criteria.tag)) === -1) {
+        return false;
+      }
+      if (criteria.photos && !person.photos) {
+        return false;
+      }
+      if (criteria.interview && !person.interview) {
+        return false;
+      }
+      if (criteria.recipe && !person.recipes) {
+        return false;
+      }
+      return true;
+    }).sort(function (a, b) {
+      return N(a.person.name) < N(b.person.name) ? -1 : N(a.person.name) > N(b.person.name) ? 1 : 0;
+    });
+  }
+
+  function filterRecipes(data, text) {
+    var textWords = words(text);
+    if (!textWords.length) {
+      return [];
+    }
+    return data.recipes.filter(function (recipe) {
+      var title = N(recipe.title);
+      return textWords.every(function (word) { return title.indexOf(word) !== -1; });
+    });
+  }
+
+  // ----- Page -----
+
+  function start(doc, data) {
+    var form = doc.getElementById("search-form");
+    if (!form || !data) {
+      return;
+    }
+    var strings = JSON.parse(doc.getElementById("search-strings").textContent);
+    var lang = doc.documentElement.getAttribute("data-lang");
+    var root = Raizes.siteRoot(doc);
+    var people = Raizes.byId(data.people);
+    var index = buildIndex(data);
+    var kin = data.central ? new Kinship.FamilyGraph(data).walk(data.central) : null;
+
+    function options(select, list) {
+      select.insertAdjacentHTML("beforeend", list.map(function (option) {
+        return '<option value="' + Raizes.escapeHtml(option[0]) + '">' + Raizes.escapeHtml(option[1]) + "</option>";
+      }).join(""));
+    }
+
+    var places = Object.keys(data.places).map(function (slug) {
+      return [slug, data.places[slug].name];
+    }).sort(function (a, b) { return N(a[1]) < N(b[1]) ? -1 : 1; });
+    options(form.elements.born, places);
+    options(form.elements.lived, places);
+    var tags = {};
+    data.people.forEach(function (person) {
+      person.tags.forEach(function (tag) { tags[tag] = true; });
+    });
+    options(form.elements.tag, Object.keys(tags).sort().map(function (tag) { return [tag, tag]; }));
+
+    function sideColor(side) {
+      if (side === undefined) {
+        return data.colors.unlinked;
+      }
+      if (side === Kinship.CENTER) {
+        return data.colors.center;
+      }
+      var i = kin.figures.indexOf(side);
+      return i < data.colors.sides.length ? data.colors.sides[i] : data.colors.otherSides;
+    }
+
+    function sideLabel(side) {
+      if (!kin) {
+        return "";
+      }
+      var centralName = people[data.central].name;
+      if (side === undefined) {
+        return Raizes.format(strings.unlinked, { name: centralName });
+      }
+      if (side === Kinship.CENTER) {
+        return Raizes.format(strings.centerShort, { name: centralName });
+      }
+      return Raizes.format(strings.side, { name: people[side].name });
+    }
+
+    if (kin) {
+      var centralName = people[data.central].name;
+      options(form.elements.side, kin.figures.map(function (figure) {
+        return [figure, Raizes.format(strings.side, { name: people[figure].name })];
+      }).concat([[Kinship.CENTER, Raizes.format(strings.center, { name: centralName })]]));
+      var maxDistance = 0;
+      var generations = {};
+      Object.keys(kin.distance).forEach(function (id) {
+        maxDistance = Math.max(maxDistance, kin.distance[id]);
+        generations[kin.generation[id]] = true;
+      });
+      var steps = [];
+      for (var d = 1; d <= maxDistance; d++) {
+        steps.push([String(d), Raizes.format(Raizes.plural(strings.steps, d), { count: d })]);
+      }
+      options(form.elements.distance, steps);
+      options(form.elements.generation, Object.keys(generations).map(Number).sort(function (a, b) { return a - b; }).map(function (value) {
+        return [String(value), Raizes.format(strings.generations[String(value)] || strings.generationOther, { name: centralName, number: value })];
+      }));
+    } else {
+      ["side", "distance", "generation"].forEach(function (name) {
+        form.elements[name].closest("label").hidden = true;
+      });
+    }
+
+    function criteria() {
+      var elements = form.elements;
+      return {
+        text: elements.text.value,
+        from: elements.from.value,
+        to: elements.to.value,
+        born: elements.born.value,
+        lived: elements.lived.value,
+        side: elements.side.value,
+        distance: elements.distance.value,
+        generation: elements.generation.value,
+        status: elements.status.value,
+        occupation: elements.occupation.value,
+        tag: elements.tag.value,
+        photos: elements.photos.checked,
+        interview: elements.interview.checked,
+        recipe: elements.recipe.checked,
+      };
+    }
+
+    function render() {
+      var wanted = criteria();
+      var found = filterPeople(index, wanted);
+      var recipes = filterRecipes(data, wanted.text);
+      var html = '<p class="results-count">' + Raizes.format(Raizes.plural(strings.results, found.length), { count: found.length }) + "</p>";
+      if (!found.length) {
+        html += '<p class="notice">' + Raizes.escapeHtml(strings.noResults) + "</p>";
+      }
+      html += '<ul class="results">' + found.map(function (entry) {
+        var person = entry.person;
+        var picture = person.avatar
+          ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, person.avatar) + '" alt="" loading="lazy">'
+          : '<span class="mini-avatar mini-initials" aria-hidden="true">' + Raizes.escapeHtml(person.initials) + "</span>";
+        var side = kin ? '<span class="side-dot" style="background:' + sideColor(entry.side) + '"></span>' + Raizes.escapeHtml(sideLabel(entry.side)) : "";
+        return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + picture +
+          '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(person.name) + "</span>" +
+          (person.years ? ' <span class="years">' + Raizes.escapeHtml(person.years) + "</span>" : "") +
+          (side ? '<span class="result-side">' + side + "</span>" : "") + "</span></a></li>";
+      }).join("") + "</ul>";
+      if (recipes.length) {
+        html += "<h2>" + Raizes.escapeHtml(strings.recipes) + '</h2><ul class="results">' + recipes.map(function (recipe) {
+          var author = recipe.author && people[recipe.author] ? Raizes.format(strings.recipeBy, { name: people[recipe.author].name }) : "";
+          return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/") + '">' +
+            (recipe.thumb ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, recipe.thumb) + '" alt="" loading="lazy">' : '<span class="mini-avatar mini-initials" aria-hidden="true">🍲</span>') +
+            '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(recipe.title) + "</span>" +
+            (author ? '<span class="result-side">' + Raizes.escapeHtml(author) + "</span>" : "") + "</span></a></li>";
+        }).join("") + "</ul>";
+      }
+      doc.getElementById("search-results").innerHTML = html;
+    }
+
+    form.hidden = false;
+    form.addEventListener("input", render);
+    form.addEventListener("change", render);
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      render();
+    });
+    form.addEventListener("reset", function () {
+      setTimeout(render, 0);
+    });
+    render();
+  }
+
+  return { buildIndex: buildIndex, filterPeople: filterPeople, filterRecipes: filterRecipes, start: start };
+});

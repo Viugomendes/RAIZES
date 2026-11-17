@@ -1,0 +1,31 @@
+{% extends "family/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% translate "News" %} · {% endblock %}
+
+{% block content %}
+  <h1>{% translate "News" %}</h1>
+  {% if not has_people %}
+    <p class="notice">{% translate "Nobody has been added yet." %}</p>
+  {% else %}
+    <div id="mural" class="mural" aria-live="polite">
+      <noscript><p class="notice">{% translate "The mural is calculated by the browser every day: it needs JavaScript turned on." %}</p></noscript>
+    </div>
+    {% if who_count %}
+      <p class="who-invite">
+        <a href="{% url 'family:who' %}">{% translate "Who is this?" %}</a>
+        {% blocktranslate count counter=who_count %}{{ counter }} photo has someone nobody has identified yet.{% plural %}{{ counter }} photos have someone nobody has identified yet.{% endblocktranslate %}
+      </p>
+    {% endif %}
+    {{ strings|json_script:"mural-strings" }}
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {% if has_people %}
+    <script src="{% url 'family_data' %}"></script>
+    <script src="{% static 'js/common.js' %}"></script>
+    <script src="{% static 'js/mural.js' %}"></script>
+    <script src="{% static 'js/gallery.js' %}" defer></script>
+  {% endif %}
+{% endblock %}

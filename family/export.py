@@ -23,14 +23,17 @@ from django_distill.renderer import DistillRenderer, render_pattern
 from django_distill.request import get_static_filepath
 from django_distill.utils import get_langs
 
-from .models import Person
+from .images import URL_PREFIX, VariantError, make_variant, parse_variant_path
+from .site_data import update_history
 from .textcheck import all_text_problems
 
 # A file left in the exported folder. A folder is only ever erased by the
 # export when this file is in it, so no other folder can be wiped by mistake.
 MARKER = ".raizes-export"
 
-_LINK = re.compile(r'(?P<attribute>href|src)="(?P<url>[^"]*)"')
+_LINK = re.compile(r'(?P<attribute>href|src|data-root)="(?P<url>[^"]*)"')
+# References to media files, in pages and in data/family.js (with or without the first "/").
+_MEDIA_REFERENCE = re.compile(r"/?media/(?P<path>(?:v/\d+/|clips/)[^\"'\s?#<>]+)")
 _EXTERNAL = re.compile(r"^(?:[a-z][a-z0-9+.-]*:|//|#)", re.IGNORECASE)
 
 
@@ -65,7 +68,7 @@ def export_site(output_dir: Path | str | None = None) -> ExportReport:
     _prepare_folder(output_dir)
     pages = _render_pages(output_dir)
     _copy_static_files(output_dir / settings.STATIC_URL.strip("/"))
-    _copy_photos(output_dir / settings.MEDIA_URL.strip("/"))
+    _write_media(output_dir)
     _write_front_door(output_dir)
     (output_dir / "robots.txt").write_text("User-agent: *\nDisallow: /\n", encoding="utf-8")
     _make_links_relative(output_dir)
@@ -73,6 +76,9 @@ def export_site(output_dir: Path | str | None = None) -> ExportReport:
     dead_links = find_dead_links(output_dir)
     if dead_links:
         raise ExportError(_("The exported site has links to files that do not exist."), dead_links)
+
+    # Remember what was published, for "new on the site" next time.
+    update_history()
 
     files = [path for path in output_dir.rglob("*") if path.is_file()]
     return ExportReport(
@@ -114,7 +120,7 @@ def _prepare_folder(output_dir: Path) -> None:
 def _render_pages(output_dir: Path) -> int:
     """Render every page marked with `distill_path=True`, in every language."""
     language_before = translation.get_language()
-    pages = 0
+    written: set[Path] = set()
     try:
         with DistillRenderer() as renderer:
             for pattern, parameters, _uri in renderer.get_urls_to_render():
@@ -124,9 +130,13 @@ def _render_pages(output_dir: Path) -> int:
                     )
                     path, _local_uri = get_static_filepath(output_dir, file_name, uri)
                     path = Path(path)
+                    # Addresses without a language (data/family.js) are the
+                    # same in every language: written once.
+                    if path in written:
+                        continue
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_bytes(body)
-                    pages += 1
+                    written.add(path)
     except DistillError as error:
         raise ExportError(str(error)) from error
     finally:
@@ -135,7 +145,7 @@ def _render_pages(output_dir: Path) -> int:
             translation.activate(language_before)
         else:
             translation.deactivate_all()
-    return pages
+    return sum(1 for path in written if path.suffix == ".html")
 
 
 def _copy_static_files(target: Path) -> None:
@@ -151,20 +161,43 @@ def _copy_static_files(target: Path) -> None:
             shutil.copy2(storage.path(path), destination)
 
 
-def _copy_photos(target: Path) -> None:
-    """Copy only the photos that the pages show.
+def _write_media(output_dir: Path) -> None:
+    """Write the media files the exported pages use, and nothing else.
 
-    Everything else in the media folder (originals, photos not used yet)
-    stays on the owner's computer.
+    Photos are never copied: each address of a smaller copy found in the
+    pages ("/media/v/480/photos/x.png.jpg") is made from the original. Clips
+    are copied as they are. Originals, unused photos and everything else in
+    the media folder stay on the owner's computer.
     """
-    media_root = Path(settings.MEDIA_ROOT)
-    for person in Person.objects.exclude(photo=""):
-        source = media_root / person.photo.name
-        if source.is_file():
-            destination = target / person.photo.name
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, destination)
+    media_dir = output_dir / settings.MEDIA_URL.strip("/")
+    media_root = Path(settings.MEDIA_ROOT).resolve()
+    wanted: set[str] = set()
+    for page in list(output_dir.rglob("*.html")) + list(output_dir.rglob("*.js")):
+        if media_dir in page.parents:
+            continue
+        for match in _MEDIA_REFERENCE.finditer(page.read_text(encoding="utf-8")):
+            wanted.add(unquote(match["path"]))
 
+    problems = []
+    for path in sorted(wanted):
+        destination = media_dir / path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if path.startswith(f"{URL_PREFIX}/"):
+            parsed = parse_variant_path(path[len(URL_PREFIX) + 1 :])
+            try:
+                if parsed is None:
+                    raise VariantError(path)
+                shutil.copyfile(make_variant(parsed[1], parsed[0]), destination)
+            except VariantError:
+                problems.append(_("Missing or unreadable photo: %(file)s") % {"file": path})
+        else:
+            source = (media_root / path).resolve()
+            if media_root in source.parents and source.is_file():
+                shutil.copyfile(source, destination)
+            else:
+                problems.append(_("Missing file: %(file)s") % {"file": path})
+    if problems:
+        raise ExportError(_("Some files used by the pages could not be written."), problems)
 
 def _write_front_door(output_dir: Path) -> None:
     """The index.html at the top: it sends the visitor to the default language."""

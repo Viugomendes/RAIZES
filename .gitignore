@@ -21,6 +21,8 @@ secrets.*
 
 # Generated demo pictures and other generated files.
 /demo/media/
+/demo/cache/
+/demo/export-history.json
 /.build/
 
 # Python.

@@ -13,7 +13,13 @@ from family.pofiles import build_mo, parse_po
 PROJECT_DIR = Path(settings.BASE_DIR)
 LOCALES = ("pt_BR", "es")
 TRANSLATION_FUNCTIONS = {"_", "gettext", "gettext_lazy", "gettext_noop"}
+PLURAL_FUNCTIONS = {"ngettext", "ngettext_lazy", "_plural"}
 TEMPLATE_TAG = re.compile(r"""{%\s*(?:translate|trans)\s+(?:"([^"]*)"|'([^']*)')""")
+BLOCK_TAG = re.compile(
+    r"{%\s*blocktranslate\b[^%]*%}(.*?)(?:{%\s*plural\s*%}(.*?))?{%\s*endblocktranslate\s*%}",
+    re.DOTALL,
+)
+TEMPLATE_VARIABLE = re.compile(r"{{\s*(\w+)\s*}}")
 
 SAMPLE_PO = '''
 # A comment.
@@ -56,22 +62,28 @@ def texts_in_python_files() -> set[str]:
                 if not (isinstance(node, ast.Call) and node.args):
                     continue
                 name = getattr(node.func, "id", None) or getattr(node.func, "attr", None)
-                first = node.args[0]
-                if (
-                    name in TRANSLATION_FUNCTIONS
-                    and isinstance(first, ast.Constant)
-                    and isinstance(first.value, str)
-                ):
-                    found.add(first.value)
+                texts = [
+                    arg.value
+                    for arg in node.args[:2]
+                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str)
+                ]
+                if name in TRANSLATION_FUNCTIONS and texts:
+                    found.add(texts[0])
+                elif name in PLURAL_FUNCTIONS and len(texts) == 2:
+                    found.add(f"{texts[0]}\x00{texts[1]}")
     return found
 
 
 def texts_in_templates() -> set[str]:
-    """Every text inside a {% translate %} tag."""
+    """Every text inside a {% translate %} or {% blocktranslate %} tag."""
     found = set()
     for path in (PROJECT_DIR / "family" / "templates").rglob("*.html"):
-        for match in TEMPLATE_TAG.finditer(path.read_text(encoding="utf-8")):
+        source = path.read_text(encoding="utf-8")
+        for match in TEMPLATE_TAG.finditer(source):
             found.add(match[1] if match[1] is not None else match[2])
+        for match in BLOCK_TAG.finditer(source):
+            texts = [TEMPLATE_VARIABLE.sub(r"%(\1)s", text) for text in match.groups() if text is not None]
+            found.add("\x00".join(texts))
     return found
 
 
@@ -105,6 +117,21 @@ class PoCompilerTests(SimpleTestCase):
         catalog = gettext.GNUTranslations(io.BytesIO(build_mo(self.messages)))
 
         self.assertEqual(catalog.gettext("Not translated yet"), "Not translated yet")
+
+    def test_plural_forms_are_compiled(self):
+        messages = parse_po(
+            'msgid "%(count)s photo"\nmsgid_plural "%(count)s photos"\n'
+            'msgstr[0] "%(count)s foto"\nmsgstr[1] "%(count)s fotos"\n'
+        )
+        catalog = gettext.GNUTranslations(io.BytesIO(build_mo(messages)))
+
+        self.assertEqual(catalog.ngettext("%(count)s photo", "%(count)s photos", 1), "%(count)s foto")
+        self.assertEqual(catalog.ngettext("%(count)s photo", "%(count)s photos", 5), "%(count)s fotos")
+
+    def test_plural_with_an_empty_form_counts_as_untranslated(self):
+        messages = parse_po('msgid "a"\nmsgid_plural "b"\nmsgstr[0] "x"\nmsgstr[1] ""\n')
+
+        self.assertEqual(messages[(None, "a\x00b")], "")
 
     def test_line_that_is_not_understood_is_an_error(self):
         with self.assertRaises(ValueError):

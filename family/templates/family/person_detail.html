@@ -1,14 +1,15 @@
 {% extends "family/base.html" %}
-{% load i18n static %}
+{% load i18n static raizes %}
 
 {% block title %}{{ person.full_name }} · {% endblock %}
+{% block extra_head %}{% if map_places %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endif %}{% endblock %}
 
 {% block content %}
 <article class="person">
 
   <header class="person-header">
     {% if person.photo %}
-      <img class="avatar" src="{{ person.photo.url }}" alt="{{ person.full_name }}" width="160" height="160">
+      <img class="avatar" src="{{ person.photo|photo_url:'avatar' }}" alt="{{ person.full_name }}" width="160" height="160">
     {% else %}
       <div class="avatar avatar-initials" aria-hidden="true">{{ person.initials }}</div>
     {% endif %}
@@ -29,6 +30,7 @@
       {% if not person.confirmed %}
         <p class="notice">{% translate "The details about this person have not been confirmed yet." %}</p>
       {% endif %}
+      <p class="person-actions"><a href="{% url 'family:tree' %}?from={{ person.identifier }}">{% translate "See the tree from this person" %}</a></p>
     </div>
   </header>
 
@@ -143,10 +145,31 @@
     </section>
   {% endfor %}
 
+
+
   {# ---------- Section 10: gallery and places ---------- #}
-  {% if interview_embed_url or lived_in %}
+  {% if has_gallery %}
     <section id="gallery" class="page-section">
       <h2>{% translate "Gallery and places" %}</h2>
+
+      {% if photos %}
+        <h3>{% translate "Photos" %}</h3>
+        <ul class="photo-grid">
+          {% for photo in photos %}
+            <li>
+              <figure>
+                <a class="photo-link" href="{{ photo.image|photo_url:'large' }}" data-caption="{{ photo.caption }}"><img src="{{ photo.image|photo_url:'thumb' }}" alt="{{ photo.caption }}" loading="lazy"></a>
+                <figcaption>
+                  {% if photo.caption %}{{ photo.caption }}{% endif %}
+                  {% if photo.taken %}<span class="years">{{ photo.taken.display }}</span>{% endif %}
+                  <span class="tagged">{% for someone in photo.people.all %}{% if someone != person %}<a href="{% url 'family:person_detail' someone.identifier %}">{{ someone.given_name }}</a>{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}{% if photo.has_unidentified_people %} <a href="{% url 'family:who' %}">{% translate "Who is this?" %}</a>{% endif %}</span>
+                </figcaption>
+              </figure>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
       {% if interview_embed_url %}
         <h3>{% translate "Interview" %}</h3>
         <div class="video">
@@ -154,9 +177,36 @@
         </div>
         <p class="muted"><a href="{{ interview_watch_url }}" rel="noopener">{% translate "Watch on YouTube" %}</a></p>
       {% endif %}
-      {% if lived_in %}
-        <h3>{% translate "Places where they lived" %}</h3>
-        <ul class="places">{% for place in lived_in %}<li>{{ place.name }}</li>{% endfor %}</ul>
+
+      {% if clips %}
+        <h3>{% translate "Recordings" %}</h3>
+        <ul class="clips">
+          {% for clip in clips %}
+            <li>
+              {% if clip.is_video %}
+                <video controls preload="none" src="{{ clip.file.url }}"></video>
+              {% else %}
+                <audio controls preload="none" src="{{ clip.file.url }}"></audio>
+              {% endif %}
+              <p>{{ clip.caption }}{% if clip.taken %} <span class="years">{{ clip.taken.display }}</span>{% endif %}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if recipes %}
+        <h3>{% translate "Recipes" %}</h3>
+        <ul class="recipe-list">
+          {% for recipe in recipes %}
+            <li><a href="{% url 'family:recipe_detail' recipe.slug %}">{% if recipe.photo %}<img src="{{ recipe.photo|photo_url:'thumb' }}" alt="" loading="lazy">{% endif %}<span>{{ recipe.title }}</span></a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if personal_places %}
+        <h3>{% translate "Places" %}</h3>
+        {% if map_places %}<div id="personal-map" class="map map-small" aria-label="{% translate 'Places' %}"></div>{{ map_places|json_script:"personal-places" }}{% endif %}
+        <ul class="places">{% for place in personal_places %}<li>{{ place.name }} <span class="muted">{{ place.roles|join:", " }}</span></li>{% endfor %}</ul>
       {% endif %}
     </section>
   {% endif %}
@@ -165,5 +215,7 @@
 {% endblock %}
 
 {% block scripts %}
-  {% if interview_embed_url %}<script src="{% static 'js/person.js' %}" defer></script>{% endif %}
+  {% if map_places %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script><script src="{% static 'js/places.js' %}"></script>{% endif %}
+  <script src="{% static 'js/person.js' %}" defer></script>
+  {% if photos %}<script src="{% static 'js/gallery.js' %}" defer></script>{% endif %}
 {% endblock %}

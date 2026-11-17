@@ -7,7 +7,7 @@ from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
 
 from .markup import LinkTargets
-from .models import TEXT_SECTIONS, ChildLink, Person, Photo, Place, Recipe, Union
+from .models import TEXT_SECTIONS, ChildLink, Clip, Person, Photo, Place, Recipe, Union
 from .textcheck import person_problems, union_problems
 
 # The header always says which family is loaded, so that real data is never
@@ -120,9 +120,19 @@ class UnionAdmin(admin.ModelAdmin):
 
 @admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "year", "place")
-    search_fields = ("caption",)
+    list_display = ("__str__", "date", "place", "has_unidentified_people")
+    list_filter = ("has_unidentified_people",)
+    search_fields = ("caption", "people__given_name", "people__surname")
     autocomplete_fields = ("place", "people")
+    fields = ("image", "date", "place", "caption", "people", "has_unidentified_people")
+
+
+@admin.register(Clip)
+class ClipAdmin(admin.ModelAdmin):
+    list_display = ("__str__", "date")
+    search_fields = ("caption", "people__given_name", "people__surname")
+    autocomplete_fields = ("people",)
+    fields = ("file", "caption", "date", "people")
 
 
 @admin.register(Recipe)

@@ -1,0 +1,28 @@
+{% extends "family/base.html" %}
+{% load i18n static raizes %}
+
+{% block title %}{% translate "Who is this?" %} · {% endblock %}
+
+{% block content %}
+  <h1>{% translate "Who is this?" %}</h1>
+  <p class="muted">{% translate "In these photos there is someone nobody has identified yet. If you know who it is, tell the person who takes care of the site." %}</p>
+  {% if photos %}
+    <ul class="photo-grid">
+      {% for photo in photos %}
+        <li>
+          <figure>
+            <a class="photo-link" href="{{ photo.image|photo_url:'large' }}" data-caption="{{ photo.caption }}"><img src="{{ photo.image|photo_url:'thumb' }}" alt="{{ photo.caption }}" loading="lazy"></a>
+            <figcaption>
+              {{ photo.caption }}{% if photo.taken %} <span class="years">{{ photo.taken.display }}</span>{% endif %}
+              {% if photo.people.all %}<span class="tagged">{% translate "Also in the photo:" %} {% for someone in photo.people.all %}<a href="{% url 'family:person_detail' someone.identifier %}">{{ someone.full_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+            </figcaption>
+          </figure>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="notice">{% translate "Everybody in the photos has been identified." %}</p>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/gallery.js' %}" defer></script>{% endblock %}
