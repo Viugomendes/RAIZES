@@ -40,7 +40,7 @@ ative o ambiente virtual. É preciso fazer isso uma vez em cada terminal novo:
 |---|---|
 | Carregar a família inventada (apaga e recria o banco de demonstração; mostra a senha de visualização dela, `demo-raizes`) | `python manage.py load_demo` |
 | Instalar pela primeira vez (idioma, nome da família, senha de visualização e o seu usuário) | `python manage.py instalar` |
-| Servir para os aparelhos da casa (mostra o endereço na rede) | `python manage.py servir` |
+| Servir neste computador (`servir --rede` abre para os aparelhos da casa e mostra o endereço; precisa de `RAIZES_DEBUG=false`, que o `instalar` já grava) | `python manage.py servir` |
 | Guardar uma cópia de tudo em `backups/` | `python manage.py backup` |
 | Voltar uma cópia (`--force` para sobrescrever) | `python manage.py restaurar backups/arquivo.zip` |
 | Criar o seu usuário do painel (uma vez por banco) | `python manage.py createsuperuser` |

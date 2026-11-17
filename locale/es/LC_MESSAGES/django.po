@@ -1055,9 +1055,6 @@ msgstr "La contraseña no puede ser solo espacios."
 msgid ".env already exists and is different. Use --force to overwrite it."
 msgstr ".env ya existe y es diferente. Use --force para sobrescribirlo."
 
-msgid "Address to listen on (0.0.0.0 = the whole home network)."
-msgstr "Dirección en la que escuchar (0.0.0.0 = toda la red de la casa)."
-
 msgid "Backup restored."
 msgstr "Copia de seguridad restaurada."
 
@@ -1124,9 +1121,6 @@ msgstr "Presione Ctrl+C para detener."
 msgid "Restores a backup made by the backup command."
 msgstr "Restaura una copia hecha por el comando backup."
 
-msgid "Saves the data folder and .env into backups/raizes-YYYY-MM-DD-HHMM.zip."
-msgstr "Guarda la carpeta de datos y el .env en backups/raizes-AAAA-MM-DD-HHMM.zip."
-
 msgid "Serves the site and the panel to the devices of the home network."
 msgstr "Sirve el sitio y el panel a los dispositivos de la red de la casa."
 
@@ -1180,3 +1174,21 @@ msgstr "La contraseña de su panel de Raízes"
 
 msgid "Your e-mail (the panel login): "
 msgstr "Su correo electrónico (el acceso al panel): "
+
+msgid ".env could not be written (%(error)s). Nothing was installed."
+msgstr "No se pudo escribir el .env (%(error)s). No se instaló nada."
+
+msgid "A backup with this name already exists. Wait a second and try again."
+msgstr "Ya existe una copia con este nombre. Espere un segundo e inténtelo de nuevo."
+
+msgid "Address to listen on (default 127.0.0.1: this computer only)."
+msgstr "Dirección en la que escuchar (por defecto 127.0.0.1: solo este computador)."
+
+msgid "Debug mode is on (RAIZES_DEBUG), so the site cannot be opened to the network. Set RAIZES_DEBUG=false in .env and try again."
+msgstr "El modo de depuración está activado (RAIZES_DEBUG); por eso el sitio no puede abrirse a la red. Ponga RAIZES_DEBUG=false en el .env e inténtelo de nuevo."
+
+msgid "Open the site to the devices of the home network (listens on 0.0.0.0)."
+msgstr "Abre el sitio a los dispositivos de la red de la casa (escucha en 0.0.0.0)."
+
+msgid "Saves the data folder and .env into backups/raizes-YYYY-MM-DD-HHMMSS.zip."
+msgstr "Guarda la carpeta de datos y el .env en backups/raizes-AAAA-MM-DD-HHMMSS.zip."

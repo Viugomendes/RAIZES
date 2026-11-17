@@ -23,7 +23,7 @@ class Command(BaseCommand):
         """Where an entry goes. Nothing may land outside the data folder and .env."""
         normalized = name.replace("\\", "/")
         parts = PurePosixPath(normalized).parts
-        if not parts or normalized.startswith("/") or ":" in parts[0] or ".." in parts:
+        if not parts or normalized.startswith("/") or any(":" in part for part in parts) or ".." in parts:
             raise self.unsafe(name)
         if normalized == ".env":
             return settings.ENV_FILE

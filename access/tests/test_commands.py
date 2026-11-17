@@ -99,6 +99,22 @@ class InstallTests(TempProject, TestCase):
         self.assertIn("Família Teste", env)
         self.assertNotIn("senha-da-familia", env)
 
+    def test_install_turns_debug_off_in_env(self):
+        self.install()
+
+        self.assertIn("RAIZES_DEBUG=false", self.env.read_text(encoding="utf-8"))
+
+    def test_failed_env_write_creates_nothing(self):
+        with mock.patch(
+            "access.management.commands.instalar.set_env_values", side_effect=OSError("read-only")
+        ):
+            with self.assertRaises(CommandError):
+                self.install()
+
+        self.assertFalse(get_user_model().objects.exists())
+        self.assertFalse(SiteSettings.get().has_view_password)
+        self.assertEqual(mail.outbox, [])
+
     def test_install_keeps_the_other_lines_of_env(self):
         self.env.write_text("# mine\nRAIZES_SECRET_KEY='x#y'\nRAIZES_LANGUAGE=pt-br\n", "utf-8")
 
@@ -197,7 +213,7 @@ class BackupTests(TempProject, TestCase):
             names = zipped.namelist()
         self.assertIn(".env", names)
         self.assertFalse([name for name in names if "cache" in name])
-        self.assertRegex(archive.name, r"^raizes-\d{4}-\d{2}-\d{2}-\d{4}\.zip$")
+        self.assertRegex(archive.name, r"^raizes-\d{4}-\d{2}-\d{2}-\d{6}\.zip$")
 
         self.empty_data()
         self.env.unlink()
@@ -250,6 +266,43 @@ class BackupTests(TempProject, TestCase):
                 self.assertFalse((self.root / "evil.txt").exists())
                 self.assertFalse((self.data / "ok.txt").exists())
 
+    def test_backup_is_a_consistent_snapshot_without_journal_files(self):
+        self.fill()
+        (self.data / "raizes.sqlite3-wal").write_bytes(b"wal")
+        (self.data / "raizes.sqlite3-shm").write_bytes(b"shm")
+        (self.data / "raizes.sqlite3-journal").write_bytes(b"journal")
+        archive = self.make_backup()
+
+        with zipfile.ZipFile(archive) as zipped:
+            names = zipped.namelist()
+            self.assertIn("data/raizes.sqlite3", names)
+            self.assertFalse([n for n in names if n.endswith(("-wal", "-shm", "-journal"))])
+            copy = self.root / "copy.sqlite3"
+            copy.write_bytes(zipped.read("data/raizes.sqlite3"))
+        database = sqlite3.connect(copy)
+        try:
+            rows = database.execute("select name from person order by name").fetchall()
+        finally:
+            database.close()
+        self.assertEqual(rows, [("Ana",), ("Rui",)])
+
+    def test_backup_never_overwrites_an_existing_file(self):
+        self.fill()
+        self.make_backup()
+
+        with self.assertRaises(CommandError):
+            run("backup")
+        self.assertEqual(len(list(self.backups.glob("raizes-*.zip"))), 1)
+
+    def test_restore_rejects_a_colon_in_any_component(self):
+        for bad in ("data/a.txt:stream", "data/sub:x/a.txt", "data/a/b:c"):
+            with self.subTest(entry=bad):
+                archive = self.root / "bad.zip"
+                with zipfile.ZipFile(archive, "w") as zipped:
+                    zipped.writestr(bad, "x")
+                with self.assertRaises(CommandError):
+                    run("restaurar", str(archive))
+
     def test_restore_rejects_a_missing_or_foreign_archive(self):
         with self.assertRaises(CommandError):
             run("restaurar", str(self.root / "nope.zip"))
@@ -261,33 +314,46 @@ class BackupTests(TempProject, TestCase):
 
 
 class ServeTests(SimpleTestCase):
-    def test_serve_prints_both_addresses_and_calls_waitress(self):
+    def serve(self, ip="192.168.0.7", **options):
         with mock.patch("waitress.serve") as serve, mock.patch(
-            "access.management.commands.servir.network_ip", return_value="192.168.0.7"
+            "access.management.commands.servir.network_ip", return_value=ip
         ):
-            output = run("servir", port=8123, host="0.0.0.0")
+            output = run("servir", **options)
+        return serve, output
 
+    def test_default_host_is_local_only(self):
+        serve, output = self.serve()
+
+        kwargs = serve.call_args.kwargs
+        self.assertEqual((kwargs["host"], kwargs["port"], kwargs["threads"]), ("127.0.0.1", 8000, 8))
+        self.assertIn("http://localhost:8000/", output)
+        self.assertNotIn("192.168.0.7", output)
+
+    @override_settings(DEBUG=True)
+    def test_network_with_debug_on_refuses_to_start(self):
+        for options in ({"rede": True}, {"host": "0.0.0.0"}):
+            with self.subTest(options=options), mock.patch("waitress.serve") as serve:
+                with self.assertRaises(CommandError):
+                    run("servir", **options)
+                serve.assert_not_called()
+
+    @override_settings(DEBUG=False)
+    def test_network_flag_binds_everywhere_and_prints_both_addresses(self):
+        serve, output = self.serve(rede=True, port=8123)
+
+        self.assertEqual(serve.call_args.kwargs["host"], "0.0.0.0")
         self.assertIn("http://localhost:8123/", output)
         self.assertIn("http://192.168.0.7:8123/", output)
-        kwargs = serve.call_args.kwargs
-        self.assertEqual((kwargs["host"], kwargs["port"], kwargs["threads"]), ("0.0.0.0", 8123, 8))
 
-    def test_serve_defaults_and_local_only_host(self):
-        with mock.patch("waitress.serve") as serve, mock.patch(
-            "access.management.commands.servir.network_ip", return_value="192.168.0.7"
-        ):
-            output = run("servir")
-            self.assertEqual(serve.call_args.kwargs["port"], 8000)
-            output_local = run("servir", host="127.0.0.1")
+    @override_settings(DEBUG=True)
+    def test_local_host_is_allowed_with_debug_on(self):
+        serve, _output = self.serve(port=8001)
 
-        self.assertIn("192.168.0.7", output)
-        self.assertNotIn("192.168.0.7", output_local)
+        self.assertEqual(serve.call_args.kwargs["port"], 8001)
 
+    @override_settings(DEBUG=False)
     def test_serve_without_a_network_prints_only_the_local_address(self):
-        with mock.patch("waitress.serve"), mock.patch(
-            "access.management.commands.servir.network_ip", return_value=None
-        ):
-            output = run("servir")
+        _serve, output = self.serve(ip=None, rede=True)
 
         self.assertIn("http://localhost:8000/", output)
 

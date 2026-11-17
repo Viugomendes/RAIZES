@@ -39,6 +39,22 @@ class Command(BaseCommand):
         family_name, language, email, view_password = values
         self.validate(language, email, view_password)
 
+        # First, so that a failure here leaves no account whose password was never shown.
+        try:
+            set_env_values(
+                settings.ENV_FILE,
+                {
+                    "RAIZES_LANGUAGE": language,
+                    "RAIZES_FAMILY_NAME": family_name,
+                    # The site is going to be served to the family: no debug mode.
+                    "RAIZES_DEBUG": "false",
+                },
+            )
+        except (OSError, ValueError) as error:
+            raise CommandError(
+                _(".env could not be written (%(error)s). Nothing was installed.")
+                % {"error": error}
+            )
         call_command("migrate", interactive=False, verbosity=0)
         user_model = get_user_model()
         admin_password = generate_admin_password()
@@ -47,11 +63,6 @@ class Command(BaseCommand):
         site.family_name = family_name
         site.save(update_fields=["family_name"])
         site.set_view_password(view_password)
-        # Never a password in .env.
-        set_env_values(
-            settings.ENV_FILE,
-            {"RAIZES_LANGUAGE": language, "RAIZES_FAMILY_NAME": family_name},
-        )
         self.stdout.write(self.style.SUCCESS(_("Installed. The site opens in the chosen language.")))
         self.send_password(email, admin_password, language)
 
