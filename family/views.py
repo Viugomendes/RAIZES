@@ -1,10 +1,13 @@
 """The pages: each function gathers the data and fills a template."""
+from pathlib import Path
+
+from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from .images import VariantError, make_variant, parse_variant_path
 from .markup import LinkTargets, render_text
-from .models import Person, Photo, Recipe
+from .models import Clip, Person, Photo, Recipe
 from .person_page import build_person_page
 from .site_data import site_data_script
 from .strings import map_strings, mural_strings, search_strings, tree_strings
@@ -79,3 +82,20 @@ def media_variant(request, path):
     except VariantError:
         raise Http404 from None
     return FileResponse(open(file, "rb"), content_type="image/jpeg")
+
+
+def media_clip(request, path):
+    """A clip as it is: only a file of the clips folder that the database knows.
+
+    Never django.views.static.serve: it would turn "clips/../people/x.png" into
+    the original photo, with its hidden data.
+    """
+    if any(part in ("", ".", "..") or "\\" in part for part in path.split("/")):
+        raise Http404
+    if not Clip.objects.filter(file=path).exists():
+        raise Http404
+    media_root = Path(settings.MEDIA_ROOT)
+    file = (media_root / path).resolve()
+    if (media_root / "clips").resolve() not in file.parents or not file.is_file():
+        raise Http404
+    return FileResponse(open(file, "rb"))

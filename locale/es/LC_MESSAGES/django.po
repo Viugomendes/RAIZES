@@ -991,3 +991,6 @@ msgstr "Olvidé la contraseña"
 
 msgid "Log in"
 msgstr "Entrar"
+
+msgid "Another account already uses this e-mail."
+msgstr "Otra cuenta ya usa este correo electrónico."

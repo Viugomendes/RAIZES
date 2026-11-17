@@ -990,3 +990,6 @@ msgstr "Esqueci a senha"
 
 msgid "Log in"
 msgstr "Entrar"
+
+msgid "Another account already uses this e-mail."
+msgstr "Outra conta já usa este e-mail."

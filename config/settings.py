@@ -8,7 +8,7 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
-from .env import get_or_create_secret_key, load_env_file, parse_list
+from .env import get_or_create_secret_key, load_env_file, parse_bool, parse_list
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -66,7 +66,7 @@ RAIZES_HIDDEN_SECTIONS = set(parse_list(os.environ.get("RAIZES_HIDDEN_SECTIONS",
 
 # The family pages, photos and data need the view password (set in the panel).
 # The tests switch it off (config/test_runner.py); only the tests of the gate turn it on.
-RAIZES_VIEW_GATE = os.environ.get("RAIZES_VIEW_GATE", "true").lower() in ("1", "true", "yes")
+RAIZES_VIEW_GATE = parse_bool(os.environ.get("RAIZES_VIEW_GATE"), "RAIZES_VIEW_GATE")
 
 
 # ---------------------------------------------------------------------------

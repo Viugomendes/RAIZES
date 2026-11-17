@@ -14,6 +14,7 @@ from family.images import (
     make_variant,
     variant_url,
 )
+from family.models import Clip
 
 
 def save_image(path: Path, size=(3000, 2000), exif_gps=False, orientation=None) -> None:
@@ -157,3 +158,38 @@ class VariantViewTests(VariantTestCase, TestCase):
         save_image(self.media / "photos" / "big.jpg")
 
         self.assertEqual(self.client.get("/media/photos/big.jpg").status_code, 404)
+
+
+class ClipViewTests(VariantTestCase, TestCase):
+    def setUp(self):
+        super().setUp()
+        save_image(self.media / "people" / "lia.png", exif_gps=True)
+        clip = self.media / "clips" / "conversa.mp3"
+        clip.parent.mkdir(parents=True, exist_ok=True)
+        clip.write_bytes(b"ID3 not really a song")
+        Clip.objects.create(file="clips/conversa.mp3")
+
+    def test_a_clip_is_served(self):
+        response = self.client.get("/media/clips/conversa.mp3")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(b"".join(response.streaming_content), b"ID3 not really a song")
+
+    def test_other_files_of_the_media_folder_are_never_served(self):
+        for path in (
+            "/media/clips/%2e%2e/people/lia.png",
+            "/media/clips/%2E%2E/people/lia.png",
+            "/media/clips/../people/lia.png",
+            "/media/clips/./conversa.mp3",
+            "/media/clips/%2e/conversa.mp3",
+            "/media/clips/sub/../conversa.mp3",
+            "/media/clips/..%2fpeople/lia.png",
+            "/media/clips/..%5cpeople%5clia.png",
+        ):
+            with self.subTest(path=path):
+                self.assertEqual(self.client.get(path).status_code, 404)
+
+    def test_a_file_in_the_clips_folder_unknown_to_the_database_is_a_404(self):
+        (self.media / "clips" / "esquecido.mp3").write_bytes(b"x")
+
+        self.assertEqual(self.client.get("/media/clips/esquecido.mp3").status_code, 404)

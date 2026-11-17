@@ -160,6 +160,13 @@ class GateTests(TestCase):
         self.assertEqual(self.enter(REMOTE_ADDR="2001:db8:1:2:ffff::9").status_code, 429)
         self.assertEqual(self.enter(REMOTE_ADDR="2001:db8:1:3::1").status_code, 302)
 
+    def test_a_48_prefix_is_limited_to_100_attempts(self):
+        for number in range(100):
+            self.assertFalse(ratelimit.attempt("test", f"2001:db8:1:{number:x}::1"))
+
+        self.assertTrue(ratelimit.attempt("test", "2001:db8:1:ffff::1"))
+        self.assertFalse(ratelimit.attempt("test", "2001:db8:2::1"))
+
     def test_viewer_session_lasts_a_year_but_a_staff_session_does_not(self):
         year = datetime.timedelta(days=364).total_seconds()
         user = get_user_model().objects.create_user("dona", password="x", is_staff=True)

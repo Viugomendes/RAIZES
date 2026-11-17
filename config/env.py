@@ -7,6 +7,7 @@ The format is one `NAME=value` per line; lines starting with `#` are comments.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
 
 
@@ -40,6 +41,19 @@ def load_env_file(path: Path) -> None:
 def parse_list(text: str) -> list[str]:
     """ "tastes, Legacy" -> ["tastes", "legacy"]."""
     return [part.strip().lower() for part in (text or "").split(",") if part.strip()]
+
+
+def parse_bool(text: str | None, name: str) -> bool:
+    """ "true"/"1"/"yes"/"on" or empty -> True; "false"/"0"/"no"/"off" -> False.
+
+    Anything else is an error: a typo must never switch a protection off.
+    """
+    value = (text or "").strip().lower()
+    if value in ("", "true", "1", "yes", "on"):
+        return True
+    if value in ("false", "0", "no", "off"):
+        return False
+    raise ImproperlyConfigured(f"{name} must be true or false (check the .env file), not {text!r}.")
 
 
 def get_or_create_secret_key(path: Path, name: str = "RAIZES_SECRET_KEY") -> str:

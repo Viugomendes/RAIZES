@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.core.cache import cache
+from django.core.management.sql import emit_post_migrate_signal
 from django.test import TestCase, override_settings
 
 from access.models import SiteSettings
@@ -84,16 +85,34 @@ class AdminLoginTests(TestCase):
         self.assertContains(blocked, "Muitas tentativas erradas", status_code=429)
         self.assertNotIn("_auth_user_id", self.client.session)
 
-    def test_a_good_login_clears_the_wrong_attempts(self):
+    def test_another_staff_login_does_not_reset_the_wrong_attempts(self):
+        make_staff(email="primo@example.com", username="primo")
         for _attempt in range(9):
             self.log_in(password="errada")
-        self.assertRedirects(self.log_in(), "/painel/")
+        self.assertRedirects(self.log_in(email="primo@example.com"), "/painel/")
         self.client.logout()
 
-        for _attempt in range(9):
-            self.log_in(password="errada")
+        # Every attempt counts, the good one too: the 11th is refused.
+        self.assertEqual(self.log_in(password="errada").status_code, 429)
+        self.assertEqual(self.log_in().status_code, 429)
 
-        self.assertRedirects(self.log_in(), "/painel/")
+    def test_password_reset_sends_at_most_one_e_mail_per_address_every_15_minutes(self):
+        for email in (EMAIL, "DONA@example.com ", EMAIL):
+            response = self.client.post("/painel/senha/", {"email": email})
+            self.assertRedirects(response, "/painel/senha/enviado/")
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_password_reset_is_limited_per_ip(self):
+        users = get_user_model().objects
+        for number in range(12):
+            users.create_user(
+                f"u{number}", email=f"u{number}@example.com", password=PASSWORD, is_staff=True
+            )
+            response = self.client.post("/painel/senha/", {"email": f"u{number}@example.com"})
+            self.assertRedirects(response, "/painel/senha/enviado/")
+
+        self.assertEqual(len(mail.outbox), 10)
 
     def test_password_reset_sends_an_e_mail(self):
         response = self.client.post("/painel/senha/", {"email": EMAIL})
@@ -186,3 +205,79 @@ class RoleTests(TestCase):
 
         self.assertEqual(self.client.get("/painel/auth/user/").status_code, 200)
         self.assertEqual(self.client.get("/painel/auth/group/").status_code, 200)
+
+    def test_roles_get_back_a_missing_permission_after_migrate(self):
+        administrators = Group.objects.get(name=ADMINISTRATORS)
+        reviewers = Group.objects.get(name=REVIEWERS)
+        add_person = Permission.objects.get(codename="add_person")
+        view_person = Permission.objects.get(codename="view_person")
+        administrators.permissions.remove(add_person)
+        reviewers.permissions.remove(view_person)
+
+        emit_post_migrate_signal(verbosity=0, interactive=False, db="default")
+
+        self.assertIn(add_person, administrators.permissions.all())
+        self.assertIn(view_person, reviewers.permissions.all())
+
+
+class UserAdminTests(TestCase):
+    def setUp(self):
+        self.owner = make_staff(superuser=True)
+        self.client.force_login(self.owner)
+
+    def add_user(self, email):
+        return self.client.post(
+            "/painel/auth/user/add/",
+            {
+                "username": "primo",
+                "email": email,
+                "usable_password": "true",
+                "password1": PASSWORD,
+                "password2": PASSWORD,
+            },
+        )
+
+    def test_a_new_account_needs_an_e_mail_nobody_else_has(self):
+        for email in ("", "DONA@example.com"):
+            with self.subTest(email=email):
+                response = self.add_user(email)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.context["adminform"].form.errors["email"])
+        self.assertFalse(get_user_model().objects.filter(username="primo").exists())
+
+        self.assertEqual(self.add_user("primo@example.com").status_code, 302)
+        self.assertEqual(get_user_model().objects.get(username="primo").email, "primo@example.com")
+
+    def test_changing_an_account_keeps_the_e_mail_required_and_unique(self):
+        other = make_staff(email="primo@example.com", username="primo")
+        page = self.client.get(f"/painel/auth/user/{other.pk}/change/")
+        form = page.context["adminform"].form
+        data = {name: value for name, value in form.initial.items() if value is not None}
+        data.update(
+            username="primo",
+            date_joined_0=other.date_joined.strftime("%d/%m/%Y"),
+            date_joined_1=other.date_joined.strftime("%H:%M:%S"),
+            is_active="on",
+            is_staff="on",
+            groups=[],
+            user_permissions=[],
+        )
+        data.pop("last_login", None)
+        data.pop("password", None)
+        data.pop("date_joined", None)
+        for email in ("", "dona@EXAMPLE.com"):
+            with self.subTest(email=email):
+                response = self.client.post(
+                    f"/painel/auth/user/{other.pk}/change/", {**data, "email": email}
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.context["adminform"].form.errors["email"])
+
+        response = self.client.post(
+            f"/painel/auth/user/{other.pk}/change/", {**data, "email": "primo2@example.com"}
+        )
+        self.assertEqual(response.status_code, 302)
+        other.refresh_from_db()
+        self.assertEqual(other.email, "primo2@example.com")
