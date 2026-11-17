@@ -23,6 +23,7 @@ WIDTHS = (AVATAR, THUMB, LARGE)
 
 URL_PREFIX = "v"  # /media/v/<width>/<original name>.jpg
 QUALITY = 82
+CACHE_VERSION = 2  # 2: JPEG comments are removed too
 
 
 class VariantError(Exception):
@@ -54,7 +55,11 @@ def make_variant(name: str, width: int) -> Path:
     original = _original(name)
     stat = original.stat()
     # The key changes when the original changes, so a stale copy is never used.
-    key = hashlib.sha256(f"{name}|{stat.st_size}|{stat.st_mtime_ns}".encode()).hexdigest()[:20]
+    # CACHE_VERSION changes when the way copies are made changes, so old
+    # copies are made again.
+    key = hashlib.sha256(
+        f"{CACHE_VERSION}|{name}|{stat.st_size}|{stat.st_mtime_ns}".encode()
+    ).hexdigest()[:20]
     cached = Path(settings.RAIZES_CACHE_DIR) / f"{width}" / f"{key}.jpg"
     if cached.is_file():
         return cached
@@ -70,6 +75,9 @@ def make_variant(name: str, width: int) -> Path:
             else:
                 image = image.convert("RGB")
             image.thumbnail((width, width), Image.Resampling.LANCZOS)
+            # Nothing of the original file goes with the copy: no EXIF, no XMP,
+            # no comments (Pillow would copy a JPEG comment otherwise).
+            image.info = {}
             cached.parent.mkdir(parents=True, exist_ok=True)
             temporary = cached.with_suffix(".tmp")
             # No "exif" argument: the copy carries none of the original's data.

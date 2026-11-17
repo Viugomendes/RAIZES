@@ -71,9 +71,11 @@ hospedagem elas aparecem normalmente.
 | Página da pessoa | As 10 seções do plano, com galeria, gravações, receitas e mapa pessoal. |
 | Quem é? | Fotos com alguém que ainda não foi identificado. |
 
-O "Novo no site" compara com as exportações anteriores: o arquivo
-`export-history.json` (em `data/` ou `demo/`) guarda quando cada ficha, foto e
-receita foi exportada pela primeira vez.
+O "Novo no site" mostra, por 30 dias, as fichas, fotos e receitas que entraram
+depois da publicação anterior. O arquivo `export-history.json` (em `data/` ou
+`demo/`) guarda as publicações; a primeira serve de ponto de partida, então
+nela nada aparece como novo. Só conta como publicação a exportação para
+`dist/` (exportar com `--output` para outra pasta é só um teste).
 
 ## Fotos e gravações
 

@@ -20,7 +20,7 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 from django_distill.errors import DistillError
 from django_distill.renderer import DistillRenderer, render_pattern
-from django_distill.request import get_static_filepath
+from django_distill.request import get_static_filepath, get_uri_values
 from django_distill.utils import get_langs
 
 from .images import URL_PREFIX, VariantError, make_variant, parse_variant_path
@@ -77,8 +77,10 @@ def export_site(output_dir: Path | str | None = None) -> ExportReport:
     if dead_links:
         raise ExportError(_("The exported site has links to files that do not exist."), dead_links)
 
-    # Remember what was published, for "new on the site" next time.
-    update_history()
+    # Only an export to the folder that is published (dist/) counts as a
+    # publication for "new on the site"; a test export elsewhere does not.
+    if output_dir == Path(settings.RAIZES_EXPORT_DIR).resolve():
+        update_history()
 
     files = [path for path in output_dir.rglob("*") if path.is_file()]
     return ExportReport(
@@ -117,13 +119,32 @@ def _prepare_folder(output_dir: Path) -> None:
     )
 
 
+def _pages_to_render(renderer):
+    """(pattern, parameters) of every page to write.
+
+    A page with a parameter (one per person, one per recipe) whose list is
+    empty is skipped: django-distill would otherwise try to build its address
+    without the parameter, and a family without recipes could not export.
+    """
+    for pattern in renderer.urls_to_render:
+        values = get_uri_values(pattern.distill_func, pattern.name)
+        if pattern.pattern.converters and list(values) == [None]:
+            continue
+        for parameters in values:
+            if not parameters:
+                parameters = ()
+            elif isinstance(parameters, str):
+                parameters = (parameters,)
+            yield pattern, parameters
+
+
 def _render_pages(output_dir: Path) -> int:
     """Render every page marked with `distill_path=True`, in every language."""
     language_before = translation.get_language()
     written: set[Path] = set()
     try:
         with DistillRenderer() as renderer:
-            for pattern, parameters, _uri in renderer.get_urls_to_render():
+            for pattern, parameters in _pages_to_render(renderer):
                 for language in get_langs():
                     uri, file_name, _status, _headers, body = render_pattern(
                         pattern, parameters, language
@@ -191,8 +212,11 @@ def _write_media(output_dir: Path) -> None:
             except VariantError:
                 problems.append(_("Missing or unreadable photo: %(file)s") % {"file": path})
         else:
+            # Clips only, and only inside the clips folder: an address like
+            # "clips/../photos/x.png" must never send an original photo.
+            clips_root = media_root / "clips"
             source = (media_root / path).resolve()
-            if media_root in source.parents and source.is_file():
+            if ".." not in Path(path).parts and clips_root in source.parents and source.is_file():
                 shutil.copyfile(source, destination)
             else:
                 problems.append(_("Missing file: %(file)s") % {"file": path})

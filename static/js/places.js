@@ -42,6 +42,8 @@
     var map = L.map(element, Object.assign({ scrollWheelZoom: false, worldCopyJump: true }, options || {}));
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
+      // OpenStreetMap asks to know which site shows its map (only the site, not the page).
+      referrerPolicy: "strict-origin-when-cross-origin",
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
     // The wheel scrolls the page until the map is clicked.

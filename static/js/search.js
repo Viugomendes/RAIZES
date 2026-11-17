@@ -16,14 +16,6 @@
 
   var N = Raizes.normalize;
 
-  function placeNames(data, slugs) {
-    return slugs
-      .filter(Boolean)
-      .map(function (slug) {
-        return data.places[slug] ? N(data.places[slug].name) + " " + slug : slug;
-      })
-      .join(" | ");
-  }
 
   // Everything a person can be found by, computed once.
   function buildIndex(data) {
@@ -33,8 +25,9 @@
         person: person,
         names: N([person.name, person.given, person.surname, person.nickname, person.otherNames].join(" ")),
         birthYear: person.birth ? person.birth[0] : null,
-        born: placeNames(data, [person.birthPlace]),
-        lived: placeNames(data, [person.livesIn].concat(person.livedIn)),
+        // Place identifiers, compared whole: "rio" never matches "rio-de-janeiro".
+        born: [person.birthPlace].filter(Boolean),
+        lived: [person.livesIn].concat(person.livedIn).filter(Boolean),
         occupation: N(person.occupation),
         tags: person.tags.map(N),
         side: kin ? kin.side[person.id] : undefined,
@@ -69,10 +62,10 @@
       if (to !== null && entry.birthYear > to) {
         return false;
       }
-      if (criteria.born && entry.born.indexOf(N(criteria.born)) === -1) {
+      if (criteria.born && entry.born.indexOf(criteria.born) === -1) {
         return false;
       }
-      if (criteria.lived && entry.lived.indexOf(N(criteria.lived)) === -1) {
+      if (criteria.lived && entry.lived.indexOf(criteria.lived) === -1) {
         return false;
       }
       if (criteria.side && entry.side !== criteria.side) {
@@ -236,7 +229,7 @@
         var picture = person.avatar
           ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, person.avatar) + '" alt="" loading="lazy">'
           : '<span class="mini-avatar mini-initials" aria-hidden="true">' + Raizes.escapeHtml(person.initials) + "</span>";
-        var side = kin ? '<span class="side-dot" style="background:' + sideColor(entry.side) + '"></span>' + Raizes.escapeHtml(sideLabel(entry.side)) : "";
+        var side = kin ? '<span class="side-dot" style="background:' + sideColor(entry.side) + '"></span>' + sideLabel(entry.side) : "";
         return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + picture +
           '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(person.name) + "</span>" +
           (person.years ? ' <span class="years">' + Raizes.escapeHtml(person.years) + "</span>" : "") +
@@ -248,7 +241,7 @@
           return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/") + '">' +
             (recipe.thumb ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, recipe.thumb) + '" alt="" loading="lazy">' : '<span class="mini-avatar mini-initials" aria-hidden="true">🍲</span>') +
             '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(recipe.title) + "</span>" +
-            (author ? '<span class="result-side">' + Raizes.escapeHtml(author) + "</span>" : "") + "</span></a></li>";
+            (author ? '<span class="result-side">' + author + "</span>" : "") + "</span></a></li>";
         }).join("") + "</ul>";
       }
       doc.getElementById("search-results").innerHTML = html;

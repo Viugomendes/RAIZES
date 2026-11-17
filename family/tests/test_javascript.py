@@ -149,9 +149,9 @@ class MuralTests(JavaScriptTestCase):
 
     def test_new_on_the_site_lists_recent_items_newest_first(self):
         self.data["news"] = [
-            {"type": "person", "key": "lia-carvalho-1996", "date": "2026-11-16"},
             {"type": "recipe", "key": "bolo-de-fuba-da-dalva", "date": "2026-11-01"},
             {"type": "person", "key": "theo-carvalho-2021", "date": "2026-09-01"},
+            {"type": "person", "key": "lia-carvalho-1996", "date": "2026-11-16"},
         ]
 
         (result,) = self.mural("2026-11-17")
@@ -197,6 +197,10 @@ class SearchTests(JavaScriptTestCase):
         self.assertIn("rui-pinheiro-1965", self.search(born="recife"))
         self.assertNotIn("rui-pinheiro-1965", self.search(born="curitiba"))
         self.assertIn("ines-figueira-1972", self.search(lived="valencia"))
+
+    def test_place_filters_compare_whole_places(self):
+        self.assertEqual(self.search(born="sao"), [])
+        self.assertEqual(self.search(lived="santo"), [])
 
     def test_side_distance_and_generation(self):
         stepfather_side = self.search(side="rui-pinheiro-1965")

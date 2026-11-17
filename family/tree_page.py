@@ -96,7 +96,9 @@ def build_tree_page() -> dict:
         {identifier: person.birth_year for identifier, person in people.items()},
         {identifier: style.slot_width for identifier, style in styles.items()},
     )
-    radii = {identifier: style.radius for identifier, style in styles.items()}
+    # Lines end at the centre of the circles, which are drawn over them, so
+    # they still fit when "see from..." changes the size of a circle.
+    radii = {identifier: 0 for identifier in styles}
 
     drawings = []
     for identifier, place in layout.people.items():

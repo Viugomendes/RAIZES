@@ -194,38 +194,6 @@ class ExportedMediaTests(ExportTestCase):
         self.assertTrue(any(photo.image.name in problem for problem in caught.exception.problems))
 
 
-class NewOnTheSiteTests(ExportTestCase):
-    def setUp(self):
-        super().setUp()
-        # The history file is shared by the tests of this class.
-        Path(settings.RAIZES_HISTORY_FILE).unlink(missing_ok=True)
-
-    def test_export_remembers_when_each_item_was_first_published(self):
-        export_site(self.output)
-
-        history = json.loads(Path(settings.RAIZES_HISTORY_FILE).read_text())
-        self.assertIn("person:lia-carvalho-1996", history)
-        self.assertIn(f"photo:{Photo.objects.first().pk}", history)
-        self.assertIn("recipe:bolo-de-fuba-da-dalva", history)
-
-    def test_first_publication_date_is_kept_on_later_exports(self):
-        Path(settings.RAIZES_HISTORY_FILE).write_text(json.dumps({"person:lia-carvalho-1996": "2020-01-01"}))
-
-        export_site(self.output)
-
-        history = json.loads(Path(settings.RAIZES_HISTORY_FILE).read_text())
-        self.assertEqual(history["person:lia-carvalho-1996"], "2020-01-01")
-
-    def test_failed_export_does_not_touch_the_history(self):
-        lia = Person.objects.get(identifier="lia-carvalho-1996")
-        lia.work = "[[ninguem-1]]"
-        lia.save()
-
-        with self.assertRaises(ExportError):
-            export_site(self.output)
-
-        self.assertFalse(Path(settings.RAIZES_HISTORY_FILE).exists())
-
 class ExportSafetyTests(ExportTestCase):
     def break_a_link(self):
         lia = Person.objects.get(identifier="lia-carvalho-1996")

@@ -112,9 +112,11 @@ function language(request) {
   return es !== -1 && (pt === -1 || es < pt) ? "es" : "pt";
 }
 
-// Only addresses inside this site: never "//other-site" or "https://...".
+// Only addresses inside this site: one "/" followed by ordinary characters.
+// Browsers ignore tabs and line breaks in addresses and read "\" as "/", so
+// "/\t/other-site" or "/\other-site" would leave the site: both are refused.
 function safeNext(value) {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\") ? value : "/";
+  return typeof value === "string" && /^\/(?![\/\\])[^\s\\\x00-\x1f\x7f]*$/.test(value) ? value : "/";
 }
 
 function escapeHtml(text) {
@@ -124,7 +126,9 @@ function escapeHtml(text) {
 function protectHeaders(headers) {
   headers.set("X-Robots-Tag", "noindex, nofollow");
   headers.set("Cache-Control", "private, no-store");
-  headers.set("Referrer-Policy", "same-origin");
+  // Other sites (the map images) only learn the address of the site, never
+  // the page; OpenStreetMap asks for that much.
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set("X-Content-Type-Options", "nosniff");
   return headers;
 }
@@ -221,7 +225,12 @@ export async function onRequest(context) {
   }
 
   if (url.pathname === LOGIN_PATH && request.method === "POST") {
-    const form = await request.formData();
+    let form;
+    try {
+      form = await request.formData();
+    } catch (error) {
+      return page(texts, { status: 400, message: texts.wrong, siteTitle });
+    }
     const target = safeNext(form.get("next"));
     const who = request.headers.get("CF-Connecting-IP") || "unknown";
     const record = await failures(env, who, now);
@@ -243,5 +252,5 @@ export async function onRequest(context) {
     return new Response(response.body, { status: response.status, headers: protectHeaders(new Headers(response.headers)) });
   }
 
-  return page(texts, { status: 401, next: url.pathname + url.search, siteTitle });
+  return page(texts, { status: 401, next: safeNext(url.pathname + url.search), siteTitle });
 }

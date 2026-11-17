@@ -51,6 +51,8 @@ def _phrases(person: Person) -> list[str]:
     """Quotes ("> ...") written in the texts of a person."""
     found = []
     for key, _title in TEXT_SECTIONS:
+        if key in settings.RAIZES_HIDDEN_SECTIONS:
+            continue
         lines = []
         for line in getattr(person, key).splitlines() + [""]:
             match = _QUOTE_LINE.match(line)
@@ -64,15 +66,22 @@ def _phrases(person: Person) -> list[str]:
     return found
 
 
-def read_history() -> dict[str, str]:
-    """When each item was first exported: {"person:lia-carvalho-1996": "2026-11-17"}."""
+# Items present in the first publication: they are the starting point, not news.
+INITIAL = "initial"
+
+
+def read_history() -> dict:
+    """{"first_seen": {"person:lia-carvalho-1996": "2026-11-17" or "initial"},
+    "publications": ["2026-11-17", ...]}"""
     path = Path(settings.RAIZES_HISTORY_FILE)
-    if not path.is_file():
-        return {}
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        stored = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
     except (ValueError, OSError):
-        return {}
+        stored = {}
+    if "first_seen" not in stored:  # older format: a plain {key: date}
+        stored = {"first_seen": stored, "publications": sorted(set(stored.values()))[:1]}
+    stored.setdefault("publications", [])
+    return stored
 
 
 def item_keys() -> list[str]:
@@ -84,15 +93,20 @@ def item_keys() -> list[str]:
 
 
 def update_history(today: datetime.date | None = None) -> None:
-    """Record today as the first publication of every item not seen before."""
+    """Record a publication: items never published before get today's date.
+
+    In the very first publication everything is the starting point, so
+    nothing is marked as new.
+    """
     history = read_history()
     stamp = (today or datetime.date.today()).isoformat()
+    first = not history["publications"]
     for key in item_keys():
-        history.setdefault(key, stamp)
+        history["first_seen"].setdefault(key, INITIAL if first else stamp)
+    history["publications"].append(stamp)
     path = Path(settings.RAIZES_HISTORY_FILE)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(history, indent=1, sort_keys=True), encoding="utf-8")
-
 
 def build_site_data(today: datetime.date | None = None) -> dict:
     today = today or datetime.date.today()
@@ -158,7 +172,7 @@ def build_site_data(today: datetime.date | None = None) -> dict:
                 "birthPlace": person.birth_place.slug if person.birth_place_id else None,
                 "deathPlace": person.death_place.slug if person.death_place_id else None,
                 "restingPlace": person.resting_place.slug if person.resting_place_id else None,
-                "livesIn": person.lives_in.slug if person.lives_in_id else None,
+                "livesIn": person.lives_in.slug if person.lives_in_id and not person.is_deceased else None,
                 "livedIn": [place.slug for place in person.lived_in.all()],
                 "avatar": _url(person.photo.name, AVATAR) if person.photo else "",
                 "interview": bool(person.youtube_id),
@@ -193,8 +207,11 @@ def build_site_data(today: datetime.date | None = None) -> dict:
     oldest = (today - datetime.timedelta(days=NEWS_DAYS)).isoformat()
     news = []
     for key in item_keys():
-        first = history.get(key, today.isoformat())
-        if first >= oldest:
+        # Not published yet: new, unless nothing was ever published (then the
+        # next publication is the starting point).
+        unpublished = today.isoformat() if history["publications"] else INITIAL
+        first = history["first_seen"].get(key, unpublished)
+        if first != INITIAL and first >= oldest:
             kind, _colon, ident = key.partition(":")
             news.append({"type": kind, "key": ident, "date": first})
     news.sort(key=lambda item: (item["date"], item["type"], item["key"]), reverse=True)

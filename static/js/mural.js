@@ -121,6 +121,8 @@
     var oldest = iso(addDays(today, -data.newsDays));
     var fresh = data.news.filter(function (item) {
       return item.date >= oldest && item.date <= iso(today);
+    }).sort(function (a, b) {
+      return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; // newest first
     });
     result.news = fresh.slice(0, NEWS_SHOWN);
     result.newsMore = Math.max(0, fresh.length - NEWS_SHOWN);

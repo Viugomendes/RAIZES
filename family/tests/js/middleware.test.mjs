@@ -116,10 +116,38 @@ test("a cookie older than one year is refused", async () => {
 });
 
 test("after the password the visitor never leaves the site", async () => {
-  for (const next of ["//evil.example/", "https://evil.example/", "/\\evil.example", "javascript:alert(1)"]) {
+  for (const next of [
+    "//evil.example/",
+    "https://evil.example/",
+    "/\\evil.example",
+    "javascript:alert(1)",
+    "/\t/evil.example/x",
+    "/\n/evil.example/x",
+    "/ /evil.example",
+    "/\\/evil.example",
+  ]) {
     const { response } = await call("/__login", { method: "POST", body: { password: PASSWORD, next } });
     assert.equal(response.headers.get("Location"), "/", next);
   }
+});
+
+test("a wrong password does not keep a dangerous return address", async () => {
+  const { response } = await call("/__login", { method: "POST", body: { password: "errada", next: "/\t/evil.example/x" } });
+
+  assert.ok((await response.text()).includes('name="next" value="/"'));
+});
+
+test("a login that is not a form gets a clean answer", async () => {
+  const request = new Request("https://familia.example/__login", { method: "POST", body: "{}", headers: { "Content-Type": "application/json" } });
+  const response = await onRequest({ request, env: { SITE_PASSWORD: PASSWORD }, next: async () => new Response("x") });
+
+  assert.equal(response.status, 400);
+});
+
+test("map images may learn the site address but never the page", async () => {
+  const { response } = await call("/pt-br/");
+
+  assert.equal(response.headers.get("Referrer-Policy"), "strict-origin-when-cross-origin");
 });
 
 test("ten wrong attempts block even the right password for a while", async () => {
