@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
+from config.env import owner_only
+
 
 class Command(BaseCommand):
     help = _("Restores a backup made by the backup command.")
@@ -57,6 +59,8 @@ class Command(BaseCommand):
                     continue
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(zipped.read(info))
+                if target == settings.ENV_FILE:
+                    owner_only(target)
         self.stdout.write(self.style.SUCCESS(_("Backup restored.")))
 
     def check_nothing_is_overwritten(self, zipped, entries):

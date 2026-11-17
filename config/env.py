@@ -38,6 +38,14 @@ def load_env_file(path: Path) -> None:
         os.environ.setdefault(name, value)
 
 
+def owner_only(path: Path, mode: int = 0o600) -> None:
+    """Only the owner reads it (0o600; 0o700 for a folder): it holds secrets.
+
+    On Windows only the read-only flag exists, and these modes leave it off.
+    """
+    os.chmod(path, mode)
+
+
 def parse_list(text: str) -> list[str]:
     """ "tastes, Legacy" -> ["tastes", "legacy"]."""
     return [part.strip().lower() for part in (text or "").split(",") if part.strip()]
@@ -70,6 +78,7 @@ def get_or_create_secret_key(path: Path, name: str = "RAIZES_SECRET_KEY") -> str
         existing += "\n"
     # The key may contain "#" or "$", so it is stored between quotes.
     path.write_text(f"{existing}{name}='{key}'\n", encoding="utf-8")
+    owner_only(path)
     os.environ[name] = key
     return key
 
@@ -89,3 +98,4 @@ def set_env_values(path: Path, values: dict[str, str]) -> None:
         lines = [existing for existing in lines if existing.partition("=")[0].strip() != name]
         lines.append(f"{name}={value}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    owner_only(path)

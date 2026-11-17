@@ -9,6 +9,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
+from config.env import owner_only
+
 LEFT_OUT = {"cache"}  # the photo copies are made again on demand
 JOURNAL_SUFFIXES = ("-wal", "-shm", "-journal")
 
@@ -32,6 +34,7 @@ class Command(BaseCommand):
         env = settings.ENV_FILE
         folder = settings.RAIZES_BACKUP_DIR
         folder.mkdir(parents=True, exist_ok=True)
+        owner_only(folder, 0o700)
         archive = folder / f"raizes-{datetime.datetime.now():%Y-%m-%d-%H%M%S}.zip"
         try:
             # Mode "x": an existing backup is never overwritten.
@@ -42,6 +45,8 @@ class Command(BaseCommand):
             )
         database = Path(settings.DATABASE_FILE).resolve()
         try:
+            # Before anything is written: the zip holds the secrets of .env.
+            owner_only(archive)
             with zipped, tempfile.TemporaryDirectory() as temp:
                 for path in sorted(data.rglob("*")):
                     relative = path.relative_to(data)

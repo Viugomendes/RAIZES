@@ -1,11 +1,13 @@
 """Commands to install, serve, back up and restore (never touching data/ or demo/)."""
 import io
 import logging
+import os
 import sqlite3
+import stat
 import tempfile
 import zipfile
 from pathlib import Path
-from unittest import mock
+from unittest import mock, skipUnless
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -14,6 +16,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 
 from access.models import SiteSettings
 from access.passwords import generate_admin_password
+from config.env import get_or_create_secret_key, set_env_values
 
 EMAIL = "dona@example.com"
 
@@ -327,6 +330,45 @@ class BackupTests(TempProject, TestCase):
         with self.assertRaises(CommandError):
             run("backup")
         self.assertEqual(len(list(self.backups.glob("raizes-*.zip"))), 1)
+
+    def assertOwnerOnly(self, calls, path, mode):
+        self.assertIn(mock.call(path, mode), calls)
+
+    def test_backup_restore_and_env_are_for_the_owner_only(self):
+        # Runs everywhere: the permissions are set (Windows has no such modes).
+        self.fill()
+        with mock.patch("config.env.os.chmod") as chmod:
+            archive = self.make_backup()
+            self.env.unlink()
+            self.empty_data()
+            run("restaurar", str(archive))
+            set_env_values(self.env, {"RAIZES_LANGUAGE": "es"})
+        calls = chmod.call_args_list
+        self.assertOwnerOnly(calls, self.backups, 0o700)
+        self.assertOwnerOnly(calls, archive, 0o600)
+        self.assertEqual(calls.count(mock.call(self.env, 0o600)), 2)
+
+    def test_a_new_secret_key_is_written_for_the_owner_only(self):
+        name = "RAIZES_KEY_ONLY_FOR_THIS_TEST"
+        self.addCleanup(os.environ.pop, name, None)
+        with mock.patch("config.env.os.chmod") as chmod:
+            get_or_create_secret_key(self.env, name)
+
+        chmod.assert_called_once_with(self.env, 0o600)
+        self.assertIn(name, self.env.read_text("utf-8"))
+
+    @skipUnless(os.name == "posix", "file modes are a POSIX thing")
+    def test_backup_restore_and_env_modes_on_posix(self):
+        self.fill()
+        old_umask = os.umask(0o022)
+        self.addCleanup(os.umask, old_umask)
+        archive = self.make_backup()
+        self.assertEqual(stat.S_IMODE(self.backups.stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE(archive.stat().st_mode), 0o600)
+        self.env.unlink()
+        self.empty_data()
+        run("restaurar", str(archive))
+        self.assertEqual(stat.S_IMODE(self.env.stat().st_mode), 0o600)
 
     def test_restore_rejects_a_colon_in_any_component(self):
         for bad in ("data/a.txt:stream", "data/sub:x/a.txt", "data/a/b:c"):
