@@ -90,12 +90,9 @@ tastes = """
 **Mania:** desenhar nas margens de qualquer papel.
 """
 childhood = """
-Cresci entre duas casas: a da minha mãe, [[helena-figueira-1970]], e a do meu pai,
-[[tomas-carvalho-1968|Tomás]]. Quando eu tinha nove anos o [[rui-pinheiro-1965|Rui]]
-entrou na nossa vida, e foi ele quem me ensinou a andar de bicicleta.
+Cresci entre duas casas: a da minha mãe, [[helena-figueira-1970]], e a do meu pai, [[tomas-carvalho-1968|Tomás]]. Quando eu tinha nove anos o [[rui-pinheiro-1965|Rui]] entrou na nossa vida, e foi ele quem me ensinou a andar de bicicleta.
 
-As férias eram em [[lugar:ouro-preto]], na casa dos avós, com
-[[bento-carvalho-1993|meu irmão Bento]] e um bando de primos.
+As férias eram em [[lugar:ouro-preto]], na casa dos avós, com [[bento-carvalho-1993|meu irmão Bento]] e um bando de primos.
 """
 legacy = """
 > Guardem as histórias. As fotos sozinhas não contam quem a gente foi.
@@ -177,19 +174,15 @@ portrait = true
 interview_url = "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
 source = "entrevista gravada em 2026"
 childhood = """
-Fui a quinta de oito irmãos. A casa em [[lugar:ouro-preto]] nunca ficava em
-silêncio: sempre tinha alguém cantando, brigando ou procurando um sapato. [00:42]
+Fui a quinta de oito irmãos. A casa em [[lugar:ouro-preto]] nunca ficava em silêncio: sempre tinha alguém cantando, brigando ou procurando um sapato. [00:42]
 
-Quem mandava na fila do banho era a [[cecilia-figueira-1964|Cecília]]. O
-[[edgar-figueira-1968|Edgar]] furava a fila toda vez. [03:15]
+Quem mandava na fila do banho era a [[cecilia-figueira-1964|Cecília]]. O [[edgar-figueira-1968|Edgar]] furava a fila toda vez. [03:15]
 """
 work = """
-Vim para São Paulo aos dezenove anos para estudar e fiquei. Trabalhei trinta
-anos em bibliotecas públicas e nunca me cansei do cheiro de livro velho.
+Vim para São Paulo aos dezenove anos para estudar e fiquei. Trabalhei trinta anos em bibliotecas públicas e nunca me cansei do cheiro de livro velho.
 """
 memories = """
-O dia mais feliz foi o primeiro Natal com todos os filhos na mesma mesa:
-[[bento-carvalho-1993]], [[lia-carvalho-1996]] e [[nina-pinheiro-2007]].
+O dia mais feliz foi o primeiro Natal com todos os filhos na mesma mesa: [[bento-carvalho-1993]], [[lia-carvalho-1996]] e [[nina-pinheiro-2007]].
 """
 
 [[people]]
@@ -464,9 +457,7 @@ occupation = "ferreiro"
 tags = "emigrante"
 source = "certidão de casamento de Horácio"
 origins = """
-Veio de [[lugar:porto]] ainda rapaz, por volta de 1905, e nunca mais voltou.
-Dizem que trouxe só uma mala e o martelo de ferreiro, que passou para o filho
-[[horacio-figueira-1912|Horácio]].
+Veio de [[lugar:porto]] ainda rapaz, por volta de 1905, e nunca mais voltou. Dizem que trouxe só uma mala e o martelo de ferreiro, que passou para o filho [[horacio-figueira-1912|Horácio]].
 """
 
 [[people]]
@@ -512,8 +503,7 @@ lives_in = "santos"
 occupation = "estivador aposentado"
 portrait = true
 love = """
-Casei três vezes e não me arrependo de nenhuma. Cada uma me ensinou uma coisa
-diferente, e a mais importante foi ouvir.
+Casei três vezes e não me arrependo de nenhuma. Cada uma me ensinou uma coisa diferente, e a mais importante foi ouvir.
 """
 
 [[people]]
@@ -656,8 +646,7 @@ start_date = "1992"
 end_date = "2003"
 children = ["bento-carvalho-1993", "lia-carvalho-1996"]
 story = """
-Conheceram-se numa festa junina em Santos, em 1990. Ela tinha ido só para
-acompanhar a irmã [[marta-figueira-1966|Marta]].
+Conheceram-se numa festa junina em Santos, em 1990. Ela tinha ido só para acompanhar a irmã [[marta-figueira-1966|Marta]].
 """
 
 # The mother and the stepfather: he raised Lia and Bento, so they are foster
@@ -669,8 +658,7 @@ start_date = "2005"
 children = ["nina-pinheiro-2007"]
 foster_children = ["bento-carvalho-1993", "lia-carvalho-1996"]
 story = """
-Ele foi consertar uma estante na biblioteca onde ela trabalhava e demorou três
-semanas num serviço de dois dias.
+Ele foi consertar uma estante na biblioteca onde ela trabalhava e demorou três semanas num serviço de dois dias.
 """
 
 # The stepfather's first marriage.
@@ -714,8 +702,7 @@ children = [
     "lara-figueira-1978",
 ]
 story = """
-Namoraram por carta durante dois anos, enquanto ele trabalhava na ferrovia.
-Ficaram casados cinquenta e três anos.
+Namoraram por carta durante dois anos, enquanto ele trabalhava na ferrovia. Ficaram casados cinquenta e três anos.
 """
 
 [[unions]]
@@ -817,9 +804,7 @@ slug = "bolo-de-fuba-da-dalva"
 title = "Bolo de fubá da vó Dalva"
 author = "dalva-oliveira-1944"
 text = """
-**Ingredientes:** 3 ovos, 2 xícaras de fubá, 1 xícara de açúcar, 1 xícara de
-leite, meia xícara de óleo, 1 colher de fermento e uma pitada de erva-doce.
+**Ingredientes:** 3 ovos, 2 xícaras de fubá, 1 xícara de açúcar, 1 xícara de leite, meia xícara de óleo, 1 colher de fermento e uma pitada de erva-doce.
 
-**Modo de preparo:** bata tudo, menos o fermento, que entra por último. Forno
-médio por quarenta minutos. Não abra o forno antes da hora.
+**Modo de preparo:** bata tudo, menos o fermento, que entra por último. Forno médio por quarenta minutos. Não abra o forno antes da hora.
 """

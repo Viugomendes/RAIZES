@@ -600,6 +600,30 @@ msgstr ""
 "Família inventada carregada: %(people)d pessoas, %(unions)d uniões, "
 "%(places)d lugares, %(recipes)d receitas."
 
+# --- Exportação ---
+
+msgid "The site was not exported: some texts have links that point nowhere."
+msgstr "O site não foi exportado: alguns textos têm links que não levam a lugar nenhum."
+
+msgid "The exported site has links to files that do not exist."
+msgstr "O site exportado tem links para arquivos que não existem."
+
+msgid "%(folder)s is not a folder."
+msgstr "%(folder)s não é uma pasta."
+
+msgid ""
+"The folder %(folder)s has files that were not created by the export, so it "
+"was left untouched. Choose an empty folder."
+msgstr ""
+"A pasta %(folder)s tem arquivos que não foram criados pela exportação, por "
+"isso não foi tocada. Escolha uma pasta vazia."
+
+msgid "Site exported: %(pages)d pages, %(files)d files, %(size)s."
+msgstr "Site exportado: %(pages)d páginas, %(files)d arquivos, %(size)s."
+
+msgid "Open this file in the browser: %(path)s"
+msgstr "Abra este arquivo no navegador: %(path)s"
+
 # --- Painel de administração ---
 
 msgid "Raízes · invented family (demo)"
