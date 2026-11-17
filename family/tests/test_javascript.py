@@ -9,6 +9,8 @@ import subprocess
 from pathlib import Path
 from unittest import skipUnless
 
+from django.test import SimpleTestCase
+
 from family.graph import load_family_graph
 from family.kinship import CENTER
 from family.site_data import build_site_data
@@ -36,6 +38,20 @@ class JavaScriptTestCase(DemoFamilyTestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         return json.loads(completed.stdout)
+
+
+@skipUnless(NODE, "Node is not installed")
+class PasswordFunctionTests(SimpleTestCase):
+    """The Cloudflare function that asks for the family password."""
+
+    def test_password_function_tests_pass(self):
+        tests = Path(__file__).parent / "js" / "middleware.test.mjs"
+        completed = subprocess.run(
+            [NODE, "--test", str(tests)], capture_output=True, text=True, encoding="utf-8", check=False
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertIn("fail 0", completed.stdout)
 
 
 class KinshipInTheBrowserTests(JavaScriptTestCase):

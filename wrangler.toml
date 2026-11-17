@@ -1,0 +1,18 @@
+# Cloudflare Pages: the site is the dist/ folder, and functions/_middleware.js
+# asks for the family password before every page, photo and data file.
+#
+# The password is NOT written here. Set it once with:
+#   npx wrangler pages secret put SITE_PASSWORD
+# (see "Publicar com senha" in README.md).
+
+name = "raizes"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-01"
+
+# Optional, but better: a KV namespace keeps the count of wrong passwords
+# between servers. Create it with
+#   npx wrangler kv namespace create RAIZES_KV
+# and put the id it prints below, removing the "#" of the three lines.
+# [[kv_namespaces]]
+# binding = "RAIZES_KV"
+# id = "PUT-THE-ID-HERE"

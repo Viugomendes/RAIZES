@@ -56,6 +56,71 @@ Depois do `export_site`, abra `dist/index.html` com dois cliques: o site
 funciona direto do disco. Se algum texto tiver um link para alguém que não
 existe, a exportação para e mostra a lista do que precisa ser corrigido.
 
+Abrindo do disco, as imagens do mapa podem não aparecer (o OpenStreetMap
+recusa pedidos que não vêm de um endereço de site). No `runserver` e na
+hospedagem elas aparecem normalmente.
+
+## O que o site tem
+
+| Página | O que faz |
+|---|---|
+| Novidades | Mural automático: aniversários da semana, "neste dia", "em memória", lembrança do dia e novo no site. Calculado pelo navegador a cada dia, sem republicar. |
+| Árvore | A família inteira. "Ver a partir de..." recalcula lados e distâncias para qualquer pessoa. Aproximar: Ctrl + roda do mouse, dois dedos ou os botões; "Tela cheia" para usar a árvore à vontade. |
+| Árvore > Mapa | Todos os lugares da família, com filtro por lado e geração. |
+| Busca | Por nome, ano, lugar, lado, distância, geração, vivo ou falecido, profissão, etiqueta, fotos, entrevista e receita. |
+| Página da pessoa | As 10 seções do plano, com galeria, gravações, receitas e mapa pessoal. |
+| Quem é? | Fotos com alguém que ainda não foi identificado. |
+
+O "Novo no site" compara com as exportações anteriores: o arquivo
+`export-history.json` (em `data/` ou `demo/`) guarda quando cada ficha, foto e
+receita foi exportada pela primeira vez.
+
+## Fotos e gravações
+
+- A foto original fica no seu computador. O site recebe só cópias menores
+  (miniatura e versão grande), sem os dados escondidos do arquivo, como o GPS.
+  As cópias ficam guardadas em `cache/`, dentro de `data/` ou `demo/`.
+- Gravações curtas (áudio ou vídeo de até 25 MB) vão para o site como estão.
+  Entrevistas longas vão para o YouTube como "não listado".
+
+## Publicar com senha (Cloudflare Pages)
+
+A função [functions/_middleware.js](functions/_middleware.js) pede a senha da
+família no servidor, antes de entregar qualquer página, foto ou arquivo de
+dados. Quem acerta fica conectado por um ano naquele aparelho. Depois de 10
+senhas erradas, aquela conexão espera 15 minutos. Para trocar a senha, basta
+mudar o segredo: todo mundo precisa entrar de novo.
+
+Precisa do Node.js instalado. Uma única vez:
+
+```powershell
+npx wrangler login
+npx wrangler pages project create raizes
+npx wrangler pages secret put SITE_PASSWORD
+```
+
+O último comando pede a senha; ela fica guardada só na Cloudflare, nunca no
+código. Opcional, mas recomendado: crie o contador de tentativas com
+`npx wrangler kv namespace create RAIZES_KV` e copie o `id` para o
+[wrangler.toml](wrangler.toml), como ele explica.
+
+A cada publicação:
+
+```powershell
+python manage.py export_site
+npx wrangler pages deploy
+```
+
+Para testar a senha no seu computador antes de publicar:
+
+```powershell
+npx wrangler pages dev dist --binding SITE_PASSWORD=uma-senha-de-teste
+```
+
+e abra <http://127.0.0.1:8788/>.
+
+**Não publique a família real antes de conferir que a senha funciona.**
+
 ## Família inventada ou família real
 
 O arquivo `.env` (criado sozinho na primeira vez, e ignorado pelo Git) diz qual
@@ -106,5 +171,9 @@ Para começar a família real (só depois de tudo testado com a inventada):
 | `family/tree_layout.py` | O esqueleto da árvore: onde cada pessoa fica |
 | `family/tree_skin.py` | A pele da árvore: cores, formas e linhas |
 | `family/export.py` | A exportação estática para `dist/` |
+| `family/site_data.py` | Os dados que o navegador lê (`data/family.js`) |
+| `family/images.py` | As cópias menores das fotos |
+| `static/js/` | Mural, busca, mapas, árvore e as regras de parentesco no navegador |
+| `functions/_middleware.js` | A senha na Cloudflare |
 | `demo/family.toml` | A família inventada |
 | `locale/` | Os textos da interface em português e espanhol |
