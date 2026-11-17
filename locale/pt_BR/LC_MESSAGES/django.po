@@ -1200,3 +1200,8 @@ msgstr "Salva a pasta de dados e o .env em backups/raizes-AAAA-MM-DD-HHMMSS.zip.
 
 msgid "The backup failed (%(error)s). Nothing was saved."
 msgstr "A cópia falhou (%(error)s). Nada foi salvo."
+
+# --- Painel e acesso, correções (2026-11-17) ---
+
+msgid "The site published on Cloudflare Pages has its own password: changing it here only affects the site served by this program. To change that one, run npx wrangler pages secret put SITE_PASSWORD (its devices are not listed here)."
+msgstr "O site publicado na Cloudflare Pages tem a sua própria senha: trocar aqui só vale para o site servido por este programa. Para trocar aquela, rode npx wrangler pages secret put SITE_PASSWORD (os aparelhos de lá não aparecem aqui)."

@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from .admin_site import site
@@ -23,9 +24,17 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             _("Family password"),
             {
                 "fields": ("new_view_password", "repeat_view_password"),
-                "description": _(
-                    "Saving a new password disconnects every device. "
-                    "The site language is chosen in the installer (the .env file) and is not changed here."
+                "description": format_lazy(
+                    "{} {}",
+                    _(
+                        "Saving a new password disconnects every device. "
+                        "The site language is chosen in the installer (the .env file) and is not changed here."
+                    ),
+                    _(
+                        "The site published on Cloudflare Pages has its own password: changing it "
+                        "here only affects the site served by this program. To change that one, run "
+                        "npx wrangler pages secret put SITE_PASSWORD (its devices are not listed here)."
+                    ),
                 ),
             },
         ),

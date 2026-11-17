@@ -1201,3 +1201,8 @@ msgstr "Guarda la carpeta de datos y el .env en backups/raizes-AAAA-MM-DD-HHMMSS
 
 msgid "The backup failed (%(error)s). Nothing was saved."
 msgstr "La copia falló (%(error)s). No se guardó nada."
+
+# --- Painel e acesso, correções (2026-11-17) ---
+
+msgid "The site published on Cloudflare Pages has its own password: changing it here only affects the site served by this program. To change that one, run npx wrangler pages secret put SITE_PASSWORD (its devices are not listed here)."
+msgstr "El sitio publicado en Cloudflare Pages tiene su propia contraseña: cambiarla aquí solo vale para el sitio servido por este programa. Para cambiar esa, ejecuta npx wrangler pages secret put SITE_PASSWORD (sus dispositivos no aparecen aquí)."

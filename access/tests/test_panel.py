@@ -80,6 +80,13 @@ class SettingsPageTests(TestCase):
     def test_settings_page_says_language_is_in_the_installer(self):
         self.assertContains(self.client.get(self.url), ".env")
 
+    def test_settings_page_says_the_cloudflare_site_has_its_own_password(self):
+        for language, words in (("pt-br", "tem a sua própria senha"), ("es", "tiene su propia contraseña")):
+            with self.subTest(language=language):
+                response = self.client.get(self.url, HTTP_ACCEPT_LANGUAGE=language)
+                self.assertContains(response, words)
+                self.assertContains(response, "npx wrangler pages secret put SITE_PASSWORD")
+
 
 class ConnectedPageTests(TestCase):
     def setUp(self):

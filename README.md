@@ -329,6 +329,13 @@ dados. Quem acerta fica conectado por um ano naquele aparelho. Depois de 10
 senhas erradas, aquela conexão espera 15 minutos. Para trocar a senha, basta
 mudar o segredo: todo mundo precisa entrar de novo.
 
+Atenção: o site da Cloudflare Pages tem a sua própria senha, o segredo
+`SITE_PASSWORD`. Trocar a senha da família no painel, ou desconectar um
+aparelho em "Aparelhos conectados", só vale para o site servido pelo Django
+(`servir`). Para trocar a senha do site publicado, rode de novo
+`npx wrangler pages secret put SITE_PASSWORD`. A lista de aparelhos do painel
+não mostra quem entrou pela Cloudflare.
+
 Precisa do Node.js instalado. Uma única vez:
 
 ```powershell
