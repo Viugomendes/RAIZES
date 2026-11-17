@@ -1,10 +1,13 @@
 """Settings of the Raízes project.
 
-Until version 1.0 Django runs only on the owner's computer: the admin panel is
-used to fill in the data, and the site is exported as static pages.
+The admin panel is used to fill in the data. The site is served by
+`python manage.py servir` (on this computer, the home network, a tunnel or a
+server: see "Onde hospedar" in the README) or exported as static pages.
+Everything that changes between places is read from `.env`.
 """
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -18,9 +21,63 @@ load_env_file(ENV_FILE)
 
 SECRET_KEY = get_or_create_secret_key(ENV_FILE)
 
-# Django only ever runs on this computer, so debug mode is the default.
-DEBUG = os.environ.get("RAIZES_DEBUG", "true").lower() in ("1", "true", "yes")
+# ---------------------------------------------------------------------------
+# Where the site is served (see "Onde hospedar" in the README)
+# ---------------------------------------------------------------------------
+# The address the family opens, for example https://familia.example.org
+# Empty: the site is only used on this computer or on the home network.
+RAIZES_PUBLIC_URL = os.environ.get("RAIZES_PUBLIC_URL", "").strip().rstrip("/").lower()
+_public = urlsplit(RAIZES_PUBLIC_URL)
+if RAIZES_PUBLIC_URL and (
+    _public.scheme not in ("http", "https")
+    or not _public.hostname
+    or "@" in _public.netloc
+    or _public.path
+    or _public.query
+    or _public.fragment
+):
+    raise ImproperlyConfigured(
+        "RAIZES_PUBLIC_URL must look like https://familia.example.org (check the .env file)."
+    )
+RAIZES_PUBLIC_HTTPS = _public.scheme == "https"
+
+# Debug mode shows the code of errors: it is the default only without a public address.
+_debug = os.environ.get("RAIZES_DEBUG", "").strip()
+DEBUG = parse_bool(_debug, "RAIZES_DEBUG") if _debug else not RAIZES_PUBLIC_URL
+
+# The names this site answers to. Never "*": a request for another name is refused.
+RAIZES_EXTRA_HOSTS = parse_list(os.environ.get("RAIZES_EXTRA_HOSTS", ""))
+if "*" in RAIZES_EXTRA_HOSTS:
+    raise ImproperlyConfigured("RAIZES_EXTRA_HOSTS cannot be '*': write each name.")
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+CSRF_TRUSTED_ORIGINS = []
+if RAIZES_PUBLIC_URL:
+    # An IPv6 address is written between brackets, as in the Host header.
+    ALLOWED_HOSTS.append(f"[{_public.hostname}]" if ":" in _public.hostname else _public.hostname)
+    CSRF_TRUSTED_ORIGINS.append(f"{_public.scheme}://{_public.netloc}")
+ALLOWED_HOSTS += [host for host in RAIZES_EXTRA_HOSTS if host not in ALLOWED_HOSTS]
+
+# Behind a tunnel or a proxy every visit comes from the same local address; this
+# header then carries the visitor's address (used by the attempt limits).
+#   empty (default): no proxy, the address of the connection is used;
+#   CF-Connecting-IP: Cloudflare Tunnel;
+#   X-Forwarded-For: a proxy on the same computer (Caddy); its last entry is used.
+_proxy_headers = {"cf-connecting-ip": "CF-Connecting-IP", "x-forwarded-for": "X-Forwarded-For"}
+_proxy = os.environ.get("RAIZES_PROXY_HEADER", "").strip()
+if _proxy and _proxy.lower() not in _proxy_headers:
+    raise ImproperlyConfigured(
+        "RAIZES_PROXY_HEADER must be empty, CF-Connecting-IP or X-Forwarded-For."
+    )
+RAIZES_PROXY_HEADER = _proxy_headers.get(_proxy.lower(), "")
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if RAIZES_PROXY_HEADER else None
+
+# With an https address the cookies only travel over https, and the browser is told
+# to always use https (HSTS, one year). The tunnel or the proxy sends http to https.
+SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = LANGUAGE_COOKIE_SECURE = RAIZES_PUBLIC_HTTPS
+SECURE_HSTS_SECONDS = 31536000 if RAIZES_PUBLIC_HTTPS else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+SECURE_SSL_REDIRECT = False
 
 # ---------------------------------------------------------------------------
 # Which family is loaded
@@ -87,7 +144,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     # The same Content-Security-Policy and headers as the Cloudflare function.
+    # Before WhiteNoise, which answers static files by itself: they get them too.
     "access.security.SecurityHeadersMiddleware",
+    # CSS, JavaScript and icons, from STATIC_ROOT (`servir` runs collectstatic).
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -187,10 +247,27 @@ RAIZES_BACKUP_DIR = BASE_DIR / "backups"
 # ---------------------------------------------------------------------------
 # E-mail (the password of the panel is sent by e-mail; see the README)
 # ---------------------------------------------------------------------------
-EMAIL_HOST = os.environ.get("RAIZES_EMAIL_HOST", "localhost")
-EMAIL_PORT = int(os.environ.get("RAIZES_EMAIL_PORT", "25") or 25)
-EMAIL_HOST_USER = os.environ.get("RAIZES_EMAIL_USER", "")
+# Without RAIZES_EMAIL_HOST nothing is sent: each e-mail is written as a file in
+# DATA_DIR/emails, and `instalar` shows the panel password on the screen instead.
+EMAIL_HOST = os.environ.get("RAIZES_EMAIL_HOST", "").strip()
+RAIZES_EMAIL_CONFIGURED = bool(EMAIL_HOST)
+try:
+    EMAIL_PORT = int(os.environ.get("RAIZES_EMAIL_PORT", "").strip() or 587)
+except ValueError:
+    raise ImproperlyConfigured(
+        "RAIZES_EMAIL_PORT must be a number, like 587 (check the .env file)."
+    ) from None
+EMAIL_HOST_USER = os.environ.get("RAIZES_EMAIL_USER", "").strip()
 EMAIL_HOST_PASSWORD = os.environ.get("RAIZES_EMAIL_PASSWORD", "")
-EMAIL_USE_TLS = os.environ.get("RAIZES_EMAIL_TLS", "").lower() in ("1", "true", "yes")
-DEFAULT_FROM_EMAIL = os.environ.get("RAIZES_EMAIL_FROM", "") or EMAIL_HOST_USER or "raizes@localhost"
+# Always encrypted: port 465 starts with TLS, any other port switches to it (STARTTLS).
+EMAIL_USE_SSL = EMAIL_PORT == 465
+EMAIL_USE_TLS = not EMAIL_USE_SSL
+DEFAULT_FROM_EMAIL = (
+    os.environ.get("RAIZES_EMAIL_FROM", "").strip() or EMAIL_HOST_USER or "raizes@localhost"
+)
 EMAIL_TIMEOUT = 15
+if RAIZES_EMAIL_CONFIGURED:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+    EMAIL_FILE_PATH = DATA_DIR / "emails"

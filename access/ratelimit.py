@@ -11,6 +11,7 @@ single-process server (Task 6 documents it).
 """
 import ipaddress
 
+from django.conf import settings
 from django.core.cache import cache
 
 LIMIT = 10
@@ -19,8 +20,18 @@ WINDOW = 15 * 60  # seconds
 
 
 def client_ip(request) -> str:
-    # Only REMOTE_ADDR: X-Forwarded-For can be typed by anybody.
-    return request.META.get("REMOTE_ADDR", "")
+    """The visitor's address: the connection's, or the one given by our own proxy.
+
+    A header is only read when RAIZES_PROXY_HEADER names it: anybody can type one.
+    From X-Forwarded-For only the last entry counts, the one the proxy added.
+    """
+    header = settings.RAIZES_PROXY_HEADER
+    value = ""
+    if header == "CF-Connecting-IP":
+        value = request.META.get("HTTP_CF_CONNECTING_IP", "")
+    elif header == "X-Forwarded-For":
+        value = request.META.get("HTTP_X_FORWARDED_FOR", "").rsplit(",", 1)[-1]
+    return value.strip() or request.META.get("REMOTE_ADDR", "")
 
 
 def _address(ip: str):

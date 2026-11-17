@@ -105,6 +105,9 @@ class Command(BaseCommand):
 
     def send_password(self, email, password, language):
         try:
+            if not settings.RAIZES_EMAIL_CONFIGURED:
+                # The e-mail would only be written to a file in DATA_DIR/emails.
+                raise OSError("e-mail is not configured")
             with translation.override(language):
                 send_mail(
                     str(_("Your Raízes panel password")),

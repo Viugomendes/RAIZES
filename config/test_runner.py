@@ -3,6 +3,8 @@
 Most tests open pages as a visitor would; only the tests of the gate itself
 turn it on, with @override_settings(RAIZES_VIEW_GATE=True).
 """
+import tempfile
+
 from django.conf import settings
 from django.contrib.auth.hashers import get_hashers, get_hashers_by_algorithm
 from django.test.runner import DiscoverRunner
@@ -16,3 +18,11 @@ class RaizesTestRunner(DiscoverRunner):
         settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
         get_hashers.cache_clear()
         get_hashers_by_algorithm.cache_clear()
+        # WhiteNoise reads STATIC_ROOT when it starts: an empty folder, so the tests
+        # never depend on an old collectstatic (the static test fills its own).
+        self._static_root = tempfile.TemporaryDirectory()
+        settings.STATIC_ROOT = self._static_root.name
+
+    def teardown_test_environment(self, **kwargs):
+        super().teardown_test_environment(**kwargs)
+        self._static_root.cleanup()

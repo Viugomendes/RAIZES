@@ -134,6 +134,15 @@ class AdminLoginTests(TestCase):
         self.assertRedirects(done, "/painel/senha/pronto/")
         self.assertRedirects(self.log_in(password="outra-senha-comprida-7"), "/painel/")
 
+    @override_settings(RAIZES_PUBLIC_URL="https://familia.example.org")
+    def test_password_reset_link_points_at_the_public_address(self):
+        # The request may arrive through a tunnel as plain http to localhost.
+        self.client.post("/painel/senha/", {"email": EMAIL})
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertRegex(mail.outbox[0].body, r"https://familia\.example\.org/painel/senha/\S+/\S+/")
+        self.assertNotIn("testserver", mail.outbox[0].body)
+
     def test_old_admin_address_is_gone(self):
         response = self.client.get("/admin/", follow=True)
 

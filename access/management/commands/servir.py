@@ -1,7 +1,11 @@
-"""`python manage.py servir`: serves the site on the home network with waitress."""
+"""`python manage.py servir`: serves the site on the home network with waitress.
+
+One process only: the attempt limits (access/ratelimit.py) are counted in memory.
+"""
 import socket
 
 from django.conf import settings
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
@@ -38,8 +42,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         import waitress
 
-        from config.wsgi import application
-
         host, port = options["host"], options["port"]
         if options["rede"]:
             host = "0.0.0.0"
@@ -51,13 +53,35 @@ class Command(BaseCommand):
                     "network. Set RAIZES_DEBUG=false in .env and try again."
                 )
             )
+        if not local_only and settings.RAIZES_PROXY_HEADER:
+            # Anybody on the network could type the proxy's header and pass for someone else.
+            raise CommandError(
+                _(
+                    "RAIZES_PROXY_HEADER is set, so the site only listens on this computer "
+                    "(the tunnel or the proxy brings the visits). Remove --rede or --host."
+                )
+            )
+
+        # WhiteNoise serves the CSS and JavaScript from STATIC_ROOT: fill it first.
+        call_command("collectstatic", interactive=False, verbosity=0)
+        # Imported after collectstatic: WhiteNoise lists the files when it starts.
+        from config.wsgi import application
+
         self.stdout.write(_("Open on this computer: http://localhost:%(port)d/") % {"port": port})
         if not local_only:
-            ip = network_ip()
-            if ip:
+            addresses = [network_ip()] if host in ("0.0.0.0", "::") else [host]
+            for ip in filter(None, addresses):
+                self.allow(ip, port)
                 self.stdout.write(
                     _("Open on the home network: http://%(ip)s:%(port)d/")
                     % {"ip": ip, "port": port}
                 )
         self.stdout.write(_("Press Ctrl+C to stop."))
         waitress.serve(application, host=host, port=port, threads=8)
+
+    def allow(self, ip, port):
+        """Let this run answer at the network address (settings are already loaded)."""
+        name = f"[{ip}]" if ":" in ip else ip
+        if name not in settings.ALLOWED_HOSTS:
+            settings.ALLOWED_HOSTS = [*settings.ALLOWED_HOSTS, name]
+        settings.CSRF_TRUSTED_ORIGINS = [*settings.CSRF_TRUSTED_ORIGINS, f"http://{name}:{port}"]

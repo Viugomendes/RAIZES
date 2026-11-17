@@ -27,6 +27,8 @@ secrets.*
 /demo/media/
 /demo/cache/
 /demo/export-history.json
+# E-mails written as files when no e-mail server is configured (reset links).
+/demo/emails/
 /.build/
 
 # Python.

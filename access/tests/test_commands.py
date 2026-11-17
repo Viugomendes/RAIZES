@@ -64,6 +64,7 @@ class PasswordTests(SimpleTestCase):
         self.assertNotEqual(first, second)
 
 
+@override_settings(RAIZES_EMAIL_CONFIGURED=True)
 class InstallTests(TempProject, TestCase):
     def install(self, **extra):
         options = dict(
@@ -158,6 +159,17 @@ class InstallTests(TempProject, TestCase):
         self.assertEqual(output.count(password), 1)
         self.assertIn("README", output)
         self.assertNotIn(password, "\n".join(logs.output))
+
+    @override_settings(RAIZES_EMAIL_CONFIGURED=False)
+    def test_without_e_mail_settings_the_password_is_shown_and_never_written_to_a_file(self):
+        output = self.install()
+
+        user = get_user_model().objects.get(email=EMAIL)
+        password = password_in(output, user)
+        self.assertTrue(password)
+        self.assertEqual(output.count(password), 1)
+        # Not even to the folder of e-mail files.
+        self.assertEqual(mail.outbox, [])
 
     def test_interactive_install_asks_twice_with_getpass(self):
         answers = iter(["Família Teste", "pt-br", EMAIL])
@@ -335,13 +347,48 @@ class BackupTests(TempProject, TestCase):
             run("restaurar", str(archive))
 
 
+@override_settings(ALLOWED_HOSTS=["localhost"], CSRF_TRUSTED_ORIGINS=[], RAIZES_PROXY_HEADER="")
 class ServeTests(SimpleTestCase):
     def serve(self, ip="192.168.0.7", **options):
         with mock.patch("waitress.serve") as serve, mock.patch(
             "access.management.commands.servir.network_ip", return_value=ip
-        ):
+        ), mock.patch("access.management.commands.servir.call_command") as collect:
             output = run("servir", **options)
+        self.collect = collect
         return serve, output
+
+    def test_static_files_are_collected_quietly_before_serving(self):
+        self.serve()
+
+        self.collect.assert_called_once_with("collectstatic", interactive=False, verbosity=0)
+
+    @override_settings(DEBUG=False)
+    def test_network_flag_allows_the_network_address_for_this_run(self):
+        from django.conf import settings
+
+        self.serve(rede=True, port=8123)
+
+        self.assertIn("192.168.0.7", settings.ALLOWED_HOSTS)
+        self.assertIn("localhost", settings.ALLOWED_HOSTS)
+        self.assertNotIn("*", settings.ALLOWED_HOSTS)
+        self.assertIn("http://192.168.0.7:8123", settings.CSRF_TRUSTED_ORIGINS)
+
+    def test_local_serve_allows_no_network_address(self):
+        from django.conf import settings
+
+        self.serve()
+
+        self.assertEqual(settings.ALLOWED_HOSTS, ["localhost"])
+
+    @override_settings(DEBUG=False, RAIZES_PROXY_HEADER="CF-Connecting-IP")
+    def test_network_flag_is_refused_behind_a_proxy(self):
+        # Anybody on the network could then type the proxy's header.
+        with mock.patch("waitress.serve") as serve, mock.patch(
+            "access.management.commands.servir.call_command"
+        ):
+            with self.assertRaises(CommandError):
+                run("servir", rede=True)
+        serve.assert_not_called()
 
     def test_default_host_is_local_only(self):
         serve, output = self.serve()

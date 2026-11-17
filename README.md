@@ -50,13 +50,9 @@ ative o ambiente virtual. É preciso fazer isso uma vez em cada terminal novo:
 | Depois de editar um arquivo em `locale/` | `python manage.py compile_translations` |
 
 
-### E-mail
-
-O comando `instalar` envia a senha do painel por e-mail. Para isso, ponha no `.env`
-`RAIZES_EMAIL_HOST`, `RAIZES_EMAIL_PORT`, `RAIZES_EMAIL_USER`, `RAIZES_EMAIL_PASSWORD`,
-`RAIZES_EMAIL_TLS=true` e `RAIZES_EMAIL_FROM` (os dados do seu provedor de e-mail).
-Se o envio falhar, o comando mostra a senha uma única vez na tela: anote-a na hora.
-
+O e-mail (para a senha do painel e o "esqueci a senha") está explicado em
+[E-mail com o Gmail](#e-mail-com-o-gmail). Onde deixar o site para a família
+abrir está em [Onde hospedar](#onde-hospedar).
 
 Com o `runserver` rodando:
 
@@ -99,7 +95,228 @@ nela nada aparece como novo. Só conta como publicação a exportação para
 - Gravações curtas (áudio ou vídeo de até 25 MB) vão para o site como estão.
   Entrevistas longas vão para o YouTube como "não listado".
 
+## Onde hospedar
+
+Tudo o que é da família fica em `data/` e no `.env`. Por isso dá para começar
+de um jeito e mudar depois (veja [Mudar de lugar](#mudar-de-lugar)).
+
+| Caminho | Custo | Painel na web | Observação |
+|---|---|---|---|
+| Só no meu computador | grátis | sim, na mesma casa (mesmo Wi-Fi) | o mais simples para começar |
+| Meu computador + Cloudflare Tunnel | grátis | sim, de qualquer lugar | o computador precisa ficar ligado |
+| Site estático na Cloudflare Pages | grátis | não (edita no computador e publica) | veja [Publicar com senha](#publicar-com-senha-cloudflare-pages) |
+| Servidor pago + domínio próprio | a partir de uns US$ 5/mês | sim, sempre ligado | o mais confortável |
+
+Antes de qualquer caminho, rode uma vez `python manage.py instalar`. Ele
+pergunta o nome da família, o idioma, o seu e-mail e a senha de visualização,
+e grava `RAIZES_DEBUG=false` no `.env` (o modo de depuração mostra pedaços do
+código quando algo dá errado: só serve para quem programa).
+
+O `servir` usa um processo só (as tentativas de senha erradas são contadas na
+memória dele). Não rode dois `servir` para o mesmo site.
+
+### Só no meu computador
+
+```powershell
+python manage.py servir
+```
+
+Abra <http://localhost:8000/> (o site) e <http://localhost:8000/painel/> (o
+painel). Só este computador consegue abrir. Para parar: `Ctrl+C`.
+
+### Na rede de casa
+
+```powershell
+python manage.py servir --rede
+```
+
+O comando mostra um endereço como `http://192.168.0.7:8000/`. Abra esse
+endereço no celular ou no computador de quem está no mesmo Wi-Fi. Na primeira
+vez o Windows pergunta se o Python pode usar a rede: marque **Redes privadas**
+e permita.
+
+- Só funciona com `RAIZES_DEBUG=false` no `.env` (o `instalar` já grava).
+- O endereço da casa pode mudar quando o roteador reinicia: o `servir --rede`
+  mostra o novo a cada vez.
+- Na rede de casa o site abre com `http://` (sem o cadeado). Para abrir de
+  fora de casa, use o caminho seguinte.
+
+### Meu computador + Cloudflare Tunnel
+
+O túnel da Cloudflare leva as visitas de um endereço `https://` até o seu
+computador, sem abrir nada no roteador. O computador precisa ficar ligado.
+
+1. Instale o `cloudflared`: no Windows, `winget install --id Cloudflare.cloudflared`
+   (ou baixe em <https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/>).
+2. Num terminal, deixe o site rodando só neste computador:
+
+   ```powershell
+   python manage.py servir
+   ```
+
+3. **Para experimentar** (o endereço muda a cada vez), num segundo terminal:
+
+   ```powershell
+   cloudflared tunnel --url http://localhost:8000
+   ```
+
+   Ele mostra um endereço como `https://palavras-aleatorias.trycloudflare.com`.
+   Escreva no `.env`:
+
+   ```
+   RAIZES_PUBLIC_URL=https://palavras-aleatorias.trycloudflare.com
+   RAIZES_PROXY_HEADER=CF-Connecting-IP
+   ```
+
+   Pare o `servir` (`Ctrl+C`) e rode de novo, para ele ler o `.env`.
+4. **Para ficar** (endereço fixo): precisa de um domínio seu na Cloudflare
+   (a conta é grátis; o domínio custa uns US$ 10 por ano). Uma vez só:
+
+   ```powershell
+   cloudflared tunnel login
+   cloudflared tunnel create raizes
+   cloudflared tunnel route dns raizes familia.seudominio.com
+   ```
+
+   E a cada vez que ligar o computador:
+
+   ```powershell
+   cloudflared tunnel run --url http://localhost:8000 raizes
+   ```
+
+   No `.env`: `RAIZES_PUBLIC_URL=https://familia.seudominio.com` e
+   `RAIZES_PROXY_HEADER=CF-Connecting-IP`.
+
+Com `RAIZES_PROXY_HEADER` preenchido o `servir` recusa o `--rede`: o site fica
+só neste computador e todo mundo entra pelo túnel, inclusive quem está em casa.
+
+### Servidor pago + domínio
+
+Um servidor pequeno com Linux (Ubuntu ou Debian) em qualquer fornecedor, e um
+domínio apontando para ele. O Caddy cuida do `https://` sozinho.
+
+1. No servidor, instale o básico e as atualizações automáticas de segurança:
+
+   ```bash
+   sudo apt update && sudo apt install -y python3 python3-venv git caddy unattended-upgrades
+   sudo dpkg-reconfigure -plow unattended-upgrades
+   sudo adduser --disabled-password raizes
+   ```
+
+2. Como o usuário `raizes`, copie o projeto e instale:
+
+   ```bash
+   sudo -iu raizes
+   git clone <endereço do seu repositório> Raizes && cd Raizes
+   python3 -m venv .venv
+   .venv/bin/python -m pip install -r requirements.txt
+   ```
+
+   Traga a família com [Mudar de lugar](#mudar-de-lugar), ou comece do zero
+   com `.venv/bin/python manage.py instalar`. No `.env`:
+
+   ```
+   RAIZES_DATASET=real
+   RAIZES_PUBLIC_URL=https://familia.seudominio.com
+   RAIZES_PROXY_HEADER=X-Forwarded-For
+   ```
+
+3. O Caddy recebe as visitas e as passa para o site. Em `/etc/caddy/Caddyfile`:
+
+   ```
+   familia.seudominio.com {
+       reverse_proxy 127.0.0.1:8000
+   }
+   ```
+
+   Depois: `sudo systemctl reload caddy`.
+
+4. O site como serviço, que volta sozinho quando o servidor reinicia. Em
+   `/etc/systemd/system/raizes.service`:
+
+   ```ini
+   [Unit]
+   Description=Raízes
+   After=network.target
+
+   [Service]
+   User=raizes
+   WorkingDirectory=/home/raizes/Raizes
+   ExecStart=/home/raizes/Raizes/.venv/bin/python manage.py servir --port 8000
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   Depois: `sudo systemctl enable --now raizes`. O `servir` escuta só em
+   `127.0.0.1`: de fora, só se chega pelo Caddy.
+
+5. Cópia de segurança todo dia às 3h: rode `crontab -e` como `raizes` e
+   acrescente
+
+   ```
+   0 3 * * * cd /home/raizes/Raizes && .venv/bin/python manage.py backup
+   ```
+
+   As cópias ficam em `backups/`. De vez em quando, baixe uma para o seu
+   computador e apague as antigas.
+
+O `https://` liga sozinho os cookies só por HTTPS e o aviso ao navegador para
+usar sempre HTTPS (HSTS). Quem manda o `http://` para o `https://` é o Caddy
+ou o túnel, não o Django.
+
+### Por que não o GitHub Pages
+
+No plano gratuito do GitHub, o Pages só funciona com o repositório público:
+os dados da família ficariam abertos para qualquer pessoa. Use um dos
+caminhos acima.
+
+### Mudar de lugar
+
+1. No lugar antigo: `python manage.py backup`. Ele cria um `.zip` em
+   `backups/` com a pasta de dados e o `.env`.
+2. Copie esse `.zip` para o outro computador ou servidor (pendrive, `scp`...).
+   Ele tem os dados da família: não o mande por lugares públicos.
+3. No lugar novo, com o projeto instalado:
+   `python manage.py restaurar caminho/do/arquivo.zip` (`--force` se já
+   houver dados lá).
+4. Ajuste no `.env` o que muda com o lugar (`RAIZES_PUBLIC_URL`,
+   `RAIZES_PROXY_HEADER`) e rode o `servir`.
+
+## E-mail com o Gmail
+
+O e-mail envia a senha do painel (no `instalar`) e o link de "esqueci a
+senha". Sem e-mail configurado nada sai do computador: as mensagens ficam
+como arquivos em `data/emails/` (ou `demo/emails/`), e o `instalar` mostra a
+senha do painel uma única vez na tela (anote na hora).
+
+Um Gmail com "senha de app" é grátis e basta para uma família:
+
+1. Entre na conta Google que vai enviar (pode ser uma criada só para isso).
+2. Em <https://myaccount.google.com/security>, ligue a **Verificação em duas
+   etapas**.
+3. Abra <https://myaccount.google.com/apppasswords>, escreva o nome
+   `Raízes` e clique em **Criar**. Aparecem 16 letras: essa é a senha de app.
+4. Escreva no `.env` (a senha de app sem os espaços):
+
+   ```
+   RAIZES_EMAIL_HOST=smtp.gmail.com
+   RAIZES_EMAIL_PORT=587
+   RAIZES_EMAIL_USER=suafamilia@gmail.com
+   RAIZES_EMAIL_PASSWORD=abcdefghijklmnop
+   RAIZES_EMAIL_FROM=suafamilia@gmail.com
+   ```
+
+5. Reinicie o `servir`.
+
+Outro serviço de e-mail funciona igual, com os dados dele. A conexão é sempre
+cifrada: a porta 465 usa TLS direto; as outras (como a 587) usam STARTTLS.
+
 ## Publicar com senha (Cloudflare Pages)
+
+O caminho grátis sem servidor: o site exportado (páginas prontas) fica na
+Cloudflare, e o painel continua só no seu computador.
 
 A função [functions/_middleware.js](functions/_middleware.js) pede a senha da
 família no servidor, antes de entregar qualquer página, foto ou arquivo de

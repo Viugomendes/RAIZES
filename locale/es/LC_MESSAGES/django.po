@@ -1187,6 +1187,9 @@ msgstr "Dirección en la que escuchar (por defecto 127.0.0.1: solo este computad
 msgid "Debug mode is on (RAIZES_DEBUG), so the site cannot be opened to the network. Set RAIZES_DEBUG=false in .env and try again."
 msgstr "El modo de depuración está activado (RAIZES_DEBUG); por eso el sitio no puede abrirse a la red. Ponga RAIZES_DEBUG=false en el .env e inténtelo de nuevo."
 
+msgid "RAIZES_PROXY_HEADER is set, so the site only listens on this computer (the tunnel or the proxy brings the visits). Remove --rede or --host."
+msgstr "RAIZES_PROXY_HEADER está definido; por eso el sitio solo escucha en este computador (el túnel o el proxy trae las visitas). Quite el --rede o el --host."
+
 msgid "Open the site to the devices of the home network (listens on 0.0.0.0)."
 msgstr "Abre el sitio a los dispositivos de la red de la casa (escucha en 0.0.0.0)."
 

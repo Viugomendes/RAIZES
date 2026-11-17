@@ -133,5 +133,5 @@ def set_language_cookie(response, language: str) -> None:
         language,
         max_age=LANGUAGE_COOKIE_AGE,
         samesite="Lax",
-        secure=settings.SESSION_COOKIE_SECURE,
+        secure=settings.LANGUAGE_COOKIE_SECURE,
     )

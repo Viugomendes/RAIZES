@@ -9,8 +9,10 @@ The password reset sends at most 10 e-mails per address of the sender and one
 per e-mail address every 15 minutes.
 """
 import hashlib
+from urllib.parse import urlsplit
 
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth import views as auth_views
@@ -80,7 +82,23 @@ class PasswordResetView(auth_views.PasswordResetView):
             address_key, True, ratelimit.WINDOW
         ):
             return HttpResponseRedirect(self.get_success_url())
-        return super().form_valid(form)
+        if not settings.RAIZES_PUBLIC_URL:
+            return super().form_valid(form)
+        # Behind a tunnel the request is plain http to localhost: the link must
+        # point at the address the family opens.
+        public = urlsplit(settings.RAIZES_PUBLIC_URL)
+        form.save(
+            domain_override=public.netloc,
+            use_https=public.scheme == "https",
+            token_generator=self.token_generator,
+            from_email=self.from_email,
+            email_template_name=self.email_template_name,
+            subject_template_name=self.subject_template_name,
+            request=self.request,
+            html_email_template_name=self.html_email_template_name,
+            extra_email_context=self.extra_email_context,
+        )
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class UniqueEmailMixin:
