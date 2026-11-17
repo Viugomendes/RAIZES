@@ -100,7 +100,7 @@ class ViewerDeviceAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Status"))
     def status(self, obj):
-        if obj.revoked or obj.password_version != obj.current_version:
+        if not obj.is_valid_for(obj.current_version):
             return format_html('<span class="raizes-status raizes-off">{}</span>', _("Disconnected"))
         if obj.is_online:
             return format_html('<span class="raizes-status raizes-on">{}</span>', _("Online"))

@@ -94,3 +94,23 @@ class DevicesHelpersTests(TestCase):
         first.set_view_password("senha-um-1234")
         second.set_view_password("senha-dois-1234")
         self.assertEqual(SiteSettings.get().password_version, 3)
+
+    def test_blank_password_changes_nothing(self):
+        site = SiteSettings.get()
+        site.set_view_password("senha-valida-1")
+        hash_before, version_before = site.view_password_hash, site.password_version
+        for raw in ("", "   "):
+            with self.assertRaises(ValueError):
+                site.set_view_password(raw)
+        fresh = SiteSettings.get()
+        self.assertEqual(fresh.view_password_hash, hash_before)
+        self.assertEqual(fresh.password_version, version_before)
+
+    def test_stale_instance_keeps_other_fields_and_password_works(self):
+        a, b = SiteSettings.get(), SiteSettings.get()
+        a.family_name = "Do A"
+        a.save()
+        b.set_view_password("nova-senha-1")
+        fresh = SiteSettings.get()
+        self.assertEqual(fresh.family_name, "Do A")
+        self.assertTrue(fresh.check_view_password("nova-senha-1"))

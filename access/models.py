@@ -82,5 +82,9 @@ class ViewerDevice(models.Model):
     def is_online(self) -> bool:
         return timezone.now() - self.last_seen <= ONLINE_WINDOW
 
+    def is_valid_for(self, password_version: int) -> bool:
+        """The one rule: not revoked, and typed with the current password."""
+        return not self.revoked and self.password_version == password_version
+
     def is_valid(self, site: SiteSettings) -> bool:
-        return not self.revoked and self.password_version == site.password_version
+        return self.is_valid_for(site.password_version)
