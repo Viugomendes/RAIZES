@@ -979,3 +979,15 @@ msgstr "Abrir el sitio"
 
 msgid "This device stays connected for a year."
 msgstr "Este dispositivo queda conectado durante un año."
+
+msgid "E-mail"
+msgstr "Correo electrónico"
+
+msgid "Wrong e-mail or password. Check them and try again."
+msgstr "Correo electrónico o contraseña equivocados. Revísalos y vuelve a intentarlo."
+
+msgid "Forgot the password"
+msgstr "Olvidé la contraseña"
+
+msgid "Log in"
+msgstr "Entrar"

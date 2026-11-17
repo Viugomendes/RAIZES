@@ -15,6 +15,11 @@ LIMIT = 10
 WINDOW = 15 * 60  # seconds
 
 
+def client_ip(request) -> str:
+    # Only REMOTE_ADDR: X-Forwarded-For can be typed by anybody.
+    return request.META.get("REMOTE_ADDR", "")
+
+
 def _key(scope: str, ip: str) -> str:
     try:
         address = ipaddress.ip_address(ip)

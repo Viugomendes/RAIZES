@@ -86,6 +86,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # The same Content-Security-Policy and headers as the Cloudflare function.
+    "access.security.SecurityHeadersMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -132,6 +134,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# The panel (/painel/) is entered with e-mail and password, staff accounts only.
+AUTHENTICATION_BACKENDS = ["access.backends.EmailBackend"]
+LOGIN_URL = "admin:login"
 
 # Sessions keep Django's default life (2 weeks). A device that typed the view
 # password is given a year in access/views.py.

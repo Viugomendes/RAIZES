@@ -56,15 +56,15 @@ class AdminTestCase(TestCase):
 
 class PersonAdminTests(AdminTestCase):
     def test_admin_is_in_portuguese_by_default(self):
-        response = self.client.get("/admin/family/person/add/")
+        response = self.client.get("/painel/family/person/add/")
 
         self.assertContains(response, "Adicionar pessoa")
         self.assertContains(response, "Data de nascimento")
 
     def test_person_can_be_added(self):
-        response = self.client.post("/admin/family/person/add/", PERSON_FORM)
+        response = self.client.post("/painel/family/person/add/", PERSON_FORM)
 
-        self.assertRedirects(response, "/admin/family/person/")
+        self.assertRedirects(response, "/painel/family/person/")
         person = Person.objects.get()
         self.assertEqual(person.identifier, "ramon-garcia-1962")
         self.assertEqual(person.birth_date, "1962-03-14")
@@ -72,7 +72,7 @@ class PersonAdminTests(AdminTestCase):
 
     def test_invalid_date_shows_an_error_in_portuguese(self):
         response = self.client.post(
-            "/admin/family/person/add/", {**PERSON_FORM, "birth_date": "31/02/1962"}
+            "/painel/family/person/add/", {**PERSON_FORM, "birth_date": "31/02/1962"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -83,7 +83,7 @@ class PersonAdminTests(AdminTestCase):
         make_person(identifier="ramon-garcia-1962")
 
         response = self.client.post(
-            "/admin/family/person/add/", {**PERSON_FORM, "identifier": "ramon-garcia-1962"}
+            "/painel/family/person/add/", {**PERSON_FORM, "identifier": "ramon-garcia-1962"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -93,8 +93,8 @@ class PersonAdminTests(AdminTestCase):
     def test_identifier_can_be_typed_only_when_creating(self):
         person = make_person(birth_date="1962")
 
-        add_page = self.client.get("/admin/family/person/add/")
-        change_page = self.client.get(f"/admin/family/person/{person.pk}/change/")
+        add_page = self.client.get("/painel/family/person/add/")
+        change_page = self.client.get(f"/painel/family/person/{person.pk}/change/")
 
         self.assertContains(add_page, 'name="identifier"')
         self.assertNotContains(change_page, 'name="identifier"')
@@ -104,18 +104,18 @@ class PersonAdminTests(AdminTestCase):
         person = make_person(birth_date="1962")
 
         response = self.client.post(
-            f"/admin/family/person/{person.pk}/change/",
+            f"/painel/family/person/{person.pk}/change/",
             {**PERSON_FORM, "given_name": "Raimundo", "birth_date": "1963"},
         )
 
-        self.assertRedirects(response, "/admin/family/person/")
+        self.assertRedirects(response, "/painel/family/person/")
         person.refresh_from_db()
         self.assertEqual(person.given_name, "Raimundo")
         self.assertEqual(person.identifier, "ramon-garcia-1962")
 
     def test_broken_link_in_a_text_is_saved_with_a_clear_warning(self):
         response = self.client.post(
-            "/admin/family/person/add/",
+            "/painel/family/person/add/",
             {**PERSON_FORM, "childhood": "Brincava com [[marta-garcia-1964]]."},
             follow=True,
         )
@@ -131,7 +131,7 @@ class PersonAdminTests(AdminTestCase):
         make_person("Marta", "García", birth_date="1964")
 
         response = self.client.post(
-            "/admin/family/person/add/",
+            "/painel/family/person/add/",
             {**PERSON_FORM, "childhood": "Brincava com [[marta-garcia-1964]]."},
             follow=True,
         )
@@ -143,14 +143,14 @@ class PersonAdminTests(AdminTestCase):
         person = make_person(birth_date="1962")
 
         self.assertEqual(person.get_absolute_url(), "/pt-br/people/ramon-garcia-1962/")
-        response = self.client.get(f"/admin/family/person/{person.pk}/change/")
+        response = self.client.get(f"/painel/family/person/{person.pk}/change/")
         self.assertContains(response, "viewsitelink")
 
     def test_people_can_be_searched_by_name(self):
         make_person(birth_date="1962")
         make_person("Carmen", "López")
 
-        response = self.client.get("/admin/family/person/?q=carmen")
+        response = self.client.get("/painel/family/person/?q=carmen")
 
         self.assertContains(response, "Carmen López")
         self.assertNotContains(response, "Ramón García")
@@ -173,11 +173,11 @@ class UnionAdminTests(AdminTestCase):
 
     def test_union_with_a_child_can_be_added(self):
         response = self.client.post(
-            "/admin/family/union/add/",
+            "/painel/family/union/add/",
             {**self.form, **inline_children((self.javier, "biological"))},
         )
 
-        self.assertRedirects(response, "/admin/family/union/")
+        self.assertRedirects(response, "/painel/family/union/")
         union = Union.objects.get()
         self.assertEqual(union.partners, [self.ramon, self.carmen])
         link = union.child_links.get()
@@ -185,17 +185,17 @@ class UnionAdminTests(AdminTestCase):
 
     def test_union_with_an_unknown_partner_can_be_added(self):
         response = self.client.post(
-            "/admin/family/union/add/",
+            "/painel/family/union/add/",
             {**self.form, "partner2": "", **inline_children((self.javier, "foster"))},
         )
 
-        self.assertRedirects(response, "/admin/family/union/")
+        self.assertRedirects(response, "/painel/family/union/")
         self.assertIsNone(Union.objects.get().partner2)
         self.assertEqual(ChildLink.objects.get().kind, "foster")
 
     def test_same_person_twice_shows_an_error_in_portuguese(self):
         response = self.client.post(
-            "/admin/family/union/add/",
+            "/painel/family/union/add/",
             {**self.form, "partner2": str(self.ramon.pk), **inline_children()},
         )
 
@@ -205,7 +205,7 @@ class UnionAdminTests(AdminTestCase):
 
     def test_partner_as_their_own_child_shows_an_error(self):
         response = self.client.post(
-            "/admin/family/union/add/",
+            "/painel/family/union/add/",
             {**self.form, **inline_children((self.ramon, "biological"))},
         )
 
@@ -215,7 +215,7 @@ class UnionAdminTests(AdminTestCase):
 
     def test_same_child_twice_shows_an_error(self):
         response = self.client.post(
-            "/admin/family/union/add/",
+            "/painel/family/union/add/",
             {
                 **self.form,
                 **inline_children((self.javier, "biological"), (self.javier, "adoptive")),
@@ -227,7 +227,7 @@ class UnionAdminTests(AdminTestCase):
 
     def test_broken_link_in_the_story_is_saved_with_a_warning(self):
         response = self.client.post(
-            "/admin/family/union/add/",
+            "/painel/family/union/add/",
             {**self.form, "story": "Apresentados por [[ninguem-1]].", **inline_children()},
             follow=True,
         )
@@ -242,7 +242,7 @@ class UnionAdminTests(AdminTestCase):
         javier_union = make_union(self.javier)
 
         response = self.client.post(
-            f"/admin/family/union/{javier_union.pk}/change/",
+            f"/painel/family/union/{javier_union.pk}/change/",
             {
                 "partner1": str(self.javier.pk),
                 "partner2": "",
@@ -263,18 +263,18 @@ class AdminSiteTests(AdminTestCase):
     def test_every_model_has_a_list_page(self):
         for name in ("person", "union", "place", "photo", "recipe"):
             with self.subTest(model=name):
-                self.assertEqual(self.client.get(f"/admin/family/{name}/").status_code, 200)
-                self.assertEqual(self.client.get(f"/admin/family/{name}/add/").status_code, 200)
+                self.assertEqual(self.client.get(f"/painel/family/{name}/").status_code, 200)
+                self.assertEqual(self.client.get(f"/painel/family/{name}/add/").status_code, 200)
 
     def test_header_says_which_family_is_loaded(self):
-        response = self.client.get("/admin/")
+        response = self.client.get("/painel/")
 
         self.assertContains(response, "família inventada")
 
     def test_admin_needs_a_login(self):
         self.client.logout()
 
-        response = self.client.get("/admin/family/person/")
+        response = self.client.get("/painel/family/person/")
 
         self.assertEqual(response.status_code, 302)
-        self.assertIn("/admin/login/", response["Location"])
+        self.assertIn("/painel/login/", response["Location"])

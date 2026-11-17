@@ -1,10 +1,12 @@
 """The admin panel: the forms where the owner fills in the family.
 
-It runs only on the owner's computer and is never exported with the site.
+Registered on the panel at /painel/ (access/admin_site.py); never exported with the site.
 """
 from django.conf import settings
 from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
+
+from access.admin_site import site
 
 from .markup import LinkTargets
 from .models import TEXT_SECTIONS, ChildLink, Clip, Person, Photo, Place, Recipe, Union
@@ -13,11 +15,11 @@ from .textcheck import person_problems, union_problems
 # The header always says which family is loaded, so that real data is never
 # typed into the invented family by mistake (or the other way round).
 if settings.RAIZES_DATASET == "demo":
-    admin.site.site_header = _("Raízes · invented family (demo)")
+    site.site_header = _("Raízes · invented family (demo)")
 else:
-    admin.site.site_header = _("Raízes · REAL family data")
-admin.site.site_title = "Raízes"
-admin.site.index_title = _("Family data")
+    site.site_header = _("Raízes · REAL family data")
+site.site_title = "Raízes"
+site.index_title = _("Family data")
 
 
 def warn_about_text_problems(request, problems: list[str]) -> None:
@@ -30,14 +32,14 @@ def warn_about_text_problems(request, problems: list[str]) -> None:
         messages.warning(request, problem)
 
 
-@admin.register(Place)
+@admin.register(Place, site=site)
 class PlaceAdmin(admin.ModelAdmin):
     list_display = ("name", "slug", "latitude", "longitude")
     search_fields = ("name", "slug")
     prepopulated_fields = {"slug": ("name",)}
 
 
-@admin.register(Person)
+@admin.register(Person, site=site)
 class PersonAdmin(admin.ModelAdmin):
     list_display = ("full_name", "identifier", "years_display", "deceased", "confirmed")
     list_filter = ("confirmed", "deceased", "sex")
@@ -99,7 +101,7 @@ class ChildLinkInline(admin.TabularInline):
     autocomplete_fields = ("child",)
 
 
-@admin.register(Union)
+@admin.register(Union, site=site)
 class UnionAdmin(admin.ModelAdmin):
     list_display = ("__str__", "kind", "start_date", "end_date", "ended")
     list_filter = ("kind", "ended")
@@ -118,7 +120,7 @@ class UnionAdmin(admin.ModelAdmin):
         warn_about_text_problems(request, union_problems(obj, LinkTargets.from_database()))
 
 
-@admin.register(Photo)
+@admin.register(Photo, site=site)
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ("__str__", "date", "place", "has_unidentified_people")
     list_filter = ("has_unidentified_people",)
@@ -127,7 +129,7 @@ class PhotoAdmin(admin.ModelAdmin):
     fields = ("image", "date", "place", "caption", "people", "has_unidentified_people")
 
 
-@admin.register(Clip)
+@admin.register(Clip, site=site)
 class ClipAdmin(admin.ModelAdmin):
     list_display = ("__str__", "date")
     search_fields = ("caption", "people__given_name", "people__surname")
@@ -135,7 +137,7 @@ class ClipAdmin(admin.ModelAdmin):
     fields = ("file", "caption", "date", "people")
 
 
-@admin.register(Recipe)
+@admin.register(Recipe, site=site)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ("title", "author")
     search_fields = ("title",)

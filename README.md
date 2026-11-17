@@ -47,7 +47,8 @@ ative o ambiente virtual. É preciso fazer isso uma vez em cada terminal novo:
 
 Com o `runserver` rodando:
 
-- painel: <http://127.0.0.1:8000/admin/>
+- painel: <http://127.0.0.1:8000/painel/> (entre com o e-mail e a senha do
+  `createsuperuser`; o e-mail é obrigatório)
 - site: <http://127.0.0.1:8000/>
 
 Para parar o servidor, aperte `Ctrl+C` no terminal.

@@ -978,3 +978,15 @@ msgstr "Abrir o site"
 
 msgid "This device stays connected for a year."
 msgstr "Este aparelho fica conectado por um ano."
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "Wrong e-mail or password. Check them and try again."
+msgstr "E-mail ou senha errados. Confira e tente de novo."
+
+msgid "Forgot the password"
+msgstr "Esqueci a senha"
+
+msgid "Log in"
+msgstr "Entrar"

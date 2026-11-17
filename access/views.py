@@ -33,11 +33,6 @@ def safe_next(value: str) -> str:
     return value if _SAFE_NEXT.fullmatch(value or "") else "/"
 
 
-def _client_ip(request) -> str:
-    # Only REMOTE_ADDR: X-Forwarded-For can be typed by anybody.
-    return request.META.get("REMOTE_ADDR", "")
-
-
 def enter(request):
     site = SiteSettings.get()
     if not site.has_view_password:
@@ -56,7 +51,7 @@ def enter(request):
     status = 200
 
     if request.method == "POST":
-        ip = _client_ip(request)
+        ip = ratelimit.client_ip(request)
         # Counted before the check, so parallel guesses cannot slip past the limit.
         if ratelimit.attempt(SCOPE, ip):
             error = _("Too many wrong attempts. Wait 15 minutes and try again.")
