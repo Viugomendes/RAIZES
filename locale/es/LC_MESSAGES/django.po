@@ -565,8 +565,8 @@ msgstr ""
 msgid "Side of %(name)s"
 msgstr "Lado de %(name)s"
 
-msgid "%(name)s, siblings, partners and descendants"
-msgstr "%(name)s, hermanos, parejas y descendientes"
+msgid "%(name)s, siblings, descendants, partners' families and relatives on more than one side"
+msgstr "%(name)s, hermanos, descendientes, familia de las parejas y quienes se vinculan por más de un lado"
 
 msgid "No link to %(name)s"
 msgstr "Sin vínculo con %(name)s"
@@ -584,6 +584,9 @@ msgstr "%(link)s: no existe ninguna receta con este identificador."
 
 msgid "%(time)s: there is no interview to link this minute to."
 msgstr "%(time)s: no hay entrevista a la que enlazar este minuto."
+
+msgid "%(link)s: only links to web pages (https://...) are allowed."
+msgstr "%(link)s: solo se permiten enlaces a páginas web (https://...)."
 
 # --- Comandos ---
 

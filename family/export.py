@@ -141,7 +141,8 @@ def _render_pages(output_dir: Path) -> int:
 def _copy_static_files(target: Path) -> None:
     """Copy the site's CSS, JavaScript and icons (not the admin panel's)."""
     for finder in finders.get_finders():
-        for path, storage in finder.list(ignore_patterns=[]):
+        # The same files Django's collectstatic skips: hidden and backup files.
+        for path, storage in finder.list(ignore_patterns=["CVS", ".*", "*~"]):
             # On Windows the path comes with "\" instead of "/".
             if Path(path).parts[0] == "admin":
                 continue

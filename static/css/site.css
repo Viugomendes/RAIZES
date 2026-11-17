@@ -603,7 +603,7 @@ a.person {
 
 .legend li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   padding: 0.1rem 0;
   font-size: 0.93rem;

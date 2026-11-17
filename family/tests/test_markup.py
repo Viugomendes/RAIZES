@@ -44,6 +44,26 @@ class MarkdownTests(SimpleTestCase):
         self.assertIn("&lt;script&gt;", html)
 
 
+class UnsafeContentTests(SimpleTestCase):
+    def test_javascript_link_is_not_a_link_and_is_a_problem(self):
+        result = render("[clique](javascript:alert(1))")
+
+        self.assertNotIn("javascript:", result.html.replace("[clique]", ""))
+        self.assertNotIn("<a ", result.html)
+        self.assertEqual(len(result.problems), 1)
+        self.assertIn("javascript:alert(1)", result.problems[0])
+
+    def test_safe_kinds_of_link_are_kept(self):
+        html = render("[a](https://x.example/) [b](http://x.example/) [c](mailto:a@x.example)").html
+
+        self.assertEqual(html.count("<a "), 3)
+
+    def test_image_from_another_server_is_never_loaded(self):
+        result = render("![foto](https://evil.example/p.png)")
+
+        self.assertNotIn("<img", result.html)
+
+
 class PersonLinkTests(SimpleTestCase):
     def test_identifier_becomes_a_link_with_the_full_name(self):
         result = render("Brincava com [[marta-garcia-1964]].")

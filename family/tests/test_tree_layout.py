@@ -182,6 +182,37 @@ class UnionPlacementTests(SimpleTestCase):
         self.assertLess(abs(jumping.x - far.x), WIDTH)
 
 
+class CrossGenerationTests(SimpleTestCase):
+    def test_child_of_partners_from_different_generations_is_below_both(self):
+        # An uncle has a child with the central person's niece.
+        graph = family(
+            union("gpa gma", "p unc"),
+            union("p q", "c sis"),
+            union("sis s2", "w"),
+            union("unc w", "k"),
+        )
+        place = layout_of(graph, "c").people
+
+        for parent in ("unc", "w"):
+            with self.subTest(parent=parent):
+                self.assertGreater(place["k"].layer, place[parent].layer)
+                self.assertGreater(place["k"].y, place[parent].y)
+
+    def test_every_child_is_below_every_parent_in_any_family(self):
+        graph = family(
+            union("a b", "c d"),
+            union("c x", "e"),
+            union("d e", "f"),  # aunt with her nephew
+            union("f", "g"),
+        )
+        place = layout_of(graph, "c").people
+
+        for person in graph.people:
+            for parent in graph.parents(person):
+                with self.subTest(child=person, parent=parent.person):
+                    self.assertGreater(place[person].layer, place[parent.person].layer)
+
+
 class WholeFamilyTests(SimpleTestCase):
     def test_people_not_linked_to_the_central_person_are_still_drawn(self):
         graph = family(union("a b", "me"), union("x y", "z"), extra="alone")

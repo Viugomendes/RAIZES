@@ -137,7 +137,7 @@ def build_tree_page() -> dict:
         legend_sides.append(
             (
                 CENTER_COLOR,
-                _("%(name)s, siblings, partners and descendants") % {"name": central.full_name},
+                _("%(name)s, siblings, descendants, partners' families and relatives on more than one side") % {"name": central.full_name},
             )
         )
         if len(distances) < len(people):

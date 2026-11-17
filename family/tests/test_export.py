@@ -4,6 +4,7 @@ import tempfile
 from io import StringIO
 from pathlib import Path
 
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import override_settings
@@ -230,7 +231,22 @@ class ExportCommandTests(ExportTestCase):
         self.assertIn("[[ninguem-silva-1900]]", str(caught.exception))
         self.assertFalse(self.output.exists())
 
-    def test_command_exports_to_the_dist_folder_by_default(self):
+    def test_default_export_folder_is_dist(self):
+        self.assertEqual(Path(settings.RAIZES_EXPORT_DIR), Path(settings.BASE_DIR) / "dist")
+
+    def test_hidden_and_backup_files_in_static_are_not_exported(self):
+        static_dir = Path(settings.BASE_DIR) / "static"
+        strays = [static_dir / ".raizes-test-hidden", static_dir / "css" / "site.css~"]
+        for stray in strays:
+            stray.write_text("stray")
+            self.addCleanup(stray.unlink)
+
+        export_site(self.output)
+
+        self.assertFalse((self.output / "static" / ".raizes-test-hidden").exists())
+        self.assertFalse((self.output / "static" / "css" / "site.css~").exists())
+
+    def test_command_uses_the_configured_export_folder(self):
         with override_settings(RAIZES_EXPORT_DIR=self.output):
             call_command("export_site", stdout=StringIO())
 

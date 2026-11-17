@@ -11,6 +11,7 @@ The texts are written in Markdown, with two additions:
 A link to something that does not exist is never ignored: it is reported as a
 problem, shown in the admin and blocking the export.
 """
+import re
 import xml.etree.ElementTree as etree
 from dataclasses import dataclass, field
 
@@ -20,6 +21,7 @@ from django.utils.safestring import SafeString, mark_safe
 from django.utils.translation import gettext as _
 from markdown.extensions import Extension
 from markdown.inlinepatterns import InlineProcessor
+from markdown.treeprocessors import Treeprocessor
 
 from .youtube import watch_url
 
@@ -145,6 +147,35 @@ class _TimestampProcessor(InlineProcessor):
         return element, match.start(0), match.end(0)
 
 
+_SAFE_SCHEMES = {"http", "https", "mailto"}
+_SCHEME = re.compile(r"^\s*([a-zA-Z][a-zA-Z0-9+.-]*):")
+
+
+class _SafeLinksProcessor(Treeprocessor):
+    """Keep only links to web pages and e-mail addresses.
+
+    Any other kind of address (like "javascript:") is shown as plain text and
+    reported, so a typing mistake can never run code on the site.
+    """
+
+    def __init__(self, md, problems: list[str]):
+        super().__init__(md)
+        self.problems = problems
+
+    def run(self, root):
+        for element in root.iter("a"):
+            href = element.get("href", "")
+            match = _SCHEME.match(href)
+            if match and match[1].lower() not in _SAFE_SCHEMES:
+                self.problems.append(
+                    _("%(link)s: only links to web pages (https://...) are allowed.")
+                    % {"link": href}
+                )
+                element.tag = "span"
+                element.attrib.clear()
+                element.set("class", "broken-link")
+
+
 class _RaizesExtension(Extension):
     def __init__(self, targets: LinkTargets, video_id: str | None, problems: list[str]):
         super().__init__()
@@ -157,6 +188,11 @@ class _RaizesExtension(Extension):
         # a stray "<" cannot break the page.
         md.preprocessors.deregister("html_block")
         md.inlinePatterns.deregister("html")
+        # Images would be loaded from another server by every visitor; the
+        # site loads nothing from outside, so "![...](...)" is not an image.
+        for name in ("image_link", "image_reference", "short_image_ref"):
+            md.inlinePatterns.deregister(name)
+        md.treeprocessors.register(_SafeLinksProcessor(md, self.problems), "raizes_safe_links", 0)
         md.inlinePatterns.register(
             _WikiLinkProcessor(_WIKILINK, md, self.targets, self.problems),
             "raizes_wikilink",

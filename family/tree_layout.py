@@ -178,6 +178,19 @@ class _Skeleton:
             group = self.graph.generations(person)
             shift = self._best_shift(group, generation)
             generation.update({member: value + shift for member, value in group.items()})
+        # A child must be below both parents. When the parents are from
+        # different generations (an uncle with his niece, say), the counted
+        # generation may follow the upper parent: push the child down, and
+        # its descendants with it. The admin forbids cycles, so this ends.
+        changed = True
+        while changed:
+            changed = False
+            for person in self.graph.people:
+                parents = [parent.person for parent in self.graph.parents(person)]
+                lowest_parent = max((generation[p] for p in parents), default=None)
+                if lowest_parent is not None and generation[person] <= lowest_parent:
+                    generation[person] = lowest_parent + 1
+                    changed = True
         if generation:
             lowest = min(generation.values())
             self.layer = {person: value - lowest for person, value in generation.items()}
