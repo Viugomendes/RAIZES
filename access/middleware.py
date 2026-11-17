@@ -80,7 +80,7 @@ def site_closed(request):
     messages.warning(
         request, _("The family site is closed until a view password is set in the panel.")
     )
-    return redirect(reverse("admin:index"))
+    return private(redirect(reverse("admin:index")))
 
 
 class ViewPasswordMiddleware:
@@ -102,7 +102,7 @@ class ViewPasswordMiddleware:
             return site_closed(request)
         device = current_device(request, site)
         if device is None:
-            return redirect(enter_url(request.get_full_path()))
+            return private(redirect(enter_url(request.get_full_path())))
         now = timezone.now()
         if now - device.last_seen > TOUCH_EVERY:
             ViewerDevice.objects.filter(pk=device.pk).update(last_seen=now)
@@ -110,7 +110,8 @@ class ViewPasswordMiddleware:
 
 
 def private(response):
-    """What passed the gate: no cache on the way (tunnel, proxy) may keep a copy.
+    """What passed the gate, and the gate's own answers (its redirects, /entrar/):
+    no cache on the way (tunnel, proxy) may keep a copy.
 
     The same value as the Cloudflare function (functions/_middleware.js).
     """

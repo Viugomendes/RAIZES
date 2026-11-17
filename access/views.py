@@ -17,6 +17,7 @@ from .middleware import (
     SESSION_KEY,
     current_device,
     is_device_id,
+    private,
     set_language_cookie,
     site_closed,
 )
@@ -71,7 +72,7 @@ def enter(request):
             # A viewer stays in for a year; a staff session keeps its own, shorter life.
             if not request.user.is_staff:
                 request.session.set_expiry(VIEWER_SESSION_AGE)
-            return redirect(next_url)
+            return private(redirect(next_url))
         else:
             error = _("Wrong password. Check it and try again.")
 
@@ -99,7 +100,7 @@ def enter(request):
     )
     if chosen:
         set_language_cookie(response, chosen)
-    return response
+    return private(response)
 
 
 @require_POST

@@ -262,10 +262,26 @@ class GateTests(TestCase):
         self.client.force_login(staff)
         self.assertEqual(self.client.get("/data/family.js")["Cache-Control"], "private, no-store")
 
-    def test_public_answers_are_not_marked_private(self):
-        for path in ("/entrar/", "/robots.txt"):
+    def test_the_gate_answers_are_never_kept_by_a_cache(self):
+        # A kept redirect would send the family back to /entrar/ for minutes.
+        redirect = self.client.get("/data/family.js")
+        self.assertEqual(redirect.status_code, 302)
+        self.assertEqual(redirect["Cache-Control"], "private, no-store")
+
+        page = self.client.get("/entrar/")
+        self.assertEqual(page.status_code, 200)
+        self.assertEqual(page["Cache-Control"], "private, no-store")
+
+        self.site.view_password_hash = ""
+        self.site.save()
+        for path in ("/pt-br/", "/entrar/"):
             with self.subTest(path=path):
-                self.assertNotIn("Cache-Control", self.client.get(path))
+                closed = self.client.get(path)
+                self.assertEqual(closed.status_code, 302)
+                self.assertEqual(closed["Cache-Control"], "private, no-store")
+
+    def test_public_answers_are_not_marked_private(self):
+        self.assertNotIn("Cache-Control", self.client.get("/robots.txt"))
 
     def test_next_is_kept_in_the_form(self):
         response = self.client.get("/entrar/?next=/pt-br/tree/")
