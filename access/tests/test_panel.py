@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from access.middleware import SESSION_KEY
 from access.models import SiteSettings, ViewerDevice
+from access.roles import REVIEWERS
 from access.tests.test_admin_login import PASSWORD, make_staff
 from family.export import export_site
 from family.tests.base import DemoFamilyTestCase
@@ -145,3 +146,78 @@ class LeaveButtonTests(DemoFamilyTestCase):
         export_site(output)
         html = (output / "pt-br" / "index.html").read_text(encoding="utf-8")
         self.assertNotIn("/sair/", html)
+
+
+class ReadOnlyAndSecrecyTests(TestCase):
+    def setUp(self):
+        self.site = SiteSettings.get()
+        self.site.set_view_password(OLD)
+        self.devices = reverse("admin:access_viewerdevice_changelist")
+        self.settings_url = reverse("admin:access_sitesettings_change", args=[1])
+
+    def test_reviewer_cannot_disconnect_or_change_the_password(self):
+        reviewer = make_staff(email="rev@example.com", username="rev", group=REVIEWERS)
+        self.client.force_login(reviewer)
+        device = make_device(self.site)
+        self.client.post(self.devices, {"action": "disconnect", "_selected_action": [str(device.pk)]})
+        self.assertFalse(ViewerDevice.objects.get(pk=device.pk).revoked)
+        before = SiteSettings.get()
+        self.client.post(
+            self.settings_url,
+            {"family_name": "X", "new_view_password": NEW, "repeat_view_password": NEW},
+        )
+        after = SiteSettings.get()
+        self.assertEqual(after.view_password_hash, before.view_password_hash)
+        self.assertEqual(after.password_version, before.password_version)
+        self.assertTrue(after.check_view_password(OLD))
+
+    def test_no_delete_action_or_url(self):
+        self.client.force_login(make_staff(superuser=True))
+        device = make_device(self.site)
+        response = self.client.get(self.devices)
+        self.assertNotContains(response, "delete_selected")
+        self.client.post(self.devices, {"action": "delete_selected", "_selected_action": [str(device.pk)], "post": "yes"})
+        self.assertTrue(ViewerDevice.objects.filter(pk=device.pk).exists())
+        url = reverse("admin:access_viewerdevice_delete", args=[device.pk])
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.assertEqual(self.client.post(url, {"post": "yes"}).status_code, 403)
+        self.assertTrue(ViewerDevice.objects.filter(pk=device.pk).exists())
+
+    def test_form_error_does_not_echo_the_typed_password(self):
+        self.client.force_login(make_staff(superuser=True))
+        response = self.client.post(
+            self.settings_url,
+            {"family_name": "X", "new_view_password": "segredo-digitado-1", "repeat_view_password": "outro-valor-22"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "segredo-digitado-1")
+        self.assertNotContains(response, "outro-valor-22")
+
+    def test_blank_spaces_get_their_own_message(self):
+        self.client.force_login(make_staff(superuser=True))
+        response = self.client.post(
+            self.settings_url,
+            {"family_name": "X", "new_view_password": "         ", "repeat_view_password": "         "},
+        )
+        self.assertContains(response, "só espaços")
+        self.assertNotContains(response, "pelo menos 8")
+
+    def test_settings_list_is_forbidden_without_permission(self):
+        user = make_staff(email="n@example.com", username="nada")
+        self.client.force_login(user)
+        self.assertEqual(self.client.get(reverse("admin:access_sitesettings_changelist")).status_code, 403)
+
+    def test_status_column_does_not_query_per_row(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        self.client.force_login(make_staff(superuser=True))
+        make_device(self.site, "D0")
+        self.client.get(self.devices)
+        with CaptureQueriesContext(connection) as one:
+            self.client.get(self.devices)
+        for i in range(1, 5):
+            make_device(self.site, f"D{i}")
+        with CaptureQueriesContext(connection) as many:
+            self.client.get(self.devices)
+        self.assertEqual(len(one), len(many))

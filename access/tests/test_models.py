@@ -88,3 +88,9 @@ class DevicesHelpersTests(TestCase):
         self.assertEqual(describe_browser(IPHONE_SAFARI), "Safari · iPhone")
         self.assertEqual(describe_browser("curl/8"), "?")
         self.assertEqual(describe_browser(""), "?")
+
+    def test_two_stale_instances_both_bump(self):
+        first, second = SiteSettings.get(), SiteSettings.get()
+        first.set_view_password("senha-um-1234")
+        second.set_view_password("senha-dois-1234")
+        self.assertEqual(SiteSettings.get().password_version, 3)

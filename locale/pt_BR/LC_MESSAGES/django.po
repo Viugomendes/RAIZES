@@ -1047,3 +1047,6 @@ msgstr "Aparelhos desconectados: %(count)d."
 
 msgid "Leave"
 msgstr "Sair"
+
+msgid "The password cannot be only spaces."
+msgstr "A senha não pode ser só espaços."

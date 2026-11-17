@@ -1,5 +1,7 @@
 """Panel pages: site settings (one row) and the connected devices."""
 from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
+from django.db.models import OuterRef, Subquery
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
@@ -36,6 +38,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
+        if not (self.has_view_permission(request) or self.has_change_permission(request)):
+            raise PermissionDenied
         # One row only: the list is the edit page.
         row = SiteSettings.get()
         return HttpResponseRedirect(reverse("admin:access_sitesettings_change", args=[row.pk]))
@@ -77,6 +81,11 @@ class ViewerDeviceAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("access/panel.css",)}
 
+    def get_queryset(self, request):
+        # The current password number comes in the same query, not one per row.
+        current = SiteSettings.objects.filter(pk=1).values("password_version")[:1]
+        return super().get_queryset(request).annotate(current_version=Subquery(current))
+
     def has_add_permission(self, request):
         return False
 
@@ -91,7 +100,7 @@ class ViewerDeviceAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Status"))
     def status(self, obj):
-        if obj.revoked or not obj.is_valid(SiteSettings.get()):
+        if obj.revoked or obj.password_version != obj.current_version:
             return format_html('<span class="raizes-status raizes-off">{}</span>', _("Disconnected"))
         if obj.is_online:
             return format_html('<span class="raizes-status raizes-on">{}</span>', _("Online"))

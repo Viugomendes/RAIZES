@@ -35,7 +35,12 @@ class SiteSettingsForm(forms.ModelForm):
             return cleaned
         if new != repeat:
             self.add_error("repeat_view_password", ValidationError(_("The two passwords are different."), code="mismatch"))
-        elif len(new) < PASSWORD_MIN_LENGTH or not new.strip():
+        elif not new.strip():
+            self.add_error(
+                "new_view_password",
+                ValidationError(_("The password cannot be only spaces."), code="blank"),
+            )
+        elif len(new) < PASSWORD_MIN_LENGTH:
             self.add_error(
                 "new_view_password",
                 ValidationError(_("The password needs at least 8 characters."), code="too_short"),
