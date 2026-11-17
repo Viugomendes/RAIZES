@@ -46,7 +46,9 @@ class TempProject:
         self.env = self.root / ".env"
         self.backups = self.root / "backups"
         override = override_settings(
-            DATA_DIR=self.data, ENV_FILE=self.env, RAIZES_BACKUP_DIR=self.backups
+            DATA_DIR=self.data,
+            DATABASE_FILE=self.data / "raizes.sqlite3",
+            ENV_FILE=self.env, RAIZES_BACKUP_DIR=self.backups
         )
         override.enable()
         self.addCleanup(override.disable)
@@ -285,6 +287,26 @@ class BackupTests(TempProject, TestCase):
         finally:
             database.close()
         self.assertEqual(rows, [("Ana",), ("Rui",)])
+
+    def test_backup_copies_other_db_files_as_they_are(self):
+        self.fill()
+        thumbs = self.data / "media" / "photos"
+        thumbs.mkdir()
+        (thumbs / "Thumbs.db").write_bytes(b"not sqlite at all")
+        archive = self.make_backup()
+
+        with zipfile.ZipFile(archive) as zipped:
+            self.assertEqual(zipped.read("data/media/photos/Thumbs.db"), b"not sqlite at all")
+
+    def test_failed_backup_leaves_no_half_written_zip(self):
+        self.fill()
+        with mock.patch(
+            "access.management.commands.backup.snapshot", side_effect=sqlite3.Error("boom")
+        ):
+            with self.assertRaises(CommandError):
+                run("backup")
+
+        self.assertEqual(list(self.backups.glob("*")), [])
 
     def test_backup_never_overwrites_an_existing_file(self):
         self.fill()

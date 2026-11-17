@@ -10,7 +10,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
 LEFT_OUT = {"cache"}  # the photo copies are made again on demand
-DATABASE_SUFFIXES = (".sqlite3", ".db")
 JOURNAL_SUFFIXES = ("-wal", "-shm", "-journal")
 
 
@@ -41,21 +40,29 @@ class Command(BaseCommand):
             raise CommandError(
                 _("A backup with this name already exists. Wait a second and try again.")
             )
-        with zipped, tempfile.TemporaryDirectory() as temp:
-            for path in sorted(data.rglob("*")):
-                relative = path.relative_to(data)
-                if relative.parts[0] in LEFT_OUT or not path.is_file():
-                    continue
-                if path.name.endswith(JOURNAL_SUFFIXES):
-                    continue
-                source = path
-                if path.suffix in DATABASE_SUFFIXES:
-                    source = Path(temp) / "snapshot.db"
-                    snapshot(path, source)
-                zipped.write(source, f"{data.name}/{relative.as_posix()}")
-                if source is not path:
-                    source.unlink()
-            if env.is_file():
-                zipped.write(env, ".env")
+        database = Path(settings.DATABASE_FILE).resolve()
+        try:
+            with zipped, tempfile.TemporaryDirectory() as temp:
+                for path in sorted(data.rglob("*")):
+                    relative = path.relative_to(data)
+                    if relative.parts[0] in LEFT_OUT or not path.is_file():
+                        continue
+                    if path.name.endswith(JOURNAL_SUFFIXES):
+                        continue
+                    source = path
+                    # Only the configured database needs the SQLite snapshot.
+                    if path.resolve() == database:
+                        source = Path(temp) / "snapshot.db"
+                        snapshot(path, source)
+                    zipped.write(source, f"{data.name}/{relative.as_posix()}")
+                    if source is not path:
+                        source.unlink()
+                if env.is_file():
+                    zipped.write(env, ".env")
+        except Exception as error:
+            archive.unlink(missing_ok=True)
+            raise CommandError(
+                _("The backup failed (%(error)s). Nothing was saved.") % {"error": error}
+            )
         self.stdout.write(self.style.SUCCESS(_("Backup saved: %(file)s") % {"file": archive}))
         self.stdout.write(_("It holds private data and passwords: keep it in a safe place."))

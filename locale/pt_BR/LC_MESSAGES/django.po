@@ -1191,3 +1191,6 @@ msgstr "Abre o site para os aparelhos da rede da casa (escuta em 0.0.0.0)."
 
 msgid "Saves the data folder and .env into backups/raizes-YYYY-MM-DD-HHMMSS.zip."
 msgstr "Salva a pasta de dados e o .env em backups/raizes-AAAA-MM-DD-HHMMSS.zip."
+
+msgid "The backup failed (%(error)s). Nothing was saved."
+msgstr "A cópia falhou (%(error)s). Nada foi salvo."
