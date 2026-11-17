@@ -16,6 +16,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
+from access import ratelimit
 from access.middleware import SESSION_KEY
 from access.models import SiteSettings, ViewerDevice
 from family.export import export_site
@@ -111,6 +112,24 @@ class GateTests(TestCase):
 
         self.assertEqual(response.status_code, 429)
         self.assertFalse(ViewerDevice.objects.exists())
+
+    def test_attempts_are_counted_before_the_password_is_checked(self):
+        for _attempt in range(10):
+            self.enter(password="errada")
+
+        # A right password while blocked is refused, counted, and does not reset the block.
+        self.assertEqual(self.enter().status_code, 429)
+        self.assertEqual(cache.get(ratelimit._key("enter", "127.0.0.1")), 11)
+        self.assertEqual(self.enter().status_code, 429)
+        self.assertEqual(cache.get(ratelimit._key("enter", "127.0.0.1")), 12)
+        self.assertFalse(ViewerDevice.objects.exists())
+
+    def test_ipv4_mapped_addresses_count_as_their_ipv4_address(self):
+        for _attempt in range(10):
+            self.enter(password="errada", REMOTE_ADDR="::ffff:1.2.3.4")
+
+        self.assertEqual(self.enter(REMOTE_ADDR="1.2.3.4").status_code, 429)
+        self.assertEqual(self.enter(REMOTE_ADDR="::ffff:9.9.9.9").status_code, 302)
 
     def test_the_block_lifts_after_15_minutes(self):
         for _attempt in range(11):

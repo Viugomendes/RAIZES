@@ -20,7 +20,10 @@ def _key(scope: str, ip: str) -> str:
         address = ipaddress.ip_address(ip)
     except ValueError:
         address = None
-    if address is not None and address.version == 6:
+    if address is not None and address.version == 6 and address.ipv4_mapped:
+        # ::ffff:1.2.3.4 is the IPv4 client 1.2.3.4 (dual-stack server).
+        ip = str(address.ipv4_mapped)
+    elif address is not None and address.version == 6:
         # One IPv6 client usually owns a whole /64: count it as one address.
         ip = str(ipaddress.ip_network(f"{address}/64", strict=False))
     return f"raizes:attempts:{scope}:{ip}"
@@ -36,14 +39,6 @@ def attempt(scope: str, ip: str) -> bool:
         cache.add(key, 1, WINDOW)
         count = 1
     return count > LIMIT
-
-
-def record_failure(scope: str, ip: str) -> None:
-    attempt(scope, ip)
-
-
-def too_many(scope: str, ip: str) -> bool:
-    return cache.get(_key(scope, ip), 0) >= LIMIT
 
 
 def clear(scope: str, ip: str) -> None:
