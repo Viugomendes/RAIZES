@@ -285,6 +285,19 @@ class QuickSearchTests(JavaScriptTestCase):
         self.assertEqual(exported["seeAll"], "../search/index.html?text=lia")
 
 
+class SearchPageAddressTests(JavaScriptTestCase):
+    def test_text_of_the_address_fills_the_field_only_when_given(self):
+        result = self.run_js("initial-text", searches=["?text=lia%20carvalho", "?q=bento", "", "?other=1", "?text="])
+
+        # None: the field keeps what the browser restored after "Back".
+        self.assertEqual(result, ["lia carvalho", "bento", None, None, ""])
+
+    def test_search_works_without_kinship(self):
+        result = self.run_js("search-without-kinship", criteria={"text": "lia carvalho"})
+
+        self.assertEqual(result, {"found": ["lia-carvalho-1996"], "kinship": False})
+
+
 class ThemeTests(JavaScriptTestCase):
     def test_same_cycle_as_the_panel(self):
         steps = [["auto", False], ["dark", False], ["light", False], ["auto", True], ["light", True], ["dark", True], ["nonsense", False]]

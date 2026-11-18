@@ -143,18 +143,18 @@
 
     function personLink(id) {
       var person = people[id];
-      return '<a href="' + Raizes.pageUrl(root, lang + "/people/" + id + "/") + '">' + Raizes.escapeHtml(person.given) + "</a>";
+      return '<a href="' + Raizes.escapeHtml(Raizes.pageUrl(root, lang + "/people/" + id + "/")) + '">' + Raizes.escapeHtml(person.given) + "</a>";
     }
 
     function fullLink(id) {
       var person = people[id];
-      return '<a href="' + Raizes.pageUrl(root, lang + "/people/" + id + "/") + '">' + Raizes.escapeHtml(person.name) + "</a>";
+      return '<a href="' + Raizes.escapeHtml(Raizes.pageUrl(root, lang + "/people/" + id + "/")) + '">' + Raizes.escapeHtml(person.name) + "</a>";
     }
 
     function avatar(id) {
       var person = people[id];
       if (person.avatar) {
-        return '<img class="mini-avatar" src="' + Raizes.fileUrl(root, person.avatar) + '" alt="">';
+        return '<img class="mini-avatar" src="' + Raizes.escapeHtml(Raizes.fileUrl(root, person.avatar)) + '" alt="">';
       }
       return '<span class="mini-avatar mini-initials" aria-hidden="true">' + Raizes.escapeHtml(person.initials) + "</span>";
     }
@@ -162,8 +162,8 @@
     function photoFigure(photo, title) {
       var tagged = photo.people.map(personLink).join(", ");
       return (
-        '<figure class="mural-photo"><a class="photo-link" href="' + Raizes.fileUrl(root, photo.large) + '" data-caption="' + Raizes.escapeHtml(photo.caption) + '">' +
-        '<img src="' + Raizes.fileUrl(root, photo.thumb) + '" alt="' + Raizes.escapeHtml(photo.caption) + '" loading="lazy"></a>' +
+        '<figure class="mural-photo"><a class="photo-link" href="' + Raizes.escapeHtml(Raizes.fileUrl(root, photo.large)) + '" data-caption="' + Raizes.escapeHtml(photo.caption) + '">' +
+        '<img src="' + Raizes.escapeHtml(Raizes.fileUrl(root, photo.thumb)) + '" alt="' + Raizes.escapeHtml(photo.caption) + '" loading="lazy"></a>' +
         "<figcaption>" + (title ? "<strong>" + Raizes.escapeHtml(title) + "</strong> " : "") + Raizes.escapeHtml(photo.caption) +
         (tagged ? '<span class="tagged">' + tagged + "</span>" : "") + "</figcaption></figure>"
       );
@@ -194,8 +194,8 @@
       }
       var recipe = recipes[entry.recipe];
       return '<p class="mural-recipe">' +
-        (recipe.thumb ? '<img src="' + Raizes.fileUrl(root, recipe.thumb) + '" alt="" loading="lazy">' : "") +
-        '<a href="' + Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/") + '">' + Raizes.escapeHtml(recipe.title) + "</a>" +
+        (recipe.thumb ? '<img src="' + Raizes.escapeHtml(Raizes.fileUrl(root, recipe.thumb)) + '" alt="" loading="lazy">' : "") +
+        '<a href="' + Raizes.escapeHtml(Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/")) + '">' + Raizes.escapeHtml(recipe.title) + "</a>" +
         (recipe.author && people[recipe.author] ? '<span class="muted">' + f(strings.recipeBy, { name: fullLink(recipe.author) }, { name: true }) + "</span>" : "") + "</p>";
     }
 
@@ -205,12 +205,12 @@
       }
       if (entry.type === "photo" && photos[entry.key]) {
         var photo = photos[entry.key];
-        return '<li><a class="photo-link" href="' + Raizes.fileUrl(root, photo.large) + '" data-caption="' + Raizes.escapeHtml(photo.caption) + '">' + Raizes.escapeHtml(strings.newPhoto) + "</a>" +
+        return '<li><a class="photo-link" href="' + Raizes.escapeHtml(Raizes.fileUrl(root, photo.large)) + '" data-caption="' + Raizes.escapeHtml(photo.caption) + '">' + Raizes.escapeHtml(strings.newPhoto) + "</a>" +
           (photo.caption ? ": " + Raizes.escapeHtml(photo.caption) : "") + "</li>";
       }
       if (entry.type === "recipe" && recipes[entry.key]) {
         var recipe = recipes[entry.key];
-        var link = '<a href="' + Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/") + '">' + Raizes.escapeHtml(recipe.title) + "</a>";
+        var link = '<a href="' + Raizes.escapeHtml(Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/")) + '">' + Raizes.escapeHtml(recipe.title) + "</a>";
         return "<li>" + f(strings.newRecipe, { title: link }, { title: true }) + "</li>";
       }
       return "";

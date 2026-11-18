@@ -112,6 +112,15 @@
     });
   }
 
+  // The text given in the address (?text=... or ?q=...), or null when none is.
+  function initialText(search) {
+    var query = new URLSearchParams(search || "");
+    if (query.has("text")) {
+      return query.get("text");
+    }
+    return query.has("q") ? query.get("q") : null;
+  }
+
   // ----- Page -----
 
   function start(doc, data) {
@@ -197,9 +206,9 @@
       html += '<ul class="results">' + found.map(function (entry) {
         var person = entry.person;
         var picture = person.avatar
-          ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, person.avatar) + '" alt="" loading="lazy">'
+          ? '<img class="mini-avatar" src="' + Raizes.escapeHtml(Raizes.fileUrl(root, person.avatar)) + '" alt="" loading="lazy">'
           : '<span class="mini-avatar mini-initials" aria-hidden="true">' + Raizes.escapeHtml(person.initials) + "</span>";
-        return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + picture +
+        return '<li><a class="result" href="' + Raizes.escapeHtml(Raizes.pageUrl(root, lang + "/people/" + person.id + "/")) + '">' + picture +
           '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(person.name) + "</span>" +
           (person.years ? ' <span class="years">' + Raizes.escapeHtml(person.years) + "</span>" : "") +
           (person.occupation ? '<span class="result-detail">' + Raizes.escapeHtml(person.occupation) + "</span>" : "") + "</span></a></li>";
@@ -207,8 +216,8 @@
       if (recipes.length) {
         html += "<h2>" + Raizes.escapeHtml(strings.recipes) + '</h2><ul class="results">' + recipes.map(function (recipe) {
           var author = recipe.author && people[recipe.author] ? Raizes.format(strings.recipeBy, { name: people[recipe.author].name }) : "";
-          return '<li><a class="result" href="' + Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/") + '">' +
-            (recipe.thumb ? '<img class="mini-avatar" src="' + Raizes.fileUrl(root, recipe.thumb) + '" alt="" loading="lazy">' : '<span class="mini-avatar mini-initials" aria-hidden="true">🍲</span>') +
+          return '<li><a class="result" href="' + Raizes.escapeHtml(Raizes.pageUrl(root, lang + "/recipes/" + recipe.slug + "/")) + '">' +
+            (recipe.thumb ? '<img class="mini-avatar" src="' + Raizes.escapeHtml(Raizes.fileUrl(root, recipe.thumb)) + '" alt="" loading="lazy">' : '<span class="mini-avatar mini-initials" aria-hidden="true">🍲</span>') +
             '<span class="result-text"><span class="result-name">' + Raizes.escapeHtml(recipe.title) + "</span>" +
             (author ? '<span class="result-detail">' + author + "</span>" : "") + "</span></a></li>";
         }).join("") + "</ul>";
@@ -217,8 +226,11 @@
     }
 
     // "See all results" of the header opens this page with ?text=... (or ?q=...).
-    var query = new URLSearchParams(doc.defaultView ? doc.defaultView.location.search : "");
-    form.elements.text.value = query.get("text") || query.get("q") || "";
+    // Without it the field keeps what the browser restored (Back button).
+    var typed = initialText(doc.defaultView ? doc.defaultView.location.search : "");
+    if (typed !== null) {
+      form.elements.text.value = typed;
+    }
 
     form.hidden = false;
     form.addEventListener("input", render);
@@ -233,5 +245,5 @@
     render();
   }
 
-  return { buildIndex: buildIndex, filterPeople: filterPeople, filterRecipes: filterRecipes, words: words, start: start };
+  return { buildIndex: buildIndex, filterPeople: filterPeople, filterRecipes: filterRecipes, words: words, initialText: initialText, start: start };
 });

@@ -2,7 +2,9 @@
 // Reads {"task": ..., "data": ..., ...} on stdin and prints the result as JSON.
 "use strict";
 
+const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 const staticDir = path.join(__dirname, "..", "..", "..", "static", "js");
 const Kinship = require(path.join(staticDir, "kinship.js"));
 const Mural = require(path.join(staticDir, "mural.js"));
@@ -40,6 +42,17 @@ process.stdin.on("end", () => {
         seeAll: Header.seeAllUrl(request.searchHref, text),
       };
     });
+  } else if (request.task === "initial-text") {
+    result = request.searches.map((search) => Search.initialText(search));
+  } else if (request.task === "search-without-kinship") {
+    // As in the browser when kinship.js is not on the page (the header search).
+    const context = { self: { Raizes: require(path.join(staticDir, "common.js")) }, URLSearchParams };
+    vm.runInNewContext(fs.readFileSync(path.join(staticDir, "search.js"), "utf-8"), context);
+    const index = context.self.RaizesSearch.buildIndex(data);
+    result = {
+      found: context.self.RaizesSearch.filterPeople(index, request.criteria).map((entry) => entry.person.id),
+      kinship: index.some((entry) => entry.distance !== undefined || entry.generation !== undefined),
+    };
   } else if (request.task === "theme") {
     result = request.steps.map(([current, prefersDark]) => Theme.nextTheme(current, prefersDark));
   } else {

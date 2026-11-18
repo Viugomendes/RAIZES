@@ -70,7 +70,7 @@
         var roles = entry.roles.map(function (role) {
           return strings.roles[role];
         }).join(", ");
-        return '<li><a href="' + R.pageUrl(root, lang + "/people/" + person.id + "/") + '">' + R.escapeHtml(person.name) + '</a> <span class="muted">' + R.escapeHtml(roles) + "</span></li>";
+        return '<li><a href="' + R.escapeHtml(R.pageUrl(root, lang + "/people/" + person.id + "/")) + '">' + R.escapeHtml(person.name) + '</a> <span class="muted">' + R.escapeHtml(roles) + "</span></li>";
       }).join("");
       marker.bindPopup(
         "<strong>" + R.escapeHtml(place.name) + "</strong><br>" + R.format(R.plural(strings.people, entries.length), { count: entries.length }) + '<ul class="map-people">' + list + "</ul>",
