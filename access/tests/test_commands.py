@@ -641,13 +641,27 @@ class ServeTests(SimpleTestCase):
             self.assertIsNone(network_ip())
 
 
+@override_settings(RAIZES_DATASET="demo")
 class DemoPasswordTests(TestCase):
-    def test_load_demo_sets_and_prints_the_demo_view_password(self):
+    def load_demo(self, **environ):
         counts = dict(people=1, unions=0, places=0, photos=0, clips=0, recipes=0)
-        with override_settings(RAIZES_DATASET="demo"), mock.patch(
+        with mock.patch.dict(os.environ, environ), mock.patch(
             "family.management.commands.load_demo.load_demo_family", return_value=counts
         ):
-            output = run("load_demo")
+            return run("load_demo")
 
-        self.assertTrue(SiteSettings.get().check_view_password("demo-raizes"))
-        self.assertIn("demo-raizes", output)
+    def test_load_demo_uses_the_password_chosen_in_the_environment(self):
+        output = self.load_demo(RAIZES_DEMO_PASSWORD="senha-da-demonstracao")
+
+        self.assertTrue(SiteSettings.get().check_view_password("senha-da-demonstracao"))
+        self.assertIn("senha-da-demonstracao", output)
+
+    def test_without_a_chosen_password_a_new_one_is_made_and_shown(self):
+        first = self.load_demo(RAIZES_DEMO_PASSWORD="")
+        site = SiteSettings.get()
+        password = next(word for word in first.split() if site.check_view_password(word))
+        second = self.load_demo(RAIZES_DEMO_PASSWORD="")
+
+        self.assertGreaterEqual(len(password), 12)
+        self.assertNotIn(password, second)
+        self.assertNotIn("demo-raizes", first)

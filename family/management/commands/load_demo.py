@@ -4,16 +4,16 @@ Creates the database if needed and fills it with the invented family of
 demo/family.toml. It only works with the demo dataset, so it can never erase
 the real family.
 """
+import os
+
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext as _
 
 from access.models import SiteSettings
+from access.passwords import generate_admin_password
 from family.demo import load_demo_family
-
-# The invented family opens locally behind the view password; it is public on purpose.
-DEMO_VIEW_PASSWORD = "demo-raizes"
 
 
 class Command(BaseCommand):
@@ -40,8 +40,9 @@ class Command(BaseCommand):
                 % counts
             )
         )
-        SiteSettings.get().set_view_password(DEMO_VIEW_PASSWORD)
+        # Chosen in .env (RAIZES_DEMO_PASSWORD), or a new one each time: never in the code.
+        password = os.environ.get("RAIZES_DEMO_PASSWORD", "").strip() or generate_admin_password()
+        SiteSettings.get().set_view_password(password)
         self.stdout.write(
-            _("Password to open the invented family: %(password)s")
-            % {"password": DEMO_VIEW_PASSWORD}
+            _("Password to open the invented family: %(password)s") % {"password": password}
         )
