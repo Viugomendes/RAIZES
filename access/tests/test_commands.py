@@ -4,6 +4,8 @@ import logging
 import os
 import sqlite3
 import stat
+import subprocess
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -16,6 +18,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 
 from access.models import SiteSettings
 from access.passwords import generate_admin_password
+from access.tests.test_settings import BASE_DIR, ENV_NAMES
 from config.env import get_or_create_secret_key, set_env_values
 
 EMAIL = "dona@example.com"
@@ -67,7 +70,7 @@ class PasswordTests(SimpleTestCase):
         self.assertNotEqual(first, second)
 
 
-@override_settings(RAIZES_EMAIL_CONFIGURED=True)
+@override_settings(RAIZES_EMAIL_CONFIGURED=True, RAIZES_DATASET="real")
 class InstallTests(TempProject, TestCase):
     def install(self, **extra):
         options = dict(
@@ -123,6 +126,54 @@ class InstallTests(TempProject, TestCase):
         self.assertFalse(get_user_model().objects.exists())
         self.assertFalse(SiteSettings.get().has_view_password)
         self.assertEqual(mail.outbox, [])
+
+    def test_install_writes_the_real_family_and_never_loads_the_invented_one(self):
+        with mock.patch(
+            "access.management.commands.instalar.call_command", wraps=call_command
+        ) as called, mock.patch("access.management.commands.instalar.subprocess.run") as rerun:
+            self.install()
+
+        self.assertIn("RAIZES_DATASET=real", self.env.read_text(encoding="utf-8"))
+        self.assertEqual([c.args[0] for c in called.call_args_list], ["migrate"])
+        rerun.assert_not_called()
+
+    @override_settings(RAIZES_DATASET="demo")
+    def test_demo_flag_keeps_the_invented_family(self):
+        with mock.patch(
+            "access.management.commands.instalar.call_command", wraps=call_command
+        ) as called, mock.patch("access.management.commands.instalar.subprocess.run") as rerun:
+            self.install(demo=True)
+
+        self.assertIn("RAIZES_DATASET=demo", self.env.read_text(encoding="utf-8"))
+        self.assertTrue(get_user_model().objects.filter(email=EMAIL).exists())
+        self.assertEqual([c.args[0] for c in called.call_args_list], ["migrate"])
+        rerun.assert_not_called()
+
+    @override_settings(RAIZES_DATASET="demo")
+    def test_without_the_demo_flag_it_starts_again_on_the_real_family(self):
+        with mock.patch(
+            "access.management.commands.instalar.subprocess.run",
+            return_value=subprocess.CompletedProcess([], 0),
+        ) as rerun:
+            self.install()
+
+        (command,), options = rerun.call_args
+        self.assertEqual(command[:4], [sys.executable, "-m", "django", "instalar"])
+        self.assertIn("--no-input", command)
+        self.assertEqual(command[command.index("--email") + 1], EMAIL)
+        self.assertNotIn("--demo", command)
+        self.assertEqual(options["env"]["RAIZES_DATASET"], "real")
+        # Nothing was written in the invented family's database or in .env.
+        self.assertFalse(get_user_model().objects.exists())
+        self.assertFalse(self.env.exists())
+
+    @override_settings(RAIZES_DATASET="demo")
+    def test_a_failed_new_start_is_an_error(self):
+        with mock.patch(
+            "access.management.commands.instalar.subprocess.run",
+            return_value=subprocess.CompletedProcess([], 1),
+        ), self.assertRaises(CommandError):
+            self.install()
 
     def test_install_keeps_the_other_lines_of_env(self):
         self.env.write_text("# mine\nRAIZES_SECRET_KEY='x#y'\nRAIZES_LANGUAGE=pt-br\n", "utf-8")
@@ -197,6 +248,57 @@ class InstallTests(TempProject, TestCase):
         self.assertFalse(get_user_model().objects.exists())
 
 
+FRESH_SETTINGS = """
+from config.settings import *  # noqa: F401,F403
+
+ENV_FILE = ROOT / ".env"
+DATA_DIR = ROOT / "demo"
+DATA_DIR.mkdir(exist_ok=True)
+DATABASE_FILE = DATA_DIR / "demo.sqlite3"
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": DATABASE_FILE}}
+MEDIA_ROOT = DATA_DIR / "media"
+RAIZES_CACHE_DIR = DATA_DIR / "cache"
+RAIZES_HISTORY_FILE = DATA_DIR / "export-history.json"
+RAIZES_BACKUP_DIR = ROOT / "backups"
+EMAIL_FILE_PATH = DATA_DIR / "emails"
+"""
+
+
+class FreshCloneInstallTests(SimpleTestCase):
+    """`instalar` on a computer where the database does not exist yet."""
+
+    def test_install_works_on_a_database_that_was_never_created(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        root = Path(folder.name)
+        (root / "fresh_settings.py").write_text(
+            f"from pathlib import Path\nROOT = Path({str(root)!r})\n" + FRESH_SETTINGS, "utf-8"
+        )
+        env = {name: value for name, value in os.environ.items() if not name.startswith("RAIZES_")}
+        env.update({name: "" for name in ENV_NAMES})
+        env.update(
+            RAIZES_SECRET_KEY="only-for-this-test",
+            RAIZES_DATASET="demo",
+            DJANGO_SETTINGS_MODULE="fresh_settings",
+            PYTHONPATH=os.pathsep.join([str(root), str(BASE_DIR)]),
+        )
+        result = subprocess.run(
+            [sys.executable, "-m", "django", "instalar", "--no-input", "--demo",
+             "--family-name", "Família Carvalho Figueira", "--language", "es",
+             "--email", EMAIL, "--view-password", "senha-da-familia"],
+            cwd=BASE_DIR, env=env, capture_output=True, text=True, timeout=120,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        database = sqlite3.connect(root / "demo" / "demo.sqlite3")
+        try:
+            emails = database.execute("select email from auth_user").fetchall()
+        finally:
+            database.close()
+        self.assertEqual(emails, [(EMAIL,)])
+        self.assertIn("RAIZES_LANGUAGE=es", (root / ".env").read_text("utf-8"))
+
+
 class BackupTests(TempProject, TestCase):
     def fill(self):
         database = sqlite3.connect(self.data / "raizes.sqlite3")
@@ -244,27 +346,56 @@ class BackupTests(TempProject, TestCase):
         self.assertEqual(self.env.read_text("utf-8"), "RAIZES_LANGUAGE=es\n")
         self.assertFalse((self.data / "cache").exists())
 
-    def test_restore_refuses_to_overwrite_without_force(self):
+    def test_restore_overwrites_and_first_saves_what_was_there(self):
         self.fill()
         archive = self.make_backup()
         (self.data / "media" / "foto.jpg").write_bytes(b"newer")
 
-        with self.assertRaises(CommandError):
-            run("restaurar", str(archive))
-        self.assertEqual((self.data / "media" / "foto.jpg").read_bytes(), b"newer")
+        output = run("restaurar", str(archive))
 
-        run("restaurar", str(archive), force=True)
         self.assertEqual((self.data / "media" / "foto.jpg").read_bytes(), b"jpeg-bytes")
+        (safety,) = self.backups.glob("antes-de-restaurar-*.zip")
+        self.assertIn(safety.name, output)
+        with zipfile.ZipFile(safety) as zipped:
+            self.assertEqual(zipped.read("data/media/foto.jpg"), b"newer")
 
-    def test_restore_refuses_a_different_env_without_force(self):
+    def test_the_backup_env_wins_over_the_one_of_this_computer(self):
         self.fill()
         archive = self.make_backup()
         self.empty_data()
-        self.env.write_text("RAIZES_LANGUAGE=pt-br\n", "utf-8")
+        # What `instalar` writes on the new computer.
+        self.env.write_text("RAIZES_SECRET_KEY='new-computer'\nRAIZES_DATASET=real\n", "utf-8")
 
-        with self.assertRaises(CommandError):
+        run("restaurar", str(archive))
+
+        self.assertEqual(self.env.read_text("utf-8"), "RAIZES_LANGUAGE=es\n")
+
+    def test_a_real_family_backup_is_restored_where_the_invented_one_is_loaded(self):
+        # On a new computer the invented family (demo/) is loaded until .env says otherwise.
+        archive = self.root / "raizes-2026-01-01-000000.zip"
+        with zipfile.ZipFile(archive, "w") as zipped:
+            zipped.writestr("data/raizes.sqlite3", "real family")
+            zipped.writestr(".env", "RAIZES_DATASET=real\n")
+        # A fresh copy: only the secret key made by the first command.
+        self.env.write_text("RAIZES_SECRET_KEY='new-computer'\n", "utf-8")
+        demo = self.root / "demo"
+        demo.mkdir()
+        with override_settings(DATA_DIR=demo, DATABASE_FILE=demo / "demo.sqlite3"):
             run("restaurar", str(archive))
-        self.assertEqual(self.env.read_text("utf-8"), "RAIZES_LANGUAGE=pt-br\n")
+
+        self.assertEqual((self.data / "raizes.sqlite3").read_text("utf-8"), "real family")
+        self.assertEqual(self.env.read_text("utf-8"), "RAIZES_DATASET=real\n")
+
+    def test_restore_removes_old_journal_files_of_the_database(self):
+        self.fill()
+        archive = self.make_backup()
+        for suffix in ("-wal", "-shm", "-journal"):
+            (self.data / f"raizes.sqlite3{suffix}").write_bytes(b"old pages")
+
+        run("restaurar", str(archive))
+
+        self.assertEqual(self.rows(), [("Ana",), ("Rui",)])
+        self.assertEqual(sorted(p.name for p in self.data.glob("raizes.sqlite3*")), ["raizes.sqlite3"])
 
     def test_restore_rejects_zip_slip_entries(self):
         bad_names = (

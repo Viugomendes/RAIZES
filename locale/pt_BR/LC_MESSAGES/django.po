@@ -1048,8 +1048,17 @@ msgstr "Sair"
 msgid "The password cannot be only spaces."
 msgstr "A senha não pode ser só espaços."
 
-msgid ".env already exists and is different. Use --force to overwrite it."
-msgstr ".env já existe e é diferente. Use --force para sobrescrevê-lo."
+msgid "Install the invented family (demo/) instead of the real one (data/)."
+msgstr "Instalar a família inventada (demo/) em vez da real (data/)."
+
+msgid "The installation did not finish (see the message above)."
+msgstr "A instalação não terminou (veja a mensagem acima)."
+
+msgid "Start the site again (servir), so it reads the restored .env."
+msgstr "Inicie o site de novo (servir), para ele ler o .env restaurado."
+
+msgid "What was there before was saved first in %(file)s."
+msgstr "O que havia antes foi guardado primeiro em %(file)s."
 
 msgid "Backup restored."
 msgstr "Cópia de segurança restaurada."
@@ -1099,9 +1108,6 @@ msgstr "Abra na rede da casa: http://%(ip)s:%(port)d/"
 msgid "Open on this computer: http://localhost:%(port)d/"
 msgstr "Abra neste computador: http://localhost:%(port)d/"
 
-msgid "Overwrite data that is already there."
-msgstr "Sobrescrever os dados que já existem."
-
 msgid "Password the family types to open the site (8+ characters)."
 msgstr "Senha que a família digita para abrir o site (8 ou mais caracteres)."
 
@@ -1128,9 +1134,6 @@ msgstr "O arquivo .zip da cópia de segurança."
 
 msgid "The backup is empty."
 msgstr "A cópia de segurança está vazia."
-
-msgid "The data folder is not empty. Use --force to overwrite it."
-msgstr "A pasta de dados não está vazia. Use --force para sobrescrevê-la."
 
 msgid "The e-mail could not be sent (e-mail is not configured yet; see the README, section about e-mail). Write this panel password down now, it will not be shown again:"
 msgstr "Não foi possível enviar o e-mail (o e-mail ainda não está configurado; veja o README, seção sobre e-mail). Anote agora esta senha do painel, ela não será mostrada de novo:"

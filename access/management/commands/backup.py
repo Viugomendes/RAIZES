@@ -26,48 +26,53 @@ def snapshot(source: Path, destination: Path) -> None:
         origin.close()
 
 
+def make_backup(name: str, data: Path, database: Path) -> Path:
+    """Zip the data folder and .env into backups/<name>-YYYY-MM-DD-HHMMSS.zip."""
+    env = settings.ENV_FILE
+    folder = settings.RAIZES_BACKUP_DIR
+    folder.mkdir(parents=True, exist_ok=True)
+    owner_only(folder, 0o700)
+    archive = folder / f"{name}-{datetime.datetime.now():%Y-%m-%d-%H%M%S}.zip"
+    try:
+        # Mode "x": an existing backup is never overwritten.
+        zipped = zipfile.ZipFile(archive, "x", zipfile.ZIP_DEFLATED)
+    except FileExistsError:
+        raise CommandError(
+            _("A backup with this name already exists. Wait a second and try again.")
+        )
+    database = database.resolve()
+    try:
+        # Before anything is written: the zip holds the secrets of .env.
+        owner_only(archive)
+        with zipped, tempfile.TemporaryDirectory() as temp:
+            for path in sorted(data.rglob("*")):
+                relative = path.relative_to(data)
+                if relative.parts[0] in LEFT_OUT or not path.is_file():
+                    continue
+                if path.name.endswith(JOURNAL_SUFFIXES):
+                    continue
+                source = path
+                # Only the database needs the SQLite snapshot.
+                if path.resolve() == database:
+                    source = Path(temp) / "snapshot.db"
+                    snapshot(path, source)
+                zipped.write(source, f"{data.name}/{relative.as_posix()}")
+                if source is not path:
+                    source.unlink()
+            if env.is_file():
+                zipped.write(env, ".env")
+    except Exception as error:
+        archive.unlink(missing_ok=True)
+        raise CommandError(
+            _("The backup failed (%(error)s). Nothing was saved.") % {"error": error}
+        )
+    return archive
+
+
 class Command(BaseCommand):
     help = _("Saves the data folder and .env into backups/raizes-YYYY-MM-DD-HHMMSS.zip.")
 
     def handle(self, *args, **options):
-        data = settings.DATA_DIR
-        env = settings.ENV_FILE
-        folder = settings.RAIZES_BACKUP_DIR
-        folder.mkdir(parents=True, exist_ok=True)
-        owner_only(folder, 0o700)
-        archive = folder / f"raizes-{datetime.datetime.now():%Y-%m-%d-%H%M%S}.zip"
-        try:
-            # Mode "x": an existing backup is never overwritten.
-            zipped = zipfile.ZipFile(archive, "x", zipfile.ZIP_DEFLATED)
-        except FileExistsError:
-            raise CommandError(
-                _("A backup with this name already exists. Wait a second and try again.")
-            )
-        database = Path(settings.DATABASE_FILE).resolve()
-        try:
-            # Before anything is written: the zip holds the secrets of .env.
-            owner_only(archive)
-            with zipped, tempfile.TemporaryDirectory() as temp:
-                for path in sorted(data.rglob("*")):
-                    relative = path.relative_to(data)
-                    if relative.parts[0] in LEFT_OUT or not path.is_file():
-                        continue
-                    if path.name.endswith(JOURNAL_SUFFIXES):
-                        continue
-                    source = path
-                    # Only the configured database needs the SQLite snapshot.
-                    if path.resolve() == database:
-                        source = Path(temp) / "snapshot.db"
-                        snapshot(path, source)
-                    zipped.write(source, f"{data.name}/{relative.as_posix()}")
-                    if source is not path:
-                        source.unlink()
-                if env.is_file():
-                    zipped.write(env, ".env")
-        except Exception as error:
-            archive.unlink(missing_ok=True)
-            raise CommandError(
-                _("The backup failed (%(error)s). Nothing was saved.") % {"error": error}
-            )
+        archive = make_backup("raizes", settings.DATA_DIR, Path(settings.DATABASE_FILE))
         self.stdout.write(self.style.SUCCESS(_("Backup saved: %(file)s") % {"file": archive}))
         self.stdout.write(_("It holds private data and passwords: keep it in a safe place."))

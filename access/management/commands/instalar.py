@@ -1,9 +1,13 @@
 """`python manage.py instalar`: first-time setup, asking a few questions.
 
-Writes the language and the family name in `.env`, sets the view password,
-creates the owner's account and e-mails its generated password.
+Writes the family (real, or the invented one with --demo), the language and
+the family name in `.env`, sets the view password, creates the owner's account
+and e-mails its generated password.
 """
 import getpass
+import os
+import subprocess
+import sys
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -33,8 +37,20 @@ class Command(BaseCommand):
         parser.add_argument(
             "--no-input", action="store_true", help=_("Never ask: every option is required.")
         )
+        parser.add_argument(
+            "--demo",
+            action="store_true",
+            help=_("Install the invented family (demo/) instead of the real one (data/)."),
+        )
 
     def handle(self, *args, **options):
+        dataset = "demo" if options["demo"] else "real"
+        if settings.RAIZES_DATASET != dataset:
+            # The settings (database, folders) were read when the command started:
+            # run again, in a new process, with the right family.
+            return self.run_again(dataset, options)
+        # A fresh copy of the project has no database yet.
+        call_command("migrate", interactive=False, verbosity=0)
         values = self.collect(options)
         family_name, language, email, view_password = values
         self.validate(language, email, view_password)
@@ -44,6 +60,7 @@ class Command(BaseCommand):
             set_env_values(
                 settings.ENV_FILE,
                 {
+                    "RAIZES_DATASET": dataset,
                     "RAIZES_LANGUAGE": language,
                     "RAIZES_FAMILY_NAME": family_name,
                     # The site is going to be served to the family: no debug mode.
@@ -55,7 +72,6 @@ class Command(BaseCommand):
                 _(".env could not be written (%(error)s). Nothing was installed.")
                 % {"error": error}
             )
-        call_command("migrate", interactive=False, verbosity=0)
         user_model = get_user_model()
         admin_password = generate_admin_password()
         user_model.objects.create_superuser(email, email=email, password=admin_password)
@@ -65,6 +81,18 @@ class Command(BaseCommand):
         site.set_view_password(view_password)
         self.stdout.write(self.style.SUCCESS(_("Installed. The site opens in the chosen language.")))
         self.send_password(email, admin_password, language)
+
+    def run_again(self, dataset, options):
+        command = [sys.executable, "-m", "django", "instalar"]
+        for name in ("family_name", "language", "email", "view_password"):
+            if options[name]:
+                command += ["--" + name.replace("_", "-"), options[name]]
+        command += ["--no-input"] * options["no_input"] + ["--demo"] * options["demo"]
+        result = subprocess.run(
+            command, cwd=settings.BASE_DIR, env={**os.environ, "RAIZES_DATASET": dataset}
+        )
+        if result.returncode:
+            raise CommandError(_("The installation did not finish (see the message above)."))
 
     def collect(self, options):
         names = ("family_name", "language", "email", "view_password")
