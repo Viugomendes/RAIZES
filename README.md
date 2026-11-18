@@ -7,7 +7,6 @@ Os dados são preenchidos no painel de administração do Django, no seu
 computador. Um comando exporta o site inteiro como páginas prontas (HTML),
 que abrem no navegador sem o Django rodando.
 
-O plano completo está em [docs/plano.md](docs/plano.md).
 
 **Neste arquivo:**
 [Instalar](#instalar-uma-vez-só) ·
