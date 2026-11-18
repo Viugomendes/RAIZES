@@ -285,6 +285,20 @@ class QuickSearchTests(JavaScriptTestCase):
         self.assertEqual(exported["seeAll"], "../search/index.html?text=lia")
 
 
+class ScriptLoaderTests(JavaScriptTestCase):
+    """The scripts of the search in place: each fetched once, a failure tried again."""
+
+    def test_reopening_during_a_load_fetches_nothing_twice_and_a_retry_only_the_failed_one(self):
+        result = self.run_js("script-loader")
+
+        self.assertEqual(result["afterFirst"], ["data", "common", "search"])
+        self.assertEqual(result["added"], ["data", "common", "search", "data"])
+        self.assertEqual(
+            result["log"],
+            [["first", False], ["reopened while loading", False], ["retry", True]],
+        )
+
+
 class SearchPageAddressTests(JavaScriptTestCase):
     def test_text_of_the_address_fills_the_field_only_when_given(self):
         result = self.run_js("initial-text", searches=["?text=lia%20carvalho", "?q=bento", "", "?other=1", "?text="])

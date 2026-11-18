@@ -1889,7 +1889,8 @@ body.map-is-full {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-.enter-languages svg {
+/* The flags only: the theme button beside them keeps its own icon. */
+.enter-languages a svg {
   width: 26px;
   height: 18px;
   border-radius: 2px;

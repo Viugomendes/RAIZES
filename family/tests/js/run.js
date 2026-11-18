@@ -53,6 +53,25 @@ process.stdin.on("end", () => {
       found: context.self.RaizesSearch.filterPeople(index, request.criteria).map((entry) => entry.person.id),
       kinship: index.some((entry) => entry.distance !== undefined || entry.generation !== undefined),
     };
+  } else if (request.task === "script-loader") {
+    // Scripts settle only when the test says so, as on a slow network.
+    const added = [];
+    const pending = {};
+    const log = [];
+    const load = Header.scriptLoader((src, settled) => {
+      added.push(src);
+      pending[src] = settled;
+    });
+    const settle = (src, ok) => { const settled = pending[src]; delete pending[src]; settled(ok); };
+    load(["data", "common", "search"], (ok) => log.push(["first", ok]));
+    settle("data", false);
+    load(["data", "common", "search"], (ok) => log.push(["reopened while loading", ok]));
+    settle("common", true);
+    settle("search", true);
+    const afterFirst = added.slice();
+    load(["data", "common", "search"], (ok) => log.push(["retry", ok]));
+    settle("data", true);
+    result = { afterFirst, added, log };
   } else if (request.task === "theme") {
     result = request.steps.map(([current, prefersDark]) => Theme.nextTheme(current, prefersDark));
   } else {

@@ -51,6 +51,48 @@
     return person.years || "";
   }
 
+  // Adds scripts at most once each. While some are on their way, a new call
+  // only waits for them (nothing is fetched twice); when every one has
+  // arrived or failed, all waiting callers hear ok (true or false). Those that
+  // failed are tried again by the next call; those that arrived never are.
+  // addScript(src, settled) must call settled(true or false) once.
+  function scriptLoader(addScript) {
+    var arrived = {};
+    var waiting = null;
+    return function load(sources, done) {
+      if (waiting) {
+        waiting.push(done);
+        return;
+      }
+      waiting = [done];
+      var todo = sources.filter(function (src) { return !arrived[src]; });
+      var left = todo.length;
+      var ok = true;
+      function settle() {
+        var callers = waiting;
+        waiting = null;
+        callers.forEach(function (caller) { caller(ok); });
+      }
+      if (!left) {
+        settle();
+        return;
+      }
+      todo.forEach(function (src) {
+        addScript(src, function (success) {
+          if (success) {
+            arrived[src] = true;
+          } else {
+            ok = false;
+          }
+          left -= 1;
+          if (!left) {
+            settle();
+          }
+        });
+      });
+    };
+  }
+
   // ----- Page -----
 
   function start(win) {
@@ -132,7 +174,6 @@
     var searchHref = magnifiers.length ? magnifiers[0].href : "";
     var opener = null;
     var index = null;
-    var loading = false;
     var failed = false;
     var options = [];
     var active = -1;
@@ -142,12 +183,21 @@
     }
 
     // The family data and the matching rules, fetched the first time only.
+    var loadScripts = scriptLoader(function (src, settled) {
+      var script = doc.createElement("script");
+      script.src = src;
+      script.async = false; // run in the order of the list
+      script.onload = function () {
+        settled(true);
+      };
+      script.onerror = function () {
+        script.parentNode.removeChild(script);
+        settled(false);
+      };
+      doc.body.appendChild(script);
+    });
+
     function load(done) {
-      if (loading) {
-        return;
-      }
-      loading = true;
-      failed = false;
       var have = { RAIZES_DATA: win.RAIZES_DATA, Raizes: win.Raizes, RaizesSearch: win.RaizesSearch };
       var template = doc.getElementById("quick-search-scripts");
       var sources = Array.prototype.filter.call(template.content.querySelectorAll("script"), function (script) {
@@ -155,40 +205,17 @@
       }).map(function (script) {
         return script.getAttribute("src");
       });
-      var left = sources.length;
-
-      function finish() {
-        loading = false;
-        try {
-          index = win.RaizesSearch.buildIndex(win.RAIZES_DATA);
-        } catch (error) {
-          failed = true;
-        }
-        done();
-      }
-
-      if (!left) {
-        finish();
-        return;
-      }
-      sources.forEach(function (src) {
-        var script = doc.createElement("script");
-        script.src = src;
-        script.async = false; // run in the order of the list
-        script.onload = function () {
-          left -= 1;
-          if (!left) {
-            finish();
+      failed = false;
+      loadScripts(sources, function (ok) {
+        if (ok && !index) {
+          try {
+            index = win.RaizesSearch.buildIndex(win.RAIZES_DATA);
+          } catch (error) {
+            ok = false;
           }
-        };
-        script.onerror = function () {
-          // Tried again at the next opening (what did load is not fetched twice).
-          script.parentNode.removeChild(script);
-          loading = false;
-          failed = true;
-          done();
-        };
-        doc.body.appendChild(script);
+        }
+        failed = !ok;
+        done();
       });
     }
 
@@ -388,5 +415,5 @@
     return { isOpen: isOpen };
   }
 
-  return { suggest: suggest, seeAllUrl: seeAllUrl, detail: detail, start: start };
+  return { suggest: suggest, seeAllUrl: seeAllUrl, detail: detail, scriptLoader: scriptLoader, start: start };
 });
