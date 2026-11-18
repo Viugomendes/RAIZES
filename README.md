@@ -40,6 +40,7 @@ in Portuguese and Spanish; this README is in English.
 - [Invented family or real family](#invented-family-or-real-family)
 - [How to fill in the data](#how-to-fill-in-the-data)
 - [How the code is organised](#how-the-code-is-organised)
+- [Licence](#licence)
 
 ## Quick start: try the invented family
 
@@ -646,3 +647,15 @@ To start the real family after trying the invented one:
 | `functions/_middleware.js` | The password on Cloudflare |
 | `demo/family.toml` | The invented family |
 | `locale/` | The interface texts in Portuguese and Spanish |
+
+## Licence
+
+Raízes is free software, licensed under the
+[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+Copyright (C) 2026 Viugomendes.
+
+In plain words: you can use it for your own family, change it and share it.
+If you change the code and let other people use your changed version over
+the internet (your relatives included), you must offer them its source code
+under the same licence; a link to your copy of the repository is enough.
+Using it without changing the code asks nothing of you.
