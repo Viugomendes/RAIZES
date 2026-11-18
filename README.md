@@ -9,6 +9,19 @@ que abrem no navegador sem o Django rodando.
 
 O plano completo está em [docs/plano.md](docs/plano.md).
 
+**Neste arquivo:**
+[Instalar](#instalar-uma-vez-só) ·
+[Comandos do dia a dia](#comandos-do-dia-a-dia) ·
+[O que o site tem](#o-que-o-site-tem) ·
+[O painel e os papéis](#o-painel-e-os-papéis) ·
+[Fotos e gravações](#fotos-e-gravações) ·
+[Onde hospedar](#onde-hospedar) ·
+[E-mail com o Gmail](#e-mail-com-o-gmail) ·
+[Publicar com senha](#publicar-com-senha-cloudflare-pages) ·
+[Família inventada ou real](#família-inventada-ou-família-real) ·
+[Como preencher](#como-preencher) ·
+[Como o código está organizado](#como-o-código-está-organizado)
+
 > **Privacidade.** Os dados reais da família ficam só na pasta `data/`, que o
 > Git ignora. Tudo o que está no repositório usa a família inventada da pasta
 > `demo/` (todos os sobrenomes são nomes de árvores; ninguém ali existe).
@@ -85,6 +98,7 @@ ative o ambiente virtual. É preciso fazer isso uma vez em cada terminal novo:
 | Carregar a família inventada (só com `RAIZES_DATASET=demo`; apaga e recria o banco de demonstração e mostra a senha de visualização dela: a de `RAIZES_DEMO_PASSWORD` no `.env`, ou uma nova a cada vez) | `python manage.py load_demo` |
 | Servidor para quem programa (recarrega sozinho quando o código muda) | `python manage.py runserver` |
 | Rodar os testes | `python manage.py test` |
+| Ver o que um comando faz e as suas opções (`servir`, `instalar`, `backup`, `restaurar`...) | `python manage.py servir --help` |
 | Exportar o site para `dist/` | `python manage.py export_site` |
 | Depois de editar um arquivo em `locale/` | `python manage.py compile_translations` |
 
@@ -113,10 +127,10 @@ hospedagem elas aparecem normalmente.
 
 | Página | O que faz |
 |---|---|
-| Novidades | Mural automático: aniversários da semana, "neste dia", "em memória", lembrança do dia e novo no site. Calculado pelo navegador a cada dia, sem republicar. |
+| Novidades | Mural automático: aniversários da semana, "neste dia", "em memória", lembrança do dia e novo no site. Calculado pelo navegador a cada dia, sem republicar. No alto, uma faixa sem fim com todas as fotos da família, numa ordem sorteada a cada visita. Ela para quando o mouse está em cima, quando um cartão tem o foco do teclado ou quando um dedo toca; com poucas fotos (menos de 4), ou se o aparelho pede "reduzir movimento", fica parada e se rola com a mão. |
 | Árvore | A família inteira, com a foto de cada pessoa no círculo. Aproximar: Ctrl + roda do mouse, dois dedos ou os botões; "Tela cheia" para usar a árvore à vontade. Na ficha, "Ver na árvore" abre a árvore já na pessoa. |
 | Árvore > Mapa | Todos os lugares da família, com filtro por geração. Aproxima como a árvore. |
-| Busca | Por nome, ano, lugar, distância, geração, vivo ou falecido, profissão, etiqueta, fotos, entrevista e receita. |
+| Busca | A lupa do cabeçalho abre a busca ali mesmo, com nomes aparecendo enquanto se digita (no celular, uma folha no alto da tela, acima do teclado). Sem JavaScript, a lupa leva à página de busca, que filtra por nome, ano, lugar, distância, geração, vivo ou falecido, profissão, etiqueta, fotos, entrevista e receita. |
 | Página da pessoa | As 10 seções do plano, com galeria, gravações, receitas e mapa pessoal. |
 | Quem é? | Fotos com alguém que ainda não foi identificado. |
 
@@ -125,6 +139,39 @@ depois da publicação anterior. O arquivo `export-history.json` (em `data/` ou
 `demo/`) guarda as publicações; a primeira serve de ponto de partida, então
 nela nada aparece como novo. Só conta como publicação a exportação para
 `dist/` (exportar com `--output` para outra pasta é só um teste).
+
+### O cabeçalho
+
+- **No computador:** uma barra fina no alto, com o nome da família e os
+  ícones de Novidades, Árvore e Busca. Ela se recolhe quando a página desce.
+- **No celular:** a barra de ícones (só os ícones, sem texto) fica na parte de
+  baixo da tela.
+- **Idioma:** uma bandeira só, que troca para o outro idioma (português e
+  espanhol). A bandeira mostrada é a do idioma em uso; clicar nela leva ao outro.
+- **Tema:** um botão alterna entre automático (segue o aparelho), claro e
+  escuro. A escolha é a mesma no site e no painel e fica guardada no navegador.
+
+## O painel e os papéis
+
+O painel (`/painel/`) é onde os dados são preenchidos. Entra-se com o e-mail e
+a senha do painel (não é a senha de visualização da família). Há três papéis:
+
+| Papel | O que pode |
+|---|---|
+| Dono (superusuário, criado pelo `instalar`) | Tudo: dados, configurações do site, contas e papéis |
+| Administradores | Edita todos os dados da família e as configurações do site, mas não mexe em contas nem em papéis |
+| Revisores | Só olha: vê os dados, não altera nada |
+
+Contas e papéis são criados pelo dono, no painel, em **Autenticação e
+autorização**. As regras estão em `access/roles.py`. Em **configurações do
+site** o dono escolhe a senha de visualização da família e, em **Aparelhos
+conectados**, pode desconectar um aparelho (isso vale só para o site servido
+pelo Django; veja [Publicar com senha](#publicar-com-senha-cloudflare-pages)).
+
+Segurança, em resumo: o `servir` recusa começar com o modo de depuração ou com
+a senha de visualização desligada; as tentativas de senha erradas são
+limitadas; as senhas nunca ficam no código nem no Git; as páginas pedem aos
+buscadores que não indexem nada (`robots.txt`).
 
 ## Fotos e gravações
 
@@ -441,6 +488,10 @@ Outras escolhas de cada família, também no `.env`:
 O cabeçalho do painel sempre mostra qual família está aberta. O comando
 `load_demo` se recusa a rodar com `RAIZES_DATASET=real`, para nunca apagar a
 família real.
+
+Todas as variáveis do `.env` (idioma, endereço público, e-mail, depuração,
+cabeçalho do túnel...) têm um comentário de uma linha no
+[.env.example](.env.example).
 
 Para começar a família real depois de experimentar a inventada:
 
