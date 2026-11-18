@@ -83,6 +83,9 @@ process.stdin.on("end", () => {
       shuffledByChance: Carousel.shuffle(request.items).slice().sort(),
       rounds: request.widths.map(([row, screen]) => Carousel.roundsToFill(row, screen)),
       durations: request.rounds.map(Carousel.duration),
+      moves: (request.moves || []).map(([count, reduce]) => Carousel.moves(count, reduce)),
+      centred: (request.centred || []).map(([left, card, screen]) => Carousel.centred(left, card, screen)),
+      phases: (request.phases || []).map(([shift, round]) => Carousel.phase(shift, round)),
     };
   } else if (request.task === "theme") {
     result = request.steps.map(([current, prefersDark]) => Theme.nextTheme(current, prefersDark));

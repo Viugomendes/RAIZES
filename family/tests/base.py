@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 
 from django.test import TestCase, override_settings
+from django.utils import translation
 
 from family.demo import load_demo_family
 
@@ -43,3 +44,8 @@ class DemoFamilyTestCase(IsolatedFilesMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         load_demo_family()
+
+    def tearDown(self):
+        # A request to a Spanish page leaves Spanish active for the next test.
+        translation.deactivate()
+        super().tearDown()

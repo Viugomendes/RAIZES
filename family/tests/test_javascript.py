@@ -10,7 +10,6 @@ from pathlib import Path
 from unittest import skipUnless
 
 from django.test import SimpleTestCase
-from django.utils import translation
 
 from family.graph import load_family_graph
 from family.kinship import CENTER
@@ -356,6 +355,23 @@ class CarouselTests(JavaScriptTestCase):
         self.assertEqual(len(set(round(speed, 6) for speed in speeds)), 1)
         self.assertLess(speeds[0], 60)
 
+    def test_moves_only_with_four_photos_or_more_and_without_reduce_motion(self):
+        result = self.carousel(moves=[[0, False], [3, False], [4, False], [40, False], [40, True]])
+
+        self.assertEqual(result["moves"], [False, False, True, True, False])
+
+    def test_a_card_reached_with_the_keyboard_goes_to_the_middle(self):
+        # Card 225 px wide, 1285 px screen: 530 px free on each side.
+        result = self.carousel(centred=[[1000, 225, 1285], [1600, 225, 1285]])
+
+        self.assertEqual(result["centred"], [470, 1070])
+
+    def test_leaving_the_keyboard_the_strip_goes_on_from_the_same_place(self):
+        # The animation starts one round in (the first row is a copy).
+        result = self.carousel(phases=[[1000, 1000], [1470, 1000], [2999, 1000], [600, 1000]])
+
+        self.assertEqual(result["phases"], [0, 470, 999, 600])
+
 
 class CarouselPageTests(DemoFamilyTestCase):
     def test_news_page_has_the_strip_hidden_until_the_script_fills_it(self):
@@ -366,7 +382,6 @@ class CarouselPageTests(DemoFamilyTestCase):
         self.assertIn("js/carousel.js", html)
 
     def test_strip_label_in_spanish(self):
-        self.addCleanup(translation.deactivate)  # the request leaves Spanish active
         html = self.client.get("/es/").content.decode()
 
         self.assertIn('aria-label="Fotos de la familia"', html)

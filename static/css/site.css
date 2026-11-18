@@ -1472,20 +1472,44 @@ button {
   padding: 6px 0;
 }
 
+/* Three equal rows (copy, photos, copy); it slides by one row and starts
+   again: --round is the width of one row, set by carousel.js. */
 .carousel-track.is-moving {
   animation: carousel-slide var(--carousel-duration, 60s) linear var(--carousel-delay, 0s) infinite;
 }
 
-.carousel:hover .carousel-track,
-.carousel:focus-within .carousel-track,
-.carousel.is-held .carousel-track {
+@keyframes carousel-slide {
+  from {
+    transform: translateX(calc(-1 * var(--round, 0px)));
+  }
+  to {
+    transform: translateX(calc(-2 * var(--round, 0px)));
+  }
+}
+
+/* It stops under the mouse (not after a tap: phones keep a "hover" there),
+   while a finger touches it (.is-held) and while the keyboard is on a card. */
+@media (hover: hover) and (pointer: fine) {
+  .carousel:hover .carousel-track {
+    animation-play-state: paused;
+  }
+}
+
+.carousel.is-held .carousel-track,
+.carousel:has(:focus-visible) .carousel-track {
   animation-play-state: paused;
 }
 
-@keyframes carousel-slide {
-  to {
-    transform: translateX(-50%);
+@supports not selector(:has(*)) {
+  .carousel:focus-within .carousel-track {
+    animation-play-state: paused;
   }
+}
+
+/* A card reached with the keyboard is put in the middle (carousel.js). */
+.carousel-track.is-steered {
+  animation: none;
+  transform: translateX(var(--steer, 0px));
 }
 
 .carousel-row {
@@ -1550,20 +1574,31 @@ button {
   }
 }
 
-/* No movement: a strip to scroll by hand, each photo once. */
+/* Still: with "reduce motion" or with fewer than 4 photos. A strip to
+   scroll by hand, each photo once, starting where the text starts. */
+.carousel.is-still {
+  --strip-start: max(1.25rem, calc((var(--page-width, 100vw) - 60rem) / 2 + 1.25rem));
+}
+
+.carousel.is-still .carousel-viewport {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--strip-start);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.carousel.is-still .carousel-track {
+  /* Below the captions: room for the scroll bar. */
+  padding: 6px var(--strip-start) 0.75rem;
+}
+
+/* "Reduce motion" turned on while the page is open. */
 @media (prefers-reduced-motion: reduce) {
   .carousel-viewport {
     overflow-x: auto;
-    overscroll-behavior-x: contain;
-    /* The first photo starts where the text of the page starts. */
-    --strip-start: max(1.25rem, calc((var(--page-width, 100vw) - 60rem) / 2 + 1.25rem));
-    scroll-padding-inline: var(--strip-start);
     -webkit-mask-image: none;
     mask-image: none;
-  }
-
-  .carousel-track {
-    padding-inline: var(--strip-start);
   }
 
   .carousel-track.is-moving {
@@ -1839,8 +1874,8 @@ button {
 
 .lightbox-close {
   float: right;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 0;
   border-radius: 50%;
   background: var(--accent-soft);
