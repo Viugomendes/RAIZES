@@ -159,7 +159,7 @@ MIDDLEWARE = [
     # The same Content-Security-Policy and headers as the Cloudflare function.
     # Before WhiteNoise, which answers static files by itself: they get them too.
     "access.security.SecurityHeadersMiddleware",
-    # CSS, JavaScript and icons, from STATIC_ROOT (`servir` runs collectstatic).
+    # CSS, JavaScript and icons (see WHITENOISE_USE_FINDERS below).
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -257,6 +257,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / ".build" / "static"
+# WhiteNoise also finds the files where they are (static/ and each app): the CSS
+# loads under runserver and servir even without debug and before collectstatic.
+WHITENOISE_USE_FINDERS = True
 
 # Photos uploaded through the admin panel (the originals: never exported).
 MEDIA_URL = "/media/"

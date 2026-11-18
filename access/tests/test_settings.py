@@ -237,6 +237,17 @@ class EnvExampleTests(SimpleTestCase):
 
 
 class StaticFilesTests(SimpleTestCase):
+    @override_settings(DEBUG=False)
+    def test_static_file_is_served_without_debug_and_without_collectstatic(self):
+        # STATIC_ROOT is an empty folder in the tests: runserver after `instalar`.
+        response = self.client.get("/static/css/site.css")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            b"".join(response.streaming_content),
+            (BASE_DIR / "static" / "css" / "site.css").read_bytes(),
+        )
+
     def test_static_file_is_served_without_debug(self):
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)
