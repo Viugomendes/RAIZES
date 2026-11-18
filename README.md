@@ -27,6 +27,47 @@ python -m pip install -r requirements.txt
 Se o PowerShell recusar o `Activate.ps1`, rode uma vez
 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` e tente de novo.
 
+Depois, ainda no mesmo terminal:
+
+```powershell
+python manage.py instalar
+```
+
+Ele pergunta o nome da família, o idioma, o seu e-mail e a senha de
+visualização (a que a família digita para abrir o site). Cria o banco de dados,
+o seu usuário do painel e manda a senha do painel por e-mail (sem e-mail
+configurado, mostra a senha uma vez na tela: anote na hora).
+
+O `instalar` grava `RAIZES_DATASET=real` no `.env`: a família real fica na
+pasta `data/`, que nunca vai para o Git. Para só experimentar a família
+inventada, use `python manage.py instalar --demo` e depois
+`python manage.py load_demo`.
+
+Para trazer uma família que já existe em outro computador, não rode o
+`instalar`: veja [Mudar de lugar](#mudar-de-lugar).
+
+### Atualizar uma instalação antiga
+
+Para trazer o código novo para uma instalação que já existe, primeiro faça
+uma cópia (`python manage.py backup`). Se a família real está em `data/`,
+confira que o `.env` tem `RAIZES_DATASET=real` (instalações de antes do
+`instalar` podem não ter). Depois:
+
+```powershell
+git pull
+python -m pip install -r requirements.txt
+python manage.py migrate
+```
+
+Se a instalação é de antes do comando `instalar`, confira também:
+
+1. No `.env`: `RAIZES_DEBUG=false`.
+2. A sua conta do painel precisa de um e-mail, porque o painel se entra com o
+   e-mail. Se ela não tem, crie outra com `python manage.py createsuperuser`
+   (escreva o e-mail quando ele pedir).
+3. No painel, em **configurações do site**, escolha a senha da família.
+   Sem ela, o site manda todo mundo para o painel.
+
 ## Comandos do dia a dia
 
 Abra o terminal na pasta do projeto (no VS Code: Terminal > Novo terminal) e
@@ -38,13 +79,11 @@ ative o ambiente virtual. É preciso fazer isso uma vez em cada terminal novo:
 
 | Para quê | Comando |
 |---|---|
-| Carregar a família inventada (apaga e recria o banco de demonstração; mostra a senha de visualização dela, `demo-raizes`) | `python manage.py load_demo` |
-| Instalar pela primeira vez (idioma, nome da família, senha de visualização e o seu usuário) | `python manage.py instalar` |
-| Servir neste computador (`servir --rede` abre para os aparelhos da casa e mostra o endereço; precisa de `RAIZES_DEBUG=false`, que o `instalar` já grava, e da senha de visualização ligada) | `python manage.py servir` |
+| Abrir o site e o painel no dia a dia (`servir --rede` abre para os aparelhos da casa e mostra o endereço; precisa de `RAIZES_DEBUG=false`, que o `instalar` já grava, e da senha de visualização ligada) | `python manage.py servir` |
 | Guardar uma cópia de tudo em `backups/` | `python manage.py backup` |
-| Voltar uma cópia (`--force` para sobrescrever) | `python manage.py restaurar backups/arquivo.zip` |
-| Criar o seu usuário do painel (uma vez por banco) | `python manage.py createsuperuser` |
-| Abrir o painel e o site no seu computador | `python manage.py runserver` |
+| Voltar uma cópia (a cópia vence: o que havia antes é guardado em `backups/`) | `python manage.py restaurar backups/arquivo.zip` |
+| Carregar a família inventada (só com `RAIZES_DATASET=demo`; apaga e recria o banco de demonstração e mostra a senha de visualização dela: a de `RAIZES_DEMO_PASSWORD` no `.env`, ou uma nova a cada vez) | `python manage.py load_demo` |
+| Servidor para quem programa (recarrega sozinho quando o código muda) | `python manage.py runserver` |
 | Rodar os testes | `python manage.py test` |
 | Exportar o site para `dist/` | `python manage.py export_site` |
 | Depois de editar um arquivo em `locale/` | `python manage.py compile_translations` |
@@ -54,11 +93,11 @@ O e-mail (para a senha do painel e o "esqueci a senha") está explicado em
 [E-mail com o Gmail](#e-mail-com-o-gmail). Onde deixar o site para a família
 abrir está em [Onde hospedar](#onde-hospedar).
 
-Com o `runserver` rodando:
+Com o `servir` rodando:
 
-- painel: <http://127.0.0.1:8000/painel/> (entre com o e-mail e a senha do
-  `createsuperuser`; o e-mail é obrigatório)
-- site: <http://127.0.0.1:8000/>
+- painel: <http://localhost:8000/painel/> (entre com o seu e-mail e a senha
+  do painel que o `instalar` mandou ou mostrou)
+- site: <http://localhost:8000/>
 
 Para parar o servidor, aperte `Ctrl+C` no terminal.
 
@@ -67,7 +106,7 @@ funciona direto do disco. Se algum texto tiver um link para alguém que não
 existe, a exportação para e mostra a lista do que precisa ser corrigido.
 
 Abrindo do disco, as imagens do mapa podem não aparecer (o OpenStreetMap
-recusa pedidos que não vêm de um endereço de site). No `runserver` e na
+recusa pedidos que não vêm de um endereço de site). No `servir` e na
 hospedagem elas aparecem normalmente.
 
 ## O que o site tem
@@ -107,10 +146,11 @@ de um jeito e mudar depois (veja [Mudar de lugar](#mudar-de-lugar)).
 | Site estático na Cloudflare Pages | grátis | não (edita no computador e publica) | veja [Publicar com senha](#publicar-com-senha-cloudflare-pages) |
 | Servidor pago + domínio próprio | a partir de uns US$ 5/mês | sim, sempre ligado | o mais confortável |
 
-Antes de qualquer caminho, rode uma vez `python manage.py instalar`. Ele
-pergunta o nome da família, o idioma, o seu e-mail e a senha de visualização,
-e grava `RAIZES_DEBUG=false` no `.env` (o modo de depuração mostra pedaços do
-código quando algo dá errado: só serve para quem programa, com o `runserver`).
+Antes de qualquer caminho, instale (veja [Instalar](#instalar-uma-vez-só)) ou
+traga a família de outro lugar (veja [Mudar de lugar](#mudar-de-lugar)). O
+`instalar` grava `RAIZES_DATASET=real` e `RAIZES_DEBUG=false` no `.env` (o
+modo de depuração mostra pedaços do código quando algo dá errado: só serve
+para quem programa).
 
 O `servir` não começa com `RAIZES_DEBUG=true` nem com `RAIZES_VIEW_GATE=false`:
 o site da família nunca fica aberto sem a senha, nem mostra o código.
@@ -142,6 +182,10 @@ e permita.
   mostra o novo a cada vez.
 - Na rede de casa o site abre com `http://` (sem o cadeado). Para abrir de
   fora de casa, use o caminho seguinte.
+- Sem o cadeado, as senhas passam pela rede sem proteção. Use o `--rede` só
+  no Wi-Fi da sua casa, e nunca entre no painel por ele num Wi-Fi
+  compartilhado (hotel, café, trabalho): quem está na mesma rede pode ver a
+  senha. Fora de casa, use um endereço `https://` (os caminhos seguintes).
 
 ### Meu computador + Cloudflare Tunnel
 
@@ -215,10 +259,10 @@ domínio apontando para ele. O Caddy cuida do `https://` sozinho.
    ```
 
    Traga a família com [Mudar de lugar](#mudar-de-lugar), ou comece do zero
-   com `.venv/bin/python manage.py instalar`. No `.env`:
+   com `.venv/bin/python manage.py instalar` (ele já grava
+   `RAIZES_DATASET=real`). Depois, acrescente no `.env`:
 
    ```
-   RAIZES_DATASET=real
    RAIZES_PUBLIC_URL=https://familia.seudominio.com
    RAIZES_PROXY_HEADER=X-Forwarded-For
    ```
@@ -283,10 +327,15 @@ caminhos acima.
    `backups/` com a pasta de dados e o `.env`.
 2. Copie esse `.zip` para o outro computador ou servidor (pendrive, `scp`...).
    Ele tem os dados da família: não o mande por lugares públicos.
-3. No lugar novo, com o projeto instalado:
-   `python manage.py restaurar caminho/do/arquivo.zip` (`--force` se já
-   houver dados lá).
-4. Ajuste no `.env` o que muda com o lugar (`RAIZES_PUBLIC_URL`,
+3. No lugar novo, baixe o código e instale o Python dele (os comandos de
+   [Instalar](#instalar-uma-vez-só) até o `pip install`; não precisa do
+   `instalar`).
+4. Rode `python manage.py restaurar caminho/do/arquivo.zip`. A cópia vence:
+   a pasta de dados e o `.env` dela (qual família, a chave secreta, o e-mail)
+   tomam o lugar do que houver ali. Se já havia algo (por exemplo, um
+   `instalar` rodado sem querer), ele é guardado antes em
+   `backups/antes-de-restaurar-....zip`.
+5. Ajuste no `.env` o que muda com o lugar (`RAIZES_PUBLIC_URL`,
    `RAIZES_PROXY_HEADER`) e rode o `servir`.
 
 ## E-mail com o Gmail
@@ -295,6 +344,10 @@ O e-mail envia a senha do painel (no `instalar`) e o link de "esqueci a
 senha". Sem e-mail configurado nada sai do computador: as mensagens ficam
 como arquivos em `data/emails/` (ou `demo/emails/`), e o `instalar` mostra a
 senha do painel uma única vez na tela (anote na hora).
+
+Sem e-mail configurado, o link de "esqueci a senha" também fica num arquivo
+em `data/emails/`, e esses arquivos vão junto em cada cópia de segurança.
+Depois de usar o link, apague o arquivo.
 
 Um Gmail com "senha de app" é grátis e basta para uma família:
 
@@ -373,8 +426,8 @@ família está carregada. Veja o modelo em [.env.example](.env.example).
 
 | `RAIZES_DATASET` | Banco de dados | Fotos |
 |---|---|---|
-| `demo` (padrão) | `demo/demo.sqlite3` | `demo/media/` |
-| `real` | `data/raizes.sqlite3` | `data/media/` |
+| `demo` (enquanto nada foi instalado; `instalar --demo`) | `demo/demo.sqlite3` | `demo/media/` |
+| `real` (o `instalar` grava este) | `data/raizes.sqlite3` | `data/media/` |
 
 Outras escolhas de cada família, também no `.env`:
 
@@ -389,15 +442,15 @@ O cabeçalho do painel sempre mostra qual família está aberta. O comando
 `load_demo` se recusa a rodar com `RAIZES_DATASET=real`, para nunca apagar a
 família real.
 
-Para começar a família real (só depois de tudo testado com a inventada):
+Para começar a família real depois de experimentar a inventada:
 
-1. No `.env`, escreva `RAIZES_DATASET=real`, o nome da família em
-   `RAIZES_FAMILY_NAME` e, quando a sua ficha existir, o seu identificador em
-   `RAIZES_CENTRAL_PERSON`.
-2. `python manage.py migrate` (cria o banco vazio em `data/`).
-3. `python manage.py createsuperuser`.
-4. Confira com `git status` que nada de `data/` aparece.
-5. Faça cópias de segurança da pasta `data/` em outro disco.
+1. `python manage.py instalar` (sem o `--demo`). Ele grava
+   `RAIZES_DATASET=real` e cria o banco vazio em `data/`, com o seu usuário.
+2. Quando a sua ficha existir, escreva o seu identificador em
+   `RAIZES_CENTRAL_PERSON` no `.env`.
+3. Confira com `git status` que nada de `data/` aparece.
+4. Faça cópias de segurança (`python manage.py backup`) e guarde a pasta
+   `backups/` em outro disco.
 
 ## Como preencher
 
