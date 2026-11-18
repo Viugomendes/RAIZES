@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 
 from access.models import SiteSettings
 from access.passwords import generate_admin_password
@@ -25,7 +25,10 @@ MIN_VIEW_PASSWORD = 8
 
 
 class Command(BaseCommand):
-    help = _("Sets up Raízes: language, family name, view password and the owner's account.")
+    # Translated when argparse reads it (a lazy text crashes `--help`).
+    @property
+    def help(self):
+        return _("Sets up Raízes: language, family name, view password and the owner's account.")
 
     def add_arguments(self, parser):
         parser.add_argument("--family-name", help=_("Name of the family."))

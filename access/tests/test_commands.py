@@ -665,3 +665,44 @@ class DemoPasswordTests(TestCase):
         self.assertGreaterEqual(len(password), 12)
         self.assertNotIn(password, second)
         self.assertNotIn("demo-raizes", first)
+
+
+class HelpTests(SimpleTestCase):
+    """`manage.py <command> --help` prints the translated help and exits cleanly."""
+
+    # A text of each command's own help, in Portuguese.
+    COMMANDS = {
+        "servir": "Serve o site e o painel",
+        "instalar": "Instala o Raízes",
+        "restaurar": "Restaura uma cópia",
+        "backup": "Salva a pasta de dados",
+        "export_site": "--output",
+        "load_demo": "load_demo",
+        "compile_translations": "compile_translations",
+    }
+
+    def test_every_command_prints_its_help(self):
+        from contextlib import redirect_stdout
+
+        from django.utils import translation
+
+        for name, expected in self.COMMANDS.items():
+            with self.subTest(command=name), translation.override("pt-br"):
+                out = io.StringIO()
+                with redirect_stdout(out), self.assertRaises(SystemExit) as stop:
+                    call_command(name, "--help")
+
+                self.assertEqual(stop.exception.code, 0)
+                self.assertIn(expected, out.getvalue())
+
+    def test_option_help_is_translated(self):
+        from contextlib import redirect_stdout
+
+        from django.utils import translation
+
+        with translation.override("es"):
+            out = io.StringIO()
+            with redirect_stdout(out), self.assertRaises(SystemExit):
+                call_command("servir", "--help")
+
+        self.assertIn("Puerto (por defecto 8000).", out.getvalue())

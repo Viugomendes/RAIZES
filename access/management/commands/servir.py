@@ -7,7 +7,7 @@ import socket
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 
 
 def network_ip():
@@ -39,7 +39,10 @@ def waitress_options():
 
 
 class Command(BaseCommand):
-    help = _("Serves the site and the panel to the devices of the home network.")
+    # Translated when argparse reads it (a lazy text crashes `--help`).
+    @property
+    def help(self):
+        return _("Serves the site and the panel to the devices of the home network.")
 
     def add_arguments(self, parser):
         parser.add_argument("--port", type=int, default=8000, help=_("Port (default 8000)."))

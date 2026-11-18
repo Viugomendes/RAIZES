@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 
 from access.management.commands.backup import JOURNAL_SUFFIXES, make_backup
 from config.env import owner_only
@@ -18,7 +18,10 @@ FOLDERS = {"data": "raizes.sqlite3", "demo": "demo.sqlite3"}
 
 
 class Command(BaseCommand):
-    help = _("Restores a backup made by the backup command.")
+    # Translated when argparse reads it (a lazy text crashes `--help`).
+    @property
+    def help(self):
+        return _("Restores a backup made by the backup command.")
 
     def add_arguments(self, parser):
         parser.add_argument("archive", help=_("The backup .zip file."))

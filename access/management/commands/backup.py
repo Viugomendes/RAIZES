@@ -7,7 +7,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 
 from config.env import owner_only
 
@@ -70,7 +70,10 @@ def make_backup(name: str, data: Path, database: Path) -> Path:
 
 
 class Command(BaseCommand):
-    help = _("Saves the data folder and .env into backups/raizes-YYYY-MM-DD-HHMMSS.zip.")
+    # Translated when argparse reads it (a lazy text crashes `--help`).
+    @property
+    def help(self):
+        return _("Saves the data folder and .env into backups/raizes-YYYY-MM-DD-HHMMSS.zip.")
 
     def handle(self, *args, **options):
         archive = make_backup("raizes", settings.DATA_DIR, Path(settings.DATABASE_FILE))
