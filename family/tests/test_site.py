@@ -129,6 +129,21 @@ class HeaderTests(TestCase):
         ):
             self.assertIn(label, button)
 
+    def test_search_on_a_phone_is_a_sheet_at_the_top_above_the_keyboard(self):
+        from pathlib import Path
+
+        static = Path(__file__).resolve().parents[2] / "static"
+        css = (static / "css" / "site.css").read_text(encoding="utf-8")
+        phone = css[css.index("@media (max-width: 45rem)"):]
+        self.assertRegex(phone, r"\.quick-search \{[^}]*top: var\(--quick-top, 0px\);[^}]*height: var\(--quick-height, 100dvh\)")
+        self.assertIn("env(safe-area-inset-top)", phone)
+        self.assertRegex(phone, r"html\.search-open \.site-nav \{\s*display: none;")
+        self.assertNotIn("column-reverse", phone)
+        js = (static / "js" / "header.js").read_text(encoding="utf-8")
+        self.assertIn("visualViewport", js)
+        self.assertIn('setProperty("--quick-height"', js)
+        self.assertIn('classList.add("search-open")', js)
+
     def test_search_in_place_is_a_combobox_that_loads_the_data_only_when_opened(self):
         html = self.html("/pt-br/tree/")
         panel = re.search(r'<div class="quick-search".*?</p>\s*</div>', html, re.DOTALL).group(0)

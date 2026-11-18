@@ -691,18 +691,26 @@ html[data-theme="dark"] .theme-label-dark {
     padding-bottom: calc(57px + env(safe-area-inset-bottom));
   }
 
-  /* The search opens just above the bar of icons, the names above it. */
+  /* The search is a sheet at the top: the field first, the names right under
+     it, the rest of the page dimmed. The keyboard then covers only the lower
+     part; header.js sets --quick-top and --quick-height from the visual
+     viewport (what is left above the keyboard). */
   .quick-search {
-    top: auto;
-    bottom: calc(57px + env(safe-area-inset-bottom));
+    top: var(--quick-top, 0px);
+    bottom: auto;
+    height: var(--quick-height, 100dvh);
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
+    overflow: hidden;
+    background: rgba(20, 16, 10, 0.55);
   }
 
   .quick-search-bar {
-    padding: 0 0.35rem 0 0.9rem;
-    border-top: 1px solid var(--bar-line);
-    border-bottom: 0;
+    flex: none;
+    height: calc(48px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 0.35rem 0 0.9rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--bar-line);
   }
 
   .quick-search-mark {
@@ -710,9 +718,20 @@ html[data-theme="dark"] .theme-label-dark {
   }
 
   .quick-results {
+    flex: 0 1 auto;
     width: calc(100% - 1rem);
-    max-height: calc(100vh - 10rem);
-    margin: 0 auto 0.4rem;
+    min-height: 0;
+    max-height: none;
+    margin: 0.4rem auto 0.5rem;
+  }
+
+  .quick-search-field:focus-within {
+    outline-offset: 0;
+  }
+
+  /* The bar of icons steps aside while the sheet is open. */
+  html.search-open .site-nav {
+    display: none;
   }
 }
 

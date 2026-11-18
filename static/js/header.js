@@ -316,9 +316,30 @@
       input.setAttribute("aria-expanded", "true");
     }
 
+    // On a phone the sheet ends where the keyboard begins: its top and height
+    // follow the visual viewport (custom properties, read by the CSS).
+    var viewport = win.visualViewport;
+    function fit() {
+      if (!viewport) {
+        return;
+      }
+      panel.style.setProperty("--quick-top", viewport.offsetTop + "px");
+      panel.style.setProperty("--quick-height", viewport.height + "px");
+    }
+    function unfit() {
+      panel.style.removeProperty("--quick-top");
+      panel.style.removeProperty("--quick-height");
+    }
+    if (viewport) {
+      viewport.addEventListener("resize", function () { if (isOpen()) { fit(); } });
+      viewport.addEventListener("scroll", function () { if (isOpen()) { fit(); } });
+    }
+
     function open(from) {
       opener = from;
       panel.hidden = false;
+      doc.documentElement.classList.add("search-open");
+      fit();
       input.focus();
       if (input.value) {
         input.select();
@@ -334,6 +355,8 @@
         return;
       }
       panel.hidden = true;
+      doc.documentElement.classList.remove("search-open");
+      unfit();
       results.hidden = true;
       input.setAttribute("aria-expanded", "false");
       setActive(-1);
@@ -407,7 +430,8 @@
     });
     // A click outside closes it, without taking the focus anywhere.
     doc.addEventListener("pointerdown", function (event) {
-      if (isOpen() && !panel.contains(event.target) && !event.target.closest(".nav-search")) {
+      // (On a phone the dimmed part is the panel itself: tapping it closes.)
+      if (isOpen() && (event.target === panel || (!panel.contains(event.target) && !event.target.closest(".nav-search")))) {
         close(false);
       }
     });
