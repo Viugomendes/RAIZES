@@ -1275,4 +1275,7 @@ msgid "Loading the family…"
 msgstr "Carregando a família…"
 
 msgid "The search could not open. Try the full search."
-msgstr "A busca não abriu. Tente a busca completa."
+msgstr "Não foi possível abrir a busca. Tente a busca completa."
+
+msgid "Change theme"
+msgstr "Mudar o tema"

@@ -30,6 +30,7 @@
   /* The header bars: the page colour, a little transparent. */
   --bar: rgba(250, 247, 241, 0.75);
   --bar-line: rgba(42, 38, 34, 0.08);
+  --nav-icon: #6a625a;
   /* The tree drawing. */
   --tree-bg: #ffffff;
   --tree-band: #f7f3eb;
@@ -74,6 +75,7 @@
     --flag-edge: rgba(255, 255, 255, 0.28);
     --bar: rgba(29, 25, 22, 0.78);
     --bar-line: rgba(240, 232, 220, 0.1);
+    --nav-icon: #ddd3c5;
     --tree-bg: #1a1714;
     --tree-band: #221e1a;
     --tree-line: #8d8377;
@@ -111,6 +113,7 @@
   --flag-edge: rgba(255, 255, 255, 0.28);
   --bar: rgba(29, 25, 22, 0.78);
   --bar-line: rgba(240, 232, 220, 0.1);
+  --nav-icon: #ddd3c5;
   --tree-bg: #1a1714;
   --tree-band: #221e1a;
   --tree-line: #8d8377;
@@ -440,7 +443,8 @@ html[data-theme="dark"] .theme-label-dark {
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
-  height: 36px;
+  /* 44px: easy to tap again to move the cursor. */
+  height: 44px;
   padding: 0 0.8rem;
   border: 1.5px solid var(--accent);
   border-radius: 999px;
@@ -492,7 +496,7 @@ html[data-theme="dark"] .theme-label-dark {
   background: var(--hover);
 }
 
-#quick-search-list {
+.quick-results {
   width: min(32rem, calc(100% - 1.5rem));
   max-height: min(28rem, calc(100vh - 7rem));
   margin: 0.4rem auto 0;
@@ -502,11 +506,17 @@ html[data-theme="dark"] .theme-label-dark {
   border-radius: 12px;
   background: var(--surface);
   box-shadow: 0 10px 30px var(--shadow);
-  list-style: none;
 }
 
-#quick-search-list[hidden] {
+.quick-results[hidden],
+.quick-empty[hidden] {
   display: none;
+}
+
+#quick-search-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .quick-result,
@@ -592,6 +602,11 @@ html[data-theme="dark"] .theme-label-dark {
 /* ---------- Header on a phone ---------- */
 
 @media (max-width: 45rem) {
+  /* Nothing that gets the focus (or an anchor) ends up under the bars. */
+  html {
+    scroll-padding-bottom: calc(57px + env(safe-area-inset-bottom));
+  }
+
   .site-header {
     height: 46px;
     padding: 0 0.35rem 0 0.9rem;
@@ -641,13 +656,13 @@ html[data-theme="dark"] .theme-label-dark {
     height: 56px;
     margin: 0;
     border-radius: 0;
-    color: var(--ink-soft);
+    color: var(--nav-icon);
   }
 
   .site-nav a .icon,
   .site-nav .nav-search .icon {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
 
   .site-nav a[aria-current] {
@@ -694,7 +709,7 @@ html[data-theme="dark"] .theme-label-dark {
     display: none;
   }
 
-  #quick-search-list {
+  .quick-results {
     width: calc(100% - 1rem);
     max-height: calc(100vh - 10rem);
     margin: 0 auto 0.4rem;
@@ -2049,4 +2064,61 @@ body.map-is-full {
 :root[data-theme="dark"] .leaflet-popup-tip {
   background: var(--surface);
   color: var(--ink);
+}
+
+/* ---------- Phones: every control at least 44px to touch ---------- */
+/* (Links inside sentences keep the size of the text.) */
+
+@media (max-width: 45rem) {
+  .tree-toolbar button,
+  .map-full-button,
+  .leave-button,
+  .lightbox-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .tree-toolbar button {
+    height: auto;
+  }
+
+  .brand {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .skip-link,
+  .filters input[type="search"],
+  .filters input[type="text"],
+  .filters input[type="number"],
+  .filters select,
+  .form-actions button,
+  .filters .checks label {
+    min-height: 44px;
+  }
+
+  /* After leaflet.css on the page: one class more to win. */
+  .map.leaflet-touch .leaflet-bar a {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+  }
+
+  .view-tabs a,
+  .person-actions a,
+  .recipe-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .legend summary {
+    padding: 0.55rem 0;
+  }
+}
+
+/* The theme button of the password page, beside the two languages. */
+.enter-languages .theme-toggle {
+  border: 1px solid var(--line);
+  background: var(--surface);
 }

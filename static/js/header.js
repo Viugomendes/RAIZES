@@ -71,8 +71,17 @@
   }
 
   // The bar hides while scrolling down and comes back on the way up; never
-  // while the search is open, while something in it has the focus, or for
-  // people who asked for less motion.
+  // while the search is open, while the keyboard is on one of its links, or
+  // for people who asked for less motion. (A mouse click on the theme button
+  // also leaves the focus there; that alone does not keep the bar.)
+  function keyboardFocusIn(element) {
+    try {
+      return Boolean(element.querySelector(":focus-visible"));
+    } catch (error) {
+      return element.contains(element.ownerDocument.activeElement);
+    }
+  }
+
   function stepAside(win, reduced, search) {
     var doc = win.document;
     var header = doc.getElementById("site-header");
@@ -86,7 +95,7 @@
     function update() {
       waiting = false;
       var y = Math.max(0, win.scrollY);
-      if (reduced.matches || search.isOpen() || header.contains(doc.activeElement)) {
+      if (reduced.matches || search.isOpen() || keyboardFocusIn(header)) {
         show();
         lastY = y;
         return;
@@ -114,6 +123,8 @@
     var panel = doc.getElementById("quick-search");
     var input = doc.getElementById("quick-search-input");
     var list = doc.getElementById("quick-search-list");
+    var results = panel.querySelector(".quick-results");
+    var empty = panel.querySelector(".quick-empty");
     var status = doc.getElementById("quick-search-status");
     var closeButton = panel.querySelector(".quick-search-close");
     var strings = JSON.parse(doc.getElementById("header-strings").textContent);
@@ -136,6 +147,7 @@
         return;
       }
       loading = true;
+      failed = false;
       var have = { RAIZES_DATA: win.RAIZES_DATA, Raizes: win.Raizes, RaizesSearch: win.RaizesSearch };
       var template = doc.getElementById("quick-search-scripts");
       var sources = Array.prototype.filter.call(template.content.querySelectorAll("script"), function (script) {
@@ -170,6 +182,8 @@
           }
         };
         script.onerror = function () {
+          // Tried again at the next opening (what did load is not fetched twice).
+          script.parentNode.removeChild(script);
           loading = false;
           failed = true;
           done();
@@ -221,14 +235,18 @@
       list.textContent = "";
       options = [];
       setActive(-1);
+      // Messages ("loading", "nobody") go above the list, never inside the
+      // listbox; the live region says them too.
+      var message = "";
       if (!text.trim()) {
-        list.hidden = true;
+        results.hidden = true;
         input.setAttribute("aria-expanded", "false");
         status.textContent = "";
         return;
       }
       if (!index) {
-        status.textContent = failed ? strings.failed : strings.loading;
+        message = failed ? strings.failed : strings.loading;
+        status.textContent = message;
       }
       if (index) {
         var root = win.Raizes.siteRoot(doc);
@@ -260,31 +278,28 @@
           ? win.Raizes.format(win.Raizes.plural(strings.results, found.total), { count: found.total })
           : strings.noResults;
         if (!found.total) {
-          var empty = doc.createElement("li");
-          empty.setAttribute("role", "none");
-          empty.className = "quick-empty";
-          empty.textContent = strings.noResults;
-          list.appendChild(empty);
+          message = strings.noResults;
         }
       }
+      empty.textContent = message;
+      empty.hidden = !message;
       var all = option("quick-search-option-all", seeAllUrl(searchHref, text), "quick-all");
       all.textContent = strings.seeAll;
-      list.hidden = false;
+      results.hidden = false;
       input.setAttribute("aria-expanded", "true");
     }
 
     function open(from) {
       opener = from;
       panel.hidden = false;
-      doc.documentElement.classList.add("quick-search-open");
       input.focus();
       if (input.value) {
         input.select();
       }
-      render();
-      if (!index && !failed) {
-        load(render);
+      if (!index) {
+        load(render); // also after a failure: one more try at each opening
       }
+      render();
     }
 
     function close(returnFocus) {
@@ -292,8 +307,7 @@
         return;
       }
       panel.hidden = true;
-      doc.documentElement.classList.remove("quick-search-open");
-      list.hidden = true;
+      results.hidden = true;
       input.setAttribute("aria-expanded", "false");
       setActive(-1);
       if (returnFocus && opener) {
@@ -355,6 +369,14 @@
     });
     closeButton.addEventListener("click", function () {
       close(true);
+    });
+    // The focus leaving it (Tab, Shift+Tab) closes it too: nothing else is
+    // covered by it while the keyboard is elsewhere. Switching to another
+    // window (no new focus inside the page) leaves it open.
+    panel.addEventListener("focusout", function (event) {
+      if (event.relatedTarget && !panel.contains(event.relatedTarget)) {
+        close(false);
+      }
     });
     // A click outside closes it, without taking the focus anywhere.
     doc.addEventListener("pointerdown", function (event) {

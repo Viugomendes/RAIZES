@@ -1255,7 +1255,7 @@ msgid "Change theme (now: dark)"
 msgstr "Cambiar el tema (ahora: oscuro)"
 
 msgid "Search for someone by name"
-msgstr "Buscar a alguien por el nombre"
+msgstr "Buscar a alguien por nombre"
 
 msgid "Name or nickname"
 msgstr "Nombre o apodo"
@@ -1267,7 +1267,7 @@ msgid "People found"
 msgstr "Personas encontradas"
 
 msgid "Nobody with this name. Try the full search."
-msgstr "Nadie con este nombre. Prueba la búsqueda completa."
+msgstr "Nadie con ese nombre. Prueba la búsqueda completa."
 
 msgid "See all results and the advanced search"
 msgstr "Ver todos los resultados y la búsqueda avanzada"
@@ -1276,4 +1276,7 @@ msgid "Loading the family…"
 msgstr "Cargando la familia…"
 
 msgid "The search could not open. Try the full search."
-msgstr "La búsqueda no pudo abrirse. Prueba la búsqueda completa."
+msgstr "No se pudo abrir la búsqueda. Prueba la búsqueda completa."
+
+msgid "Change theme"
+msgstr "Cambiar el tema"

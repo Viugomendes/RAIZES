@@ -120,6 +120,7 @@ class HeaderTests(TestCase):
     def test_theme_button_says_the_current_theme(self):
         html = self.html("/pt-br/")
         button = re.search(r'<button type="button" class="theme-toggle[^"]*".*?</button>', html, re.DOTALL).group(0)
+        self.assertIn('title="Mudar o tema"', button)
 
         for label in (
             "Mudar o tema (agora: automático)",
@@ -135,6 +136,8 @@ class HeaderTests(TestCase):
         self.assertIn("hidden", panel.split(">")[0])
         self.assertRegex(panel, r'<input[^>]*role="combobox"[^>]*aria-expanded="false"[^>]*aria-controls="quick-search-list"')
         self.assertIn('<ul id="quick-search-list" role="listbox"', panel)
+        # Messages ("nobody with this name") are outside the listbox, which holds only options.
+        self.assertRegex(panel, r'<div class="quick-results" hidden>\s*<p class="quick-empty" hidden></p>\s*<ul id="quick-search-list" role="listbox"[^>]*></ul>')
         self.assertIn('aria-live="polite"', panel)
         # The data comes later, from the browser, and is not loaded with the page.
         self.assertNotIn('src="/data/family.js"', without_lazy_scripts(html))
@@ -149,5 +152,8 @@ class HeaderTests(TestCase):
         from django.test import RequestFactory
 
         html = render_to_string("access/enter.html", {"enter_languages": []}, request=RequestFactory().get("/entrar/"))
+        # The same theme button as the site, so the choice can be made there too.
+        self.assertIn('<button type="button" class="theme-toggle header-button" title="Mudar o tema">', html)
+        self.assertIn("Mudar o tema (agora: escuro)", html)
 
         self.assertIn('<script src="/static/js/theme.js"></script>', html.split("</head>")[0])
