@@ -87,9 +87,6 @@ class ViewerDeviceAdmin(admin.ModelAdmin):
     ordering = ("-last_seen",)
     list_per_page = 50
 
-    class Media:
-        css = {"all": ("access/panel.css",)}
-
     def get_queryset(self, request):
         # The current password number comes in the same query, not one per row.
         current = SiteSettings.objects.filter(pk=1).values("password_version")[:1]

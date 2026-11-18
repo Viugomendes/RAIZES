@@ -1,5 +1,6 @@
 """The view password: nobody sees the family site without it."""
 import datetime
+import re
 import tempfile
 import time
 from pathlib import Path
@@ -418,8 +419,29 @@ class GateTests(TestCase):
         self.assertContains(response, 'lang="es"')
         self.assertContains(response, 'href="/entrar/?lang=pt-br&amp;next=%2Fes%2Ftree%2F"')
         self.assertContains(response, 'href="/entrar/?lang=es&amp;next=%2Fes%2Ftree%2F"')
-        self.assertNotContains(response, "<script")
+        # Only scripts from a file: the Content-Security-Policy refuses inline code.
+        scripts = re.findall(r"<script[^>]*>", response.content.decode())
+        self.assertEqual(scripts, ['<script src="/static/js/reveal.js" defer>'])
         self.assertNotContains(response, " onclick=")
+
+    def test_password_page_has_a_show_password_button(self):
+        for language, words in (("pt-br", "Mostrar senha"), ("es", "Mostrar contraseña")):
+            with self.subTest(language=language):
+                response = self.client.get(f"/entrar/?lang={language}")
+                # Hidden until the script runs: without JavaScript the form is unchanged.
+                self.assertContains(
+                    response,
+                    '<button type="button" class="reveal-password" data-reveal '
+                    'aria-controls="enter-password" aria-pressed="false" hidden>',
+                )
+                self.assertContains(response, words)
+
+    def test_already_connected_link_looks_like_a_button(self):
+        self.enter()
+
+        response = self.client.get("/entrar/?next=/pt-br/tree/")
+
+        self.assertContains(response, '<a class="enter-already" href="/pt-br/tree/">')
 
     def test_flag_on_the_password_page_changes_and_keeps_the_language(self):
         response = self.client.get("/entrar/?lang=es", HTTP_ACCEPT_LANGUAGE="pt-br")

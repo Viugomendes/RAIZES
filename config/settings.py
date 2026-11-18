@@ -142,6 +142,8 @@ if not RAIZES_VIEW_GATE and RAIZES_PUBLIC_URL:
 # Django
 # ---------------------------------------------------------------------------
 INSTALLED_APPS = [
+    # Before the admin: its templates/admin/base_site.html styles every panel page.
+    "access",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -150,7 +152,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_distill",
     "family",
-    "access",
 ]
 
 MIDDLEWARE = [

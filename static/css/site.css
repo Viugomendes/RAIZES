@@ -6,6 +6,8 @@
   --ink: #2a2622;
   --ink-soft: #6a625a;
   --line: #e3dcd0;
+  /* Borders that must be seen (form fields): 3.8:1 on white. */
+  --line-strong: #8a8174;
   --accent: #3f5a36;
   --accent-soft: #e9efe3;
   --warning-bg: #fff4d6;
@@ -1369,23 +1371,38 @@ body.map-is-full {
   color: var(--ink-soft);
 }
 
-.enter-error,
-.enter-already {
+.enter-error {
   margin: 0 0 1rem;
   padding: 0.8rem 1rem;
   border-radius: var(--radius);
   text-align: left;
-}
 
-.enter-error {
   border-left: 5px solid #a33a2a;
   background: #fbe9e5;
   color: #7a2416;
   font-weight: 600;
 }
 
+/* "Already connected": a button that opens the site, not a line of text. */
 .enter-already {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.4rem;
+  margin: 0 0 1.25rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
   background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.enter-already:hover {
+  background: #dce6d3;
+  text-decoration: underline;
 }
 
 .enter-form {
@@ -1412,7 +1429,7 @@ body.map-is-full {
   min-height: 3.2rem;
   margin-top: 0.35rem;
   padding: 0.5rem 0.8rem;
-  border: 2px solid var(--line);
+  border: 2px solid var(--line-strong);
   border-radius: var(--radius);
   background: #fff;
   color: var(--ink);
@@ -1429,6 +1446,36 @@ body.map-is-full {
 
 .enter-form #enter-password {
   margin-bottom: 1.4rem;
+}
+
+/* "Show password": under the field, quieter than the main button. */
+.enter-form .reveal-password {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  margin: -0.8rem 0 1.4rem;
+  padding: 0.3rem 0.9rem 0.3rem 0.7rem;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.enter-form .reveal-password:hover {
+  border-color: var(--ink);
+  background: var(--paper);
+}
+
+.enter-form .reveal-password[hidden] {
+  display: none;
+}
+
+.reveal-password[aria-pressed="false"] .reveal-slash {
+  display: none;
 }
 
 .enter-help {

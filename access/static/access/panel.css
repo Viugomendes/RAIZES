@@ -18,3 +18,165 @@
 .raizes-on::before { background: #1f9d55; box-shadow: 0 0 0 3px rgba(31, 157, 85, 0.25); }
 .raizes-off::before { background: transparent; border: 2px solid #b3261e; box-sizing: border-box; }
 #result_list td, #result_list th { font-size: 1rem; padding-top: 0.7rem; padding-bottom: 0.7rem; }
+
+/* ---------- Every panel page (loaded by admin/base_site.html) ---------- */
+
+/* Header: white title and readable links (the yellow on teal was 3.3:1; white is 5:1). */
+#site-name a:link,
+#site-name a:visited {
+  color: #fff;
+  font-weight: 400;
+}
+#user-tools,
+#logout-form button {
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+#user-tools a,
+#logout-form button {
+  border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+/* "Show password" on the panel login (static/js/reveal.js). */
+.reveal-password {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  margin-top: 0.6rem;
+  padding: 0.3rem 0.9rem 0.3rem 0.7rem;
+  border: 1px solid var(--body-quiet-color, #666);
+  border-radius: 4px;
+  background: var(--body-bg, #fff);
+  color: var(--body-fg, #333);
+  font: inherit;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+.reveal-password[hidden] {
+  display: none;
+}
+.reveal-password[aria-pressed="false"] .reveal-slash {
+  display: none;
+}
+
+/* Phones: every link, button and field at least 44px tall, text at least 14px. */
+@media (max-width: 767px) {
+  #user-tools {
+    line-height: 1.4;
+  }
+  #user-tools a,
+  #logout-form button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    border-bottom: 0;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .theme-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .breadcrumbs a {
+    display: inline-block;
+    padding: 0.75rem 0;
+  }
+
+  /* Home of the panel: the model names and the add / change / view links. */
+  .module caption a,
+  .module th a,
+  .module td a,
+  .historylink,
+  .addlink,
+  .changelink,
+  .viewlink,
+  .password-reset-link a,
+  #changelist-filter a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .addlink,
+  .changelink,
+  .viewlink {
+    white-space: nowrap;
+    background-position: 0 50%;
+  }
+
+  /* Edit, add, remove and view icons next to a choice ("Lugar de nascimento"). */
+  .related-widget-wrapper {
+    gap: 0.25rem;
+  }
+  .related-widget-wrapper-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* #container: stronger than Django's ".form-row input" (2.25rem) of responsive.css. */
+  #container input[type="text"],
+  #container input[type="email"],
+  #container input[type="password"],
+  #container input[type="search"],
+  #container input[type="url"],
+  #container input[type="number"],
+  #container select:not([multiple]),
+  #container .select2-container .select2-selection--single,
+  #container .select2-container .select2-selection--multiple {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+  #container .form-row select:not([multiple]) {
+    height: 44px;
+  }
+  #container input[type="file"] {
+    min-height: 44px;
+  }
+  #changelist-filter summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .select2-container--admin-autocomplete .select2-selection--single .select2-selection__rendered {
+    line-height: 42px;
+  }
+  .select2-container--admin-autocomplete .select2-selection--single .select2-selection__arrow {
+    height: 42px;
+  }
+  input[type="submit"],
+  input[type="button"],
+  .button,
+  .submit-row a.deletelink,
+  .submit-row a.closelink,
+  #changelist .actions button {
+    min-height: 44px;
+    font-size: 0.9375rem;
+  }
+  .login .submit-row input {
+    width: 100%;
+  }
+
+  /* Small texts of Django (help, headings, labels of the login) grow to 14px. */
+  #container .help,
+  #container .help div,
+  #container .fieldset-heading,
+  #container fieldset .description,
+  #container .module caption,
+  #container .module h2,
+  #container .addlink,
+  #container .changelink,
+  #container .viewlink,
+  #container .historylink,
+  #container .action-counter,
+  #container .actions label,
+  #container #changelist-filter li,
+  #container .paginator,
+  .login .form-row label {
+    font-size: 0.875rem;
+  }
+}

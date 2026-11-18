@@ -1,9 +1,11 @@
 {% extends "admin/login.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% comment %}
   The admin's own login page, with the e-mail field and a plain
   "forgot the password" link (the account has no username to forget).
 {% endcomment %}
+
+{% block extrahead %}{{ block.super }}<script src="{% static 'js/reveal.js' %}" defer></script>{% endblock %}
 
 {% block content %}
 {% for error in form.non_field_errors %}
@@ -19,6 +21,7 @@
   <div class="form-row">
     {{ form.password.errors }}
     {{ form.password.label_tag }} {{ form.password }}
+    {% include "access/_reveal.html" with field=form.password.id_for_label %}
     <input type="hidden" name="next" value="{{ next }}">
   </div>
   <div class="password-reset-link">

@@ -1223,3 +1223,6 @@ msgstr "Se não foi você que pediu, ignore este e-mail: a senha continua a mesm
 
 msgid "Raízes panel: new password"
 msgstr "Painel do Raízes: nova senha"
+
+msgid "Show password"
+msgstr "Mostrar senha"

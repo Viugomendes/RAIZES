@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% comment %}
+  Every panel page, the login too: bigger targets on phones and a readable
+  header (access/static/access/panel.css, after Django's responsive.css), and
+  labels for the autocomplete search boxes (access/static/access/panel.js).
+  "access" comes before "django.contrib.admin" in INSTALLED_APPS for this file.
+{% endcomment %}
+{% block responsive %}{{ block.super }}<link rel="stylesheet" href="{% static 'access/panel.css' %}">{% endblock %}
+{% block extrahead %}{{ block.super }}<script src="{% static 'access/panel.js' %}" defer></script>{% endblock %}

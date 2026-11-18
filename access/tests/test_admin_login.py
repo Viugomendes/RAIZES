@@ -163,6 +163,19 @@ class AdminLoginTests(TestCase):
                 self.assertNotIn("dona", message.body)
                 self.assertNotIn("esquecido", message.body)
 
+    def test_panel_pages_load_the_panel_styles_and_scripts(self):
+        # Bigger targets and a readable header on every page, the login too.
+        login = self.client.get("/painel/login/")
+        self.assertContains(login, 'href="/static/access/panel.css"', count=1)
+        self.assertContains(login, '<script src="/static/js/reveal.js" defer></script>')
+        self.assertContains(login, 'data-reveal aria-controls="id_password" aria-pressed="false" hidden')
+        self.client.force_login(self.owner)
+        for url in ("/painel/", "/painel/family/person/add/", "/painel/access/viewerdevice/"):
+            with self.subTest(url=url):
+                page = self.client.get(url)
+                self.assertContains(page, 'href="/static/access/panel.css"', count=1)
+                self.assertContains(page, '<script src="/static/access/panel.js" defer></script>')
+
     def test_login_button_speaks_the_page_language(self):
         for language, button in (("pt-br", "Entrar"), ("es", "Iniciar sesión")):
             with self.subTest(language=language):

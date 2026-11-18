@@ -7,6 +7,7 @@
   <title>{% translate "Family password" %} · {% if family_name %}{{ family_name }} · {% endif %}Raízes</title>
   <link rel="icon" href="{% static 'icons/favicon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <script src="{% static 'js/reveal.js' %}" defer></script>
 </head>
 <body class="enter-page">
   <nav class="enter-languages" aria-label="{% translate 'Language' %}">
@@ -25,7 +26,7 @@
     <p class="enter-lead">{% translate "Type the family password to see the site." %}</p>
 
     {% if already_in %}
-      <p class="enter-already"><a href="{{ next }}">{% translate "This device is already connected. Open the site" %}</a></p>
+      <a class="enter-already" href="{{ next }}">{% translate "This device is already connected. Open the site" %}</a>
     {% endif %}
 
     {% if error %}
@@ -41,6 +42,7 @@
 
       <label for="enter-password">{% translate "Password" %}</label>
       <input id="enter-password" type="password" name="password" required autocomplete="current-password"{% if error %} aria-invalid="true"{% endif %} autofocus>
+      {% include "access/_reveal.html" with field="enter-password" %}
 
       <button type="submit">{% translate "Open the site" %}</button>
     </form>

@@ -1,0 +1,5 @@
+{% load i18n %}{% comment %}
+  "Show password" for the field whose id is `field`. Hidden until static/js/reveal.js
+  runs, so without JavaScript the form stays as it was. The label never changes:
+  aria-pressed says whether the password is shown.
+{% endcomment %}<button type="button" class="reveal-password" data-reveal aria-controls="{{ field }}" aria-pressed="false" hidden><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path class="reveal-slash" d="M4 4l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>{% translate "Show password" %}</span></button>
