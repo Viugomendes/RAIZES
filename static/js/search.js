@@ -17,9 +17,10 @@
   var N = Raizes.normalize;
 
 
-  // Everything a person can be found by, computed once.
+  // Everything a person can be found by, computed once. Without kinship.js
+  // (the search in place of the header) there is no distance or generation.
   function buildIndex(data) {
-    var kin = data.central ? new Kinship.FamilyGraph(data).walk(data.central) : null;
+    var kin = data.central && Kinship ? new Kinship.FamilyGraph(data).walk(data.central) : null;
     return data.people.map(function (person) {
       return {
         person: person,
@@ -123,7 +124,7 @@
     var root = Raizes.siteRoot(doc);
     var people = Raizes.byId(data.people);
     var index = buildIndex(data);
-    var kin = data.central ? new Kinship.FamilyGraph(data).walk(data.central) : null;
+    var kin = data.central && Kinship ? new Kinship.FamilyGraph(data).walk(data.central) : null;
 
     // labelsAreHtml: the labels come from Raizes.format, already escaped.
     function options(select, list, labelsAreHtml) {
@@ -215,6 +216,10 @@
       doc.getElementById("search-results").innerHTML = html;
     }
 
+    // "See all results" of the header opens this page with ?text=... (or ?q=...).
+    var query = new URLSearchParams(doc.defaultView ? doc.defaultView.location.search : "");
+    form.elements.text.value = query.get("text") || query.get("q") || "";
+
     form.hidden = false;
     form.addEventListener("input", render);
     form.addEventListener("change", render);
@@ -228,5 +233,5 @@
     render();
   }
 
-  return { buildIndex: buildIndex, filterPeople: filterPeople, filterRecipes: filterRecipes, start: start };
+  return { buildIndex: buildIndex, filterPeople: filterPeople, filterRecipes: filterRecipes, words: words, start: start };
 });
