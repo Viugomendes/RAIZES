@@ -98,3 +98,14 @@ def mural_strings() -> dict:
         "recipeBy": _("Recipe of %(name)s"),
         "nothing": _("Nothing to show yet."),
     }
+
+
+def header_strings() -> dict:
+    """The search in place of the header (static/js/header.js), on every page."""
+    return {
+        "results": _plural("%(count)s person found", "%(count)s people found"),
+        "noResults": _("Nobody with this name. Try the full search."),
+        "seeAll": _("See all results and the advanced search"),
+        "loading": _("Loading the family…"),
+        "failed": _("The search could not open. Try the full search."),
+    }

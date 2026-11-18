@@ -383,13 +383,13 @@ class OtherPagesTests(PersonPageTestCase):
         html = self.client.get("/pt-br/").content.decode()
         nav = re.search(r'<nav class="site-nav".*?</nav>', html, re.DOTALL).group(0)
 
-        self.assertEqual(re.findall(r">([^<]+)</a>", nav), ["Novidades", "Árvore", "Busca"])
+        self.assertEqual(re.findall(r'<span class="nav-label">([^<]+)</span>', nav), ["Novidades", "Árvore", "Busca"])
 
-    def test_language_flags_are_small_pictures_with_the_language_name(self):
+    def test_one_language_flag_named_by_the_language_it_opens(self):
         html = self.client.get("/pt-br/").content.decode()
-        flags = re.findall(r'<a class="flag"[^>]*aria-label="([^"]+)"', html)
+        flags = re.findall(r'<a class="flag[^"]*"[^>]*aria-label="([^"]+)"', html)
 
-        self.assertEqual(flags, ["Português", "Español"])
+        self.assertEqual(flags, ["Cambiar idioma a Español"])
 
 class DemoTextsTests(DemoFamilyTestCase):
     def test_invented_family_has_no_broken_links(self):

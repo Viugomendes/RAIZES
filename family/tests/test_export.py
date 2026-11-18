@@ -135,6 +135,14 @@ class ExportedFilesTests(DemoFamilyTestCase):
         self.assertIn('href="../bento-carvalho-1993/index.html"', html)
         self.assertIn('href="../../../static/css/site.css"', html)
 
+    def test_search_in_place_finds_its_scripts_in_the_exported_site(self):
+        html = self.read("es/people/lia-carvalho-1996/index.html")
+
+        self.assertIn('<script src="../../../data/family.js" data-provides="RAIZES_DATA">', html)
+        self.assertIn('<script src="../../../static/js/search.js" data-provides="RaizesSearch">', html)
+        self.assertIn('class="nav-search" href="../../search/index.html"', html)
+        self.assertIn('data-root="../../../index.html"', html)
+
     def test_links_to_other_sites_are_untouched(self):
         html = self.read("pt-br/people/helena-figueira-1970/index.html")
 

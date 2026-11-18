@@ -421,7 +421,7 @@ class GateTests(TestCase):
         self.assertContains(response, 'href="/entrar/?lang=es&amp;next=%2Fes%2Ftree%2F"')
         # Only scripts from a file: the Content-Security-Policy refuses inline code.
         scripts = re.findall(r"<script[^>]*>", response.content.decode())
-        self.assertEqual(scripts, ['<script src="/static/js/reveal.js" defer>'])
+        self.assertEqual(scripts, ['<script src="/static/js/theme.js">', '<script src="/static/js/reveal.js" defer>'])
         self.assertNotContains(response, " onclick=")
 
     def test_password_page_has_a_show_password_button(self):

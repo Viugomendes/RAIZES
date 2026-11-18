@@ -238,3 +238,55 @@ class SearchTests(JavaScriptTestCase):
 
         self.assertEqual(result, ["bolo-de-fuba-da-dalva"])
         self.assertEqual(empty, [])
+
+
+class QuickSearchTests(JavaScriptTestCase):
+    """The search in place of the header (static/js/header.js)."""
+
+    def quick(self, *texts, search_href="/pt-br/search/"):
+        return self.run_js("quick-search", texts=list(texts), searchHref=search_href)
+
+    def test_names_match_like_the_search_page(self):
+        (lia, accents) = self.quick("LIA carvalho", "sônia")
+
+        self.assertEqual(lia["people"], ["lia-carvalho-1996"])
+        self.assertEqual(lia["total"], 1)
+        self.assertEqual(accents["people"], ["sonia-cerejeira-1966"])
+
+    def test_names_that_start_with_the_text_come_first(self):
+        (lia,) = self.quick("lia")
+
+        self.assertEqual(lia["people"][0], "lia-carvalho-1996")
+        self.assertIn("amelia-castanheira-1941", lia["people"][1:])
+
+    def test_at_most_eight_people_but_the_count_of_all(self):
+        (many,) = self.quick("a")
+
+        self.assertEqual(len(many["people"]), 8)
+        self.assertGreater(many["total"], 8)
+
+    def test_nothing_typed_shows_nobody(self):
+        (empty,) = self.quick("   ")
+
+        self.assertEqual((empty["people"], empty["total"]), ([], 0))
+
+    def test_nickname_in_quotes_or_else_the_years(self):
+        (joaquim, lia) = self.quick("quinzinho", "lia carvalho")
+        person = next(p for p in self.data["people"] if p["id"] == "lia-carvalho-1996")
+
+        self.assertEqual(joaquim["details"], ["“Quinzinho”"])
+        self.assertEqual(lia["details"], [f"“{person['nickname']}”" if person["nickname"] else person["years"]])
+
+    def test_see_all_opens_the_search_page_with_the_text(self):
+        (typed,) = self.quick(" lia & bento ")
+        (exported,) = self.quick("lia", search_href="../search/index.html?x=1#top")
+
+        self.assertEqual(typed["seeAll"], "/pt-br/search/?text=lia%20%26%20bento")
+        self.assertEqual(exported["seeAll"], "../search/index.html?text=lia")
+
+
+class ThemeTests(JavaScriptTestCase):
+    def test_same_cycle_as_the_panel(self):
+        steps = [["auto", False], ["dark", False], ["light", False], ["auto", True], ["light", True], ["dark", True], ["nonsense", False]]
+
+        self.assertEqual(self.run_js("theme", steps=steps), ["dark", "light", "auto", "light", "dark", "auto", "auto"])

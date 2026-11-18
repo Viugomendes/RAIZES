@@ -2,9 +2,10 @@
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
   <title>{% translate "Family password" %} · {% if family_name %}{{ family_name }} · {% endif %}Raízes</title>
+  <script src="{% static 'js/theme.js' %}"></script>
   <link rel="icon" href="{% static 'icons/favicon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
   <script src="{% static 'js/reveal.js' %}" defer></script>

@@ -19,6 +19,7 @@ from family.tree_skin import (
 
 from .test_demo import DemoFamilyTestCase
 from .test_models import make_person, make_union
+from .test_site import without_lazy_scripts
 
 
 def lightness(colour: str) -> float:
@@ -196,7 +197,7 @@ class TreePageTests(DemoFamilyTestCase):
 
     def test_no_see_from_any_more(self):
         self.assertNotIn('id="tree-from"', self.html)
-        self.assertNotIn("data/family.js", self.html)
+        self.assertNotIn("data/family.js", without_lazy_scripts(self.html))
 
     def test_legend_explains_the_whole_code(self):
         legend = re.search(r'<details class="legend".*?</details>', self.html, re.DOTALL).group(0)

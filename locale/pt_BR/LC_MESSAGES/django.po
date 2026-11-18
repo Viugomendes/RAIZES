@@ -1238,3 +1238,41 @@ msgstr "número da senha"
 
 msgid "device code"
 msgstr "código do aparelho"
+
+# --- Cabeçalho novo, tema claro e escuro (2026-11-18) ---
+
+msgid "Change language to %(language)s"
+msgstr "Mudar idioma para %(language)s"
+
+msgid "Change theme (now: automatic)"
+msgstr "Mudar o tema (agora: automático)"
+
+msgid "Change theme (now: light)"
+msgstr "Mudar o tema (agora: claro)"
+
+msgid "Change theme (now: dark)"
+msgstr "Mudar o tema (agora: escuro)"
+
+msgid "Search for someone by name"
+msgstr "Buscar alguém pelo nome"
+
+msgid "Name or nickname"
+msgstr "Nome ou apelido"
+
+msgid "Close"
+msgstr "Fechar"
+
+msgid "People found"
+msgstr "Pessoas encontradas"
+
+msgid "Nobody with this name. Try the full search."
+msgstr "Ninguém com esse nome. Tente a busca completa."
+
+msgid "See all results and the advanced search"
+msgstr "Ver todos os resultados e a busca avançada"
+
+msgid "Loading the family…"
+msgstr "Carregando a família…"
+
+msgid "The search could not open. Try the full search."
+msgstr "A busca não abriu. Tente a busca completa."

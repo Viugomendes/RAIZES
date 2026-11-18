@@ -12,9 +12,111 @@
   --accent-soft: #e9efe3;
   --warning-bg: #fff4d6;
   --warning-ink: #6b4a00;
+  --error-bg: #fbe9e5;
+  --error-ink: #7a2416;
+  --error-line: #a33a2a;
+  --broken-bg: #fde2e1;
+  --broken-ink: #8a1c14;
+  --on-accent: #ffffff;
+  --accent-hover: #344b2d;
+  --accent-soft-hover: #dce6d3;
+  --field: #ffffff;
+  --focus: #1b6fd1;
+  --hover: rgba(42, 38, 34, 0.06);
+  --shadow: rgba(50, 40, 20, 0.18);
+  --hint-bg: rgba(42, 38, 34, 0.86);
+  --hint-ink: #ffffff;
+  --flag-edge: rgba(0, 0, 0, 0.12);
+  /* The header bars: the page colour, a little transparent. */
+  --bar: rgba(250, 247, 241, 0.75);
+  --bar-line: rgba(42, 38, 34, 0.08);
+  /* The tree drawing. */
+  --tree-bg: #ffffff;
+  --tree-band: #f7f3eb;
+  --tree-line: #8f867c;
+  --tree-union: #4d463f;
+  --swatch: #3a3531;
   --radius: 10px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+
+/* Dark theme: warm brown-grey, cream text, a lighter green. Chosen by the
+   device ("auto") or by the theme button (data-theme on <html>, theme.js).
+   The two blocks hold the same values. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1d1916;
+    --surface: #27221e;
+    --ink: #f0e8dc;
+    --ink-soft: #bcb0a1;
+    --line: #3d3630;
+    --line-strong: #8d8174;
+    --accent: #a6c993;
+    --accent-soft: #2f3a29;
+    --warning-bg: #3a2f1a;
+    --warning-ink: #f1d48a;
+    --error-bg: #3d211b;
+    --error-ink: #f6c3b7;
+    --error-line: #e47b67;
+    --broken-bg: #3d211b;
+    --broken-ink: #f6c3b7;
+    --on-accent: #17210f;
+    --accent-hover: #bcdcaa;
+    --accent-soft-hover: #3a4733;
+    --field: #1a1613;
+    --focus: #8cb9ff;
+    --hover: rgba(240, 232, 220, 0.08);
+    --shadow: rgba(0, 0, 0, 0.5);
+    --hint-bg: rgba(12, 10, 8, 0.9);
+    --hint-ink: #f0e8dc;
+    --flag-edge: rgba(255, 255, 255, 0.28);
+    --bar: rgba(29, 25, 22, 0.78);
+    --bar-line: rgba(240, 232, 220, 0.1);
+    --tree-bg: #1a1714;
+    --tree-band: #221e1a;
+    --tree-line: #8d8377;
+    --tree-union: #d3c8b9;
+    --swatch: #d3c8b9;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #1d1916;
+  --surface: #27221e;
+  --ink: #f0e8dc;
+  --ink-soft: #bcb0a1;
+  --line: #3d3630;
+  --line-strong: #8d8174;
+  --accent: #a6c993;
+  --accent-soft: #2f3a29;
+  --warning-bg: #3a2f1a;
+  --warning-ink: #f1d48a;
+  --error-bg: #3d211b;
+  --error-ink: #f6c3b7;
+  --error-line: #e47b67;
+  --broken-bg: #3d211b;
+  --broken-ink: #f6c3b7;
+  --on-accent: #17210f;
+  --accent-hover: #bcdcaa;
+  --accent-soft-hover: #3a4733;
+  --field: #1a1613;
+  --focus: #8cb9ff;
+  --hover: rgba(240, 232, 220, 0.08);
+  --shadow: rgba(0, 0, 0, 0.5);
+  --hint-bg: rgba(12, 10, 8, 0.9);
+  --hint-ink: #f0e8dc;
+  --flag-edge: rgba(255, 255, 255, 0.28);
+  --bar: rgba(29, 25, 22, 0.78);
+  --bar-line: rgba(240, 232, 220, 0.1);
+  --tree-bg: #1a1714;
+  --tree-band: #221e1a;
+  --tree-line: #8d8377;
+  --tree-union: #d3c8b9;
+  --swatch: #d3c8b9;
+  color-scheme: dark;
 }
 
 *,
@@ -49,7 +151,7 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 3px solid #1b6fd1;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -87,93 +189,395 @@ h3 {
 }
 
 /* ---------- Header ---------- */
+/* One thin bar that steps aside while the page goes down (header.js).
+   On a phone the pages become a bar of icons at the bottom, near the thumb. */
+
+.visually-hidden,
+.theme-label,
+.site-nav .nav-search .nav-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+html {
+  scroll-padding-top: 4rem;
+}
 
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 1.5rem;
-  padding: 0.6rem 1.25rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  gap: 0.25rem;
+  height: 48px;
+  padding: 0 0.75rem 0 1.25rem;
+  border-bottom: 1px solid var(--bar-line);
+  transition: transform 0.25s ease;
+}
+
+/* The translucent glass lives on a layer of its own: a blur on the header
+   itself would trap the fixed bar of icons of the phone inside it. */
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--bar);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.site-header.is-away {
+  transform: translateY(-100%);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
+  min-height: 44px;
+  min-width: 0;
   color: var(--ink);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .brand img {
   display: block;
+  flex: none;
 }
 
 .brand-name {
   font-family: var(--font-serif);
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: bold;
 }
 
 .brand-family {
+  overflow: hidden;
   color: var(--ink-soft);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
 }
 
-.site-nav,
-.language-nav {
-  display: flex;
-  gap: 0.25rem;
+.header-rule {
+  flex: none;
+  width: 1px;
+  height: 18px;
+  margin: 0 0.75rem;
+  background: var(--line);
+}
+
+.icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon .icon-fill {
+  fill: currentColor;
+  stroke: none;
 }
 
 .site-nav {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 .site-nav a {
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 44px;
+  padding: 0 0.6rem;
+  color: var(--ink-soft);
+  font-size: 0.93rem;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .site-nav a:hover {
-  background: var(--accent-soft);
+  color: var(--ink);
 }
 
 .site-nav a[aria-current] {
-  background: var(--accent);
-  color: #fff;
+  color: var(--ink);
+  font-weight: 650;
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 
-/* Two small flags. The other language is a bit faded until hovered. */
-.language-nav {
-  align-items: center;
-  gap: 0.45rem;
+.site-nav a[aria-current] .icon {
+  color: var(--accent);
 }
 
-.flag {
+/* The magnifier: alone, at the right, without its name. */
+.site-nav .nav-search {
+  justify-content: center;
+  width: 44px;
+  margin-left: auto;
+  padding: 0;
+  border-radius: 999px;
+  color: var(--ink);
+}
+
+.site-nav .nav-search[aria-current] {
+  border-radius: 0;
+}
+
+.site-nav .nav-search .icon {
+  width: 22px;
+  height: 22px;
+}
+
+.header-button {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.site-nav .nav-search:hover,
+.header-button:hover {
+  background: var(--hover);
+}
+
+/* Theme: the icon of the current state, like the panel. Without JavaScript
+   the button could do nothing, so it is not shown. */
+html:not([data-theme]) .theme-toggle,
+.theme-toggle .icon {
+  display: none;
+}
+
+html[data-theme="auto"] .theme-icon-auto,
+html[data-theme="light"] .theme-icon-light,
+html[data-theme="dark"] .theme-icon-dark {
   display: block;
+}
+
+.theme-toggle .theme-label {
+  display: none;
+}
+
+html[data-theme="auto"] .theme-label-auto,
+html[data-theme="light"] .theme-label-light,
+html[data-theme="dark"] .theme-label-dark {
+  display: block;
+}
+
+/* One flag: the language of the page. It leads to the other language. */
+.flag {
   line-height: 0;
-  border-radius: 3px;
-  opacity: 0.6;
-  filter: saturate(0.7);
-  transition: opacity 0.15s, filter 0.15s;
 }
 
 .flag svg {
   width: 22px;
   height: 15px;
   border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0 0 1px var(--flag-edge);
 }
 
-.flag:hover,
-.flag:focus-visible,
-.flag[aria-current] {
+.flag-code {
+  font-size: 0.85rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ---------- Search in place (header.js) ---------- */
+
+.quick-search {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+}
+
+.quick-search[hidden] {
+  display: none;
+}
+
+.quick-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 48px;
+  padding: 0 0.75rem 0 1.25rem;
+  border-bottom: 1px solid var(--bar-line);
+  background: var(--paper);
+}
+
+.quick-search-mark {
+  flex: none;
+}
+
+.quick-search-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  height: 36px;
+  padding: 0 0.8rem;
+  border: 1.5px solid var(--accent);
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink-soft);
+}
+
+.quick-search-field .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.quick-search-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  /* 16px or more: phones do not zoom into the field. */
+  font-size: 1rem;
+  outline: none;
+}
+
+.quick-search-field input::placeholder {
+  color: var(--ink-soft);
   opacity: 1;
-  filter: none;
+}
+
+.quick-search-field:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.quick-search-close {
+  flex: none;
+  min-height: 44px;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.quick-search-close:hover {
+  background: var(--hover);
+}
+
+#quick-search-list {
+  width: min(32rem, calc(100% - 1.5rem));
+  max-height: min(28rem, calc(100vh - 7rem));
+  margin: 0.4rem auto 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 10px 30px var(--shadow);
+  list-style: none;
+}
+
+#quick-search-list[hidden] {
+  display: none;
+}
+
+.quick-result,
+.quick-all {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 48px;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.quick-result:hover,
+.quick-all:hover,
+.quick-result[aria-selected="true"],
+.quick-all[aria-selected="true"] {
+  background: var(--accent-soft);
+}
+
+.quick-result[aria-selected="true"],
+.quick-all[aria-selected="true"] {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.quick-avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--accent-soft);
+}
+
+.quick-initials {
+  display: inline-grid;
+  place-items: center;
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-size: 0.85rem;
+}
+
+.quick-result[aria-selected="true"] .quick-initials {
+  background: var(--surface);
+}
+
+.quick-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.quick-detail {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.quick-empty {
+  padding: 0.6rem 0.7rem;
+  color: var(--ink-soft);
+  font-size: 0.93rem;
+}
+
+.quick-all {
+  margin-top: 0.2rem;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 8px 8px;
+  color: var(--accent);
+  font-size: 0.93rem;
 }
 
 .demo-banner {
@@ -183,6 +587,124 @@ h3 {
   color: var(--warning-ink);
   font-size: 0.9rem;
   text-align: center;
+}
+
+/* ---------- Header on a phone ---------- */
+
+@media (max-width: 45rem) {
+  .site-header {
+    height: 46px;
+    padding: 0 0.35rem 0 0.9rem;
+  }
+
+  /* The top bar stays: the bar of icons below does not move either. */
+  .site-header.is-away {
+    transform: none;
+  }
+
+  .brand-name,
+  .brand-family,
+  .site-nav .nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .header-rule {
+    display: none;
+  }
+
+  /* The pages: icons only, fixed at the bottom of the screen. */
+  .site-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    gap: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--bar-line);
+    background: var(--bar);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .site-nav a,
+  .site-nav .nav-search {
+    flex: 1;
+    position: relative;
+    justify-content: center;
+    width: auto;
+    height: 56px;
+    margin: 0;
+    border-radius: 0;
+    color: var(--ink-soft);
+  }
+
+  .site-nav a .icon,
+  .site-nav .nav-search .icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .site-nav a[aria-current] {
+    box-shadow: none;
+    color: var(--accent);
+  }
+
+  /* A small line above the icon of the page that is open. */
+  .site-nav a[aria-current]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 28px;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--accent);
+    transform: translateX(-50%);
+  }
+
+  .theme-toggle {
+    margin-left: auto;
+  }
+
+  body {
+    padding-bottom: calc(57px + env(safe-area-inset-bottom));
+  }
+
+  /* The search opens just above the bar of icons, the names above it. */
+  .quick-search {
+    top: auto;
+    bottom: calc(57px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .quick-search-bar {
+    padding: 0 0.35rem 0 0.9rem;
+    border-top: 1px solid var(--bar-line);
+    border-bottom: 0;
+  }
+
+  .quick-search-mark {
+    display: none;
+  }
+
+  #quick-search-list {
+    width: calc(100% - 1rem);
+    max-height: calc(100vh - 10rem);
+    margin: 0 auto 0.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition: none;
+  }
 }
 
 /* ---------- Page ---------- */
@@ -437,8 +959,8 @@ a.timestamp::before {
 }
 
 .broken-link {
-  background: #fde2e1;
-  color: #8a1c14;
+  background: var(--broken-bg);
+  color: var(--broken-ink);
   border-radius: 3px;
   padding: 0 0.2rem;
 }
@@ -477,7 +999,7 @@ body.wide .site-main {
 
 .tree-frame {
   position: relative;
-  background: #ffffff;
+  background: var(--tree-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
@@ -528,12 +1050,12 @@ body.wide .site-main {
 }
 
 .bands rect {
-  fill: #f7f3eb;
+  fill: var(--tree-band);
 }
 
 .child-line {
   fill: none;
-  stroke: #8f867c;
+  stroke: var(--tree-line);
   stroke-width: 1.5;
 }
 
@@ -549,7 +1071,7 @@ body.wide .site-main {
 
 .union-line {
   fill: none;
-  stroke: #4d463f;
+  stroke: var(--tree-union);
   stroke-width: 3.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -570,9 +1092,24 @@ body.wide .site-main {
 
 .union-node,
 .sample-node {
-  fill: #ffffff;
-  stroke: #4d463f;
+  fill: var(--tree-bg);
+  stroke: var(--tree-union);
   stroke-width: 1.6;
+}
+
+/* The white of the circles (central ring, deceased) follows the theme. */
+.person circle.ring,
+.person.deceased circle.dot {
+  fill: var(--tree-bg);
+}
+
+.legend .swatch {
+  fill: var(--swatch);
+}
+
+.legend .swatch-hole {
+  fill: var(--surface);
+  stroke: var(--swatch);
 }
 
 a.person {
@@ -586,14 +1123,14 @@ a.person {
   text-anchor: middle;
   /* A white halo keeps the name readable where a line passes behind it. */
   paint-order: stroke;
-  stroke: #ffffff;
+  stroke: var(--tree-bg);
   stroke-width: 3.5px;
   stroke-linejoin: round;
 }
 
 .person:hover circle:not(.ring),
 .person:focus-visible circle:not(.ring) {
-  stroke: #1b6fd1;
+  stroke: var(--focus);
   stroke-width: 3.5;
 }
 
@@ -684,7 +1221,7 @@ a.person {
 
 .view-tabs a[aria-current] {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* ---------- Tree: hints and full screen ---------- */
@@ -697,8 +1234,8 @@ a.person {
   margin: 0;
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
-  background: rgba(42, 38, 34, 0.86);
-  color: #fff;
+  background: var(--hint-bg);
+  color: var(--hint-ink);
   font-size: 0.9rem;
   transform: translateX(-50%);
   opacity: 0;
@@ -771,9 +1308,9 @@ button {
 .filters select {
   min-width: 0;
   padding: 0.4rem 0.6rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
-  background: #fff;
+  background: var(--field);
   color: var(--ink);
 }
 
@@ -813,9 +1350,9 @@ button {
 
 .form-actions button {
   padding: 0.4rem 0.9rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
-  background: #fff;
+  background: var(--field);
   color: var(--ink);
 }
 
@@ -1164,6 +1701,7 @@ button {
   border: 0;
   border-radius: 50%;
   background: var(--accent-soft);
+  color: var(--ink);
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
@@ -1186,7 +1724,7 @@ button {
 }
 
 .person.focused circle.dot {
-  stroke: #1b6fd1;
+  stroke: var(--focus);
   stroke-width: 5;
 }
 
@@ -1204,8 +1742,8 @@ button {
   margin: 0;
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
-  background: rgba(42, 38, 34, 0.86);
-  color: #fff;
+  background: var(--hint-bg);
+  color: var(--hint-ink);
   font-size: 0.9rem;
   transform: translateX(-50%);
   opacity: 0;
@@ -1217,11 +1755,12 @@ button {
   opacity: 1;
 }
 
+/* Like the zoom buttons of Leaflet next to it: light in both themes. */
 .map-full-button {
   padding: 0.35rem 0.7rem;
   border: 0;
   background: #fff;
-  color: var(--ink);
+  color: #2a2622;
   font: inherit;
   font-size: 0.9rem;
   cursor: pointer;
@@ -1296,13 +1835,6 @@ body.map-is-full {
     grid-template-columns: 1fr;
   }
 
-  .site-header {
-    padding: 0.5rem 0.8rem;
-  }
-
-  .brand-family {
-    display: none;
-  }
 }
 
 /* ---------- Password page (/entrar/) ---------- */
@@ -1346,7 +1878,7 @@ body.map-is-full {
   width: 26px;
   height: 18px;
   border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0 0 1px var(--flag-edge);
 }
 
 .enter-door {
@@ -1377,9 +1909,9 @@ body.map-is-full {
   border-radius: var(--radius);
   text-align: left;
 
-  border-left: 5px solid #a33a2a;
-  background: #fbe9e5;
-  color: #7a2416;
+  border-left: 5px solid var(--error-line);
+  background: var(--error-bg);
+  color: var(--error-ink);
   font-weight: 600;
 }
 
@@ -1401,7 +1933,7 @@ body.map-is-full {
 }
 
 .enter-already:hover {
-  background: #dce6d3;
+  background: var(--accent-soft-hover);
   text-decoration: underline;
 }
 
@@ -1431,7 +1963,7 @@ body.map-is-full {
   padding: 0.5rem 0.8rem;
   border: 2px solid var(--line-strong);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--field);
   color: var(--ink);
   font-size: 1.3rem;
 }
@@ -1441,7 +1973,7 @@ body.map-is-full {
 }
 
 .enter-form input[aria-invalid] {
-  border-color: #a33a2a;
+  border-color: var(--error-line);
 }
 
 .enter-form #enter-password {
@@ -1489,16 +2021,32 @@ body.map-is-full {
   border: 0;
   border-radius: var(--radius);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 1.25rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .enter-form button:hover {
-  background: #344b2d;
+  background: var(--accent-hover);
 }
 
 .enter-stay {
   margin-top: 1rem;
+}
+/* ---------- Dark theme: the map popups ---------- */
+/* The map tiles stay as they are; the popups follow the theme. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .leaflet-popup-content-wrapper,
+  :root:not([data-theme="light"]) .leaflet-popup-tip {
+    background: var(--surface);
+    color: var(--ink);
+  }
+}
+
+:root[data-theme="dark"] .leaflet-popup-content-wrapper,
+:root[data-theme="dark"] .leaflet-popup-tip {
+  background: var(--surface);
+  color: var(--ink);
 }
