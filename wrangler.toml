@@ -3,7 +3,7 @@
 #
 # The password is NOT written here. Set it once with:
 #   npx wrangler pages secret put SITE_PASSWORD
-# (see "Publicar com senha" in README.md).
+# (see "Publishing with a password (Cloudflare Pages)" in README.md).
 
 name = "raizes"
 pages_build_output_dir = "dist"

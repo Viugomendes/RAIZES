@@ -2,7 +2,7 @@
 
 The admin panel is used to fill in the data. The site is served by
 `python manage.py servir` (on this computer, the home network, a tunnel or a
-server: see "Onde hospedar" in the README) or exported as static pages.
+server: see "Where to host it" in the README) or exported as static pages.
 Everything that changes between places is read from `.env`.
 """
 import os
@@ -22,7 +22,7 @@ load_env_file(ENV_FILE)
 SECRET_KEY = get_or_create_secret_key(ENV_FILE)
 
 # ---------------------------------------------------------------------------
-# Where the site is served (see "Onde hospedar" in the README)
+# Where the site is served (see "Where to host it" in the README)
 # ---------------------------------------------------------------------------
 # The address the family opens, for example https://familia.example.org
 # Empty: the site is only used on this computer or on the home network.
