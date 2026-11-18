@@ -1226,3 +1226,12 @@ msgstr "Painel do Raízes: nova senha"
 
 msgid "Show password"
 msgstr "Mostrar senha"
+
+msgid "view password (hash)"
+msgstr "senha de visualização (hash)"
+
+msgid "password number"
+msgstr "número da senha"
+
+msgid "device code"
+msgstr "código do aparelho"

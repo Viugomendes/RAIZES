@@ -1227,3 +1227,12 @@ msgstr "Panel de Raízes: nueva contraseña"
 
 msgid "Show password"
 msgstr "Mostrar contraseña"
+
+msgid "view password (hash)"
+msgstr "contraseña de visualización (hash)"
+
+msgid "password number"
+msgstr "número de la contraseña"
+
+msgid "device code"
+msgstr "código del dispositivo"

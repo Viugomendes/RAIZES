@@ -24,9 +24,9 @@ class SiteSettings(models.Model):
         related_name="+",
     )
     # Only the hash is stored, never the password itself.
-    view_password_hash = models.CharField(max_length=200, blank=True)
+    view_password_hash = models.CharField(_("view password (hash)"), max_length=200, blank=True)
     # Raised on every password change: devices with an older number are locked out.
-    password_version = models.PositiveIntegerField(default=1)
+    password_version = models.PositiveIntegerField(_("password number"), default=1)
 
     class Meta:
         verbose_name = _("site settings")
@@ -63,14 +63,14 @@ class SiteSettings(models.Model):
 class ViewerDevice(models.Model):
     """A browser that typed the family password."""
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(_("device code"), primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(_("name"), max_length=80, blank=True)
     browser = models.CharField(_("browser"), max_length=80, blank=True)
     # Only the start of the address, to respect privacy.
-    ip_prefix = models.CharField(max_length=40, blank=True)
-    password_version = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    last_seen = models.DateTimeField(default=timezone.now)
+    ip_prefix = models.CharField(_("Network (start of the IP)"), max_length=40, blank=True)
+    password_version = models.PositiveIntegerField(_("password number"))
+    created_at = models.DateTimeField(_("Entered"), auto_now_add=True)
+    last_seen = models.DateTimeField(_("Last visit"), default=timezone.now)
     revoked = models.BooleanField(_("revoked"), default=False)
 
     class Meta:

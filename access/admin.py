@@ -80,7 +80,7 @@ class OnlineFilter(admin.SimpleListFilter):
 
 @admin.register(ViewerDevice, site=site)
 class ViewerDeviceAdmin(admin.ModelAdmin):
-    list_display = ("status", "name", "browser", "network", "entered", "last_visit")
+    list_display = ("status", "name", "browser", "ip_prefix", "entered", "last_visit")
     list_display_links = ("name",)
     list_filter = (OnlineFilter,)
     actions = ["disconnect"]
@@ -116,10 +116,6 @@ class ViewerDeviceAdmin(admin.ModelAdmin):
         if obj.is_online:
             return format_html('<span class="raizes-status raizes-on">{}</span>', _("Online"))
         return format_html('<span class="raizes-status">{}</span>', _("Offline"))
-
-    @admin.display(description=_("Network (start of the IP)"), ordering="ip_prefix")
-    def network(self, obj):
-        return obj.ip_prefix
 
     @admin.display(description=_("Entered"), ordering="created_at")
     def entered(self, obj):

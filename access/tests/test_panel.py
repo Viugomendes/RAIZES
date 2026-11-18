@@ -129,6 +129,20 @@ class ConnectedPageTests(TestCase):
                 self.assertNotContains(response, "para visualizar")
                 self.assertNotContains(response, "para ver")
 
+    def test_device_page_labels_speak_the_family_language(self):
+        device = make_device(self.site, ip_prefix="10.0.0.0/24")
+        url = reverse("admin:access_viewerdevice_change", args=[device.pk])
+        for language, texts in (
+            ("pt-br", ("Rede (início do IP)", "Número da senha", "Última visita")),
+            ("es", ("Red (inicio de la IP)", "Número de la contraseña", "Última visita")),
+        ):
+            with self.subTest(language=language):
+                response = self.client.get(url, HTTP_ACCEPT_LANGUAGE=language)
+                for text in texts:
+                    self.assertContains(response, text)
+                for english in ("Ip prefix", "Password version", "Last seen", "Created at"):
+                    self.assertNotContains(response, english)
+
     def test_panel_home_has_plain_link_names(self):
         response = self.client.get(reverse("admin:index"), HTTP_ACCEPT_LANGUAGE="pt-br")
 
