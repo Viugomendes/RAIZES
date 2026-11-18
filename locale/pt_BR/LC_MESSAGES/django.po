@@ -1279,3 +1279,9 @@ msgstr "Não foi possível abrir a busca. Tente a busca completa."
 
 msgid "Change theme"
 msgstr "Mudar o tema"
+
+msgid "Family photos"
+msgstr "Fotos da família"
+
+msgid "Photo without caption"
+msgstr "Foto sem legenda"

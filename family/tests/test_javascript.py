@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest import skipUnless
 
 from django.test import SimpleTestCase
+from django.utils import translation
 
 from family.graph import load_family_graph
 from family.kinship import CENTER
@@ -317,3 +318,55 @@ class ThemeTests(JavaScriptTestCase):
         steps = [["auto", False], ["dark", False], ["light", False], ["auto", True], ["light", True], ["dark", True], ["nonsense", False]]
 
         self.assertEqual(self.run_js("theme", steps=steps), ["dark", "light", "auto", "light", "dark", "auto", "auto"])
+
+
+class CarouselTests(JavaScriptTestCase):
+    """The strip of photos on the News page: random order, filled screen, calm speed."""
+
+    def carousel(self, **arguments):
+        defaults = {"items": ["a", "b", "c", "d"], "random": [0, 0, 0], "widths": [], "rounds": []}
+        return self.run_js("carousel", **{**defaults, **arguments})
+
+    def test_shuffle_follows_the_random_numbers(self):
+        # Fisher-Yates from the end: 0 swaps d with a, then c with d, then b with c.
+        result = self.carousel(random=[0, 0, 0])
+
+        self.assertEqual(result["shuffled"], ["b", "c", "d", "a"])
+
+    def test_shuffle_with_numbers_near_one_keeps_the_order(self):
+        result = self.carousel(random=[0.999, 0.999, 0.999])
+
+        self.assertEqual(result["shuffled"], ["a", "b", "c", "d"])
+
+    def test_shuffle_keeps_every_photo_once_and_does_not_change_the_list(self):
+        result = self.carousel()
+
+        self.assertEqual(result["shuffledByChance"], ["a", "b", "c", "d"])
+        self.assertEqual(result["untouched"], ["a", "b", "c", "d"])
+
+    def test_few_photos_are_repeated_until_they_fill_the_screen(self):
+        result = self.carousel(widths=[[1500, 1300], [1300, 1300], [700, 1300], [240, 1920], [0, 1300]])
+
+        self.assertEqual(result["rounds"], [1, 1, 2, 8, 1])
+
+    def test_speed_does_not_grow_with_the_number_of_photos(self):
+        result = self.carousel(rounds=[1400, 2800, 14000])
+        speeds = [width / seconds for width, seconds in zip([1400, 2800, 14000], result["durations"])]
+
+        self.assertEqual(len(set(round(speed, 6) for speed in speeds)), 1)
+        self.assertLess(speeds[0], 60)
+
+
+class CarouselPageTests(DemoFamilyTestCase):
+    def test_news_page_has_the_strip_hidden_until_the_script_fills_it(self):
+        html = self.client.get("/pt-br/").content.decode()
+
+        self.assertRegex(html, r'<section class="carousel" id="carousel" aria-label="Fotos da família"[^>]* hidden>')
+        self.assertIn('data-untitled="Foto sem legenda"', html)
+        self.assertIn("js/carousel.js", html)
+
+    def test_strip_label_in_spanish(self):
+        self.addCleanup(translation.deactivate)  # the request leaves Spanish active
+        html = self.client.get("/es/").content.decode()
+
+        self.assertIn('aria-label="Fotos de la familia"', html)

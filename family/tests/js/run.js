@@ -11,6 +11,7 @@ const Mural = require(path.join(staticDir, "mural.js"));
 const Search = require(path.join(staticDir, "search.js"));
 const Header = require(path.join(staticDir, "header.js"));
 const Theme = require(path.join(staticDir, "theme.js"));
+const Carousel = require(path.join(staticDir, "carousel.js"));
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
@@ -72,6 +73,17 @@ process.stdin.on("end", () => {
     load(["data", "common", "search"], (ok) => log.push(["retry", ok]));
     settle("data", true);
     result = { afterFirst, added, log };
+  } else if (request.task === "carousel") {
+    // A fixed sequence of "random" numbers, so the order can be checked.
+    const numbers = request.random.slice();
+    const random = () => numbers.shift();
+    result = {
+      shuffled: Carousel.shuffle(request.items, random),
+      untouched: request.items,
+      shuffledByChance: Carousel.shuffle(request.items).slice().sort(),
+      rounds: request.widths.map(([row, screen]) => Carousel.roundsToFill(row, screen)),
+      durations: request.rounds.map(Carousel.duration),
+    };
   } else if (request.task === "theme") {
     result = request.steps.map(([current, prefersDark]) => Theme.nextTheme(current, prefersDark));
   } else {

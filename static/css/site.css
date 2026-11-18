@@ -1448,6 +1448,134 @@ button {
   font-size: 1.1rem;
 }
 
+/* ---------- Strip of photos (News) ---------- */
+
+/* Full width of the window: --page-width is the width without the scroll
+   bar, set by carousel.js (the strip is hidden without JavaScript). */
+.carousel {
+  --card-h: 150px;
+  margin: 0.25rem calc(50% - var(--page-width, 100%) / 2) 1.75rem;
+}
+
+.carousel-viewport {
+  overflow: hidden;
+  /* The photos come in and go out softly at the two sides. */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+}
+
+.carousel-track {
+  position: relative;
+  display: flex;
+  width: max-content;
+  /* Room for the focus outline, which the viewport would cut. */
+  padding: 6px 0;
+}
+
+.carousel-track.is-moving {
+  animation: carousel-slide var(--carousel-duration, 60s) linear var(--carousel-delay, 0s) infinite;
+}
+
+.carousel:hover .carousel-track,
+.carousel:focus-within .carousel-track,
+.carousel.is-held .carousel-track {
+  animation-play-state: paused;
+}
+
+@keyframes carousel-slide {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.carousel-row {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Margin, not gap: the two copies must have exactly the same width. */
+.carousel-row li {
+  margin-right: 1rem;
+}
+
+.carousel-card {
+  display: block;
+  width: calc(var(--card-h) * 1.5);
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.carousel-card img {
+  display: block;
+  width: 100%;
+  height: var(--card-h);
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--line);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.carousel-caption {
+  display: block;
+  overflow: hidden;
+  margin-top: 0.45rem;
+  padding: 0 0.15rem;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.carousel-card:hover .carousel-caption,
+.carousel-card:focus-visible .carousel-caption {
+  color: var(--ink);
+}
+
+.carousel-card:focus-visible {
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+@media (max-width: 45rem) {
+  .carousel {
+    --card-h: 120px;
+  }
+
+  .carousel-row li {
+    margin-right: 0.75rem;
+  }
+}
+
+/* No movement: a strip to scroll by hand, each photo once. */
+@media (prefers-reduced-motion: reduce) {
+  .carousel-viewport {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    /* The first photo starts where the text of the page starts. */
+    --strip-start: max(1.25rem, calc((var(--page-width, 100vw) - 60rem) / 2 + 1.25rem));
+    scroll-padding-inline: var(--strip-start);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .carousel-track {
+    padding-inline: var(--strip-start);
+  }
+
+  .carousel-track.is-moving {
+    animation: none;
+  }
+
+  .carousel-row[aria-hidden="true"],
+  .carousel-row li[aria-hidden="true"] {
+    display: none;
+  }
+}
+
 /* ---------- Mural ---------- */
 
 .mural-week {

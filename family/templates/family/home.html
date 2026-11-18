@@ -8,6 +8,10 @@
   {% if not has_people %}
     <p class="notice">{% translate "Nobody has been added yet." %}</p>
   {% else %}
+    {# Every photo, in a new random order on each visit (carousel.js); hidden until there are photos. #}
+    <section class="carousel" id="carousel" aria-label="{% translate 'Family photos' %}" data-untitled="{% translate 'Photo without caption' %}" hidden>
+      <div class="carousel-viewport"><div class="carousel-track"></div></div>
+    </section>
     <div id="mural" class="mural" aria-live="polite">
       <noscript><p class="notice">{% translate "The mural is calculated by the browser every day: it needs JavaScript turned on." %}</p></noscript>
     </div>
@@ -26,6 +30,7 @@
     <script src="{% url 'family_data' %}"></script>
     <script src="{% static 'js/common.js' %}"></script>
     <script src="{% static 'js/mural.js' %}"></script>
+    <script src="{% static 'js/carousel.js' %}"></script>
     <script src="{% static 'js/gallery.js' %}" defer></script>
   {% endif %}
 {% endblock %}

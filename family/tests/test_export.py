@@ -95,6 +95,7 @@ class ExportedFilesTests(DemoFamilyTestCase):
             "static/css/site.css",
             "static/js/tree.js",
             "static/js/mural.js",
+            "static/js/carousel.js",
             "static/js/search.js",
             "static/vendor/leaflet/leaflet.js",
             "static/vendor/leaflet/leaflet.css",
