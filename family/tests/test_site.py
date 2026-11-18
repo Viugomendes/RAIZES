@@ -137,6 +137,9 @@ class HeaderTests(TestCase):
         phone = css[css.index("@media (max-width: 45rem)"):]
         self.assertRegex(phone, r"\.quick-search \{[^}]*top: var\(--quick-top, 0px\);[^}]*height: var\(--quick-height, 100dvh\)")
         self.assertIn("env(safe-area-inset-top)", phone)
+        # The dim covers the whole screen, behind the keyboard too, not only
+        # the part above it (iPhones show the page through the keyboard bar).
+        self.assertRegex(phone, r"\.quick-search::before \{[^}]*position: fixed;[^}]*bottom: -40vh;[^}]*background: rgba")
         self.assertRegex(phone, r"html\.search-open \.site-nav \{\s*display: none;")
         self.assertNotIn("column-reverse", phone)
         js = (static / "js" / "header.js").read_text(encoding="utf-8")

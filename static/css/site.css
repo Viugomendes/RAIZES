@@ -702,6 +702,20 @@ html[data-theme="dark"] .theme-label-dark {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: transparent;
+  }
+
+  /* The dimmed page goes all the way down, behind the keyboard too: iPhones
+     show the page through the bar above the keyboard, so a dim that stopped
+     at the visual viewport left a light strip there. */
+  .quick-search::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: -40vh;
+    z-index: -1;
     background: rgba(20, 16, 10, 0.55);
   }
 
